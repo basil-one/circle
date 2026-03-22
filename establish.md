@@ -10,7 +10,7 @@ css_id: establish
 
 *A Pattern for Conscious Change Leadership by* **Michael Basil**
 
-**![][move]**
+![][move]
 
 ## Summary
 
@@ -58,10 +58,10 @@ Without deliberate intervention, organizational energy becomes fragmented.
 
 How do you create coherence and momentum for change when:
 
-* people hold different interpretations of the change  
-* champions are isolated from one another  
-* leadership is structurally distant from lived experience  
-* the organization is saturated with competing initiatives
+- people hold different interpretations of the change  
+- champions are isolated from one another  
+- leadership is structurally distant from lived experience  
+- the organization is saturated with competing initiatives
 
 Large meetings often become performative rather than reflective. Broadcast communication increases awareness but rarely creates commitment.
 
@@ -103,17 +103,17 @@ The Circle begins with a **three-person nucleus**.
 
 Between these three participants, the group must contain:
 
-* multiple subject matter perspectives (at least two)  
-* facilitation capability  
-* confidence and credibility within the organization
+- multiple subject matter perspectives (at least two)  
+- facilitation capability  
+- confidence and credibility within the organization
 
 The third role is critical: an **integrative facilitator**.
 
 This person is skilled in guiding conversation, sensing energy in the room, and helping participants move between:
 
-* grounding and expanding  
-* inquiry and action  
-* listening and integration
+- grounding and expanding  
+- inquiry and action  
+- listening and integration
 
 Ideally this facilitator has experience with reflective or conscious conversation practices.
 
@@ -125,10 +125,10 @@ The sponsor or senior stakeholder is typically **informally involved at first**�
 
 Within the Circle participants:
 
-* explore tensions around the change  
-* share different perspectives  
-* surface concerns and uncertainties  
-* gradually build shared understanding
+- explore tensions around the change  
+- share different perspectives  
+- surface concerns and uncertainties  
+- gradually build shared understanding
 
 Participants invite others when it becomes useful for learning or progress.
 
@@ -146,10 +146,10 @@ Over time the Circle becomes a **nucleus of alignment** within the organization.
 
 As understanding grows, the group may evolve into:
 
-* a champion network  
-* a change coalition  
-* a community of practice  
-* or a formal change working group
+- a champion network  
+- a change coalition  
+- a community of practice  
+- or a formal change working group
 
 Small islands of coherence begin forming across teams as shared understanding spreads through relationships.
 
@@ -159,12 +159,12 @@ But the essential move remains simple:
 
 ## Key Characteristics of the Circle
 
-* begins with three people  
-* includes at least two subject matter perspectives  
-* includes an integrative facilitator  
-* meets weekly  
-* operates initially informally  
-* invites participation as needed
+- begins with three people  
+- includes at least two subject matter perspectives  
+- includes an integrative facilitator  
+- meets weekly  
+- operates initially informally  
+- invites participation as needed
 
 ## Failure Modes
 
@@ -212,14 +212,14 @@ But the essential move remains simple:
 
 ## Related Patterns
 
-This pattern complements several patterns described in [*Fearless Change*](https://fearlesschangepatterns.com) by Mary Lynn Manns, PhD and Linda Rising, PhD.
+This pattern complements several patterns described in [Fearless Change](https://fearlesschangepatterns.com) by Mary Lynn Manns, PhD and Linda Rising, PhD.
 
 Examples include:
 
-* **Ask for Help** – inviting others into the change effort builds broader ownership.  
-* **Personal Touch** – change spreads through relationships and personal conversations.  
-* **Small Successes** – early wins within the Circle build confidence and momentum.  
-* **Champion Skeptic** – thoughtful skeptics can deepen understanding of the change.
+- *Ask for Help* – inviting others into the change effort builds broader ownership.  
+- *Personal Touch* – change spreads through relationships and personal conversations.  
+- *Small Successes* – early wins within the Circle build confidence and momentum.  
+- *Champion Skeptic* – thoughtful skeptics can deepen understanding of the change.
 
 The Circle serves a **nucleus where many of these and other patterns naturally occur**.
 
