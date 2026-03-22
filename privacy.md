@@ -26,7 +26,7 @@ This data is aggregated and anonymized, meaning it cannot be used to identify yo
 
 ## Cookies and Tracking Technologies
 
-Google Analytics uses cookies to collect site usage data. These cookies help us improve our site’s functionality and content. You can manage or disable cookies in your browser settings. For more details on how Google collects and processes data, refer to [Google’s Privacy Policy](https://policies.google.com/privacy).
+Google Analytics uses cookies to collect site usage data. These cookies help us improve our site’s functionality and content. You can manage or disable cookies in your browser settings. For more details on how Google collects and processes data, refer to [Google’s Privacy Policy](https://policies.google.com/privacy){: data-ga-event="external_click" data-ga-label="google_privacy_policy"}.
 
 ## Information We Do Not Collect
 
@@ -55,4 +55,4 @@ We may update this policy periodically to reflect changes in our practices. Plea
 
 ## Contact Us
 
-If you have any questions about this Privacy Policy, please [contact us](../contact).
+If you have any questions about this Privacy Policy, please [contact us](../contact/){: data-ga-event="contact_meet" data-ga-label="privacy_contact"}.

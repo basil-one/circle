@@ -22,4 +22,4 @@ Doing this upstream ensures that effort connects meaningfully for customers and 
 
 The Circle is practiced through three simple, repeatable moves.
 
-👉 [Learn more](../moves)
+👉 [Learn more](../moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
