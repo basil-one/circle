@@ -29,12 +29,16 @@
     {{ content }}
   </main>
   <footer>
-    <span>{{ site.footer.copyright | default: '' }}</span>
-    <a href="{{ '/privacy/' | relative_url }}">Privacy</a> | 
-    <a href="{{ '/' | relative_url }}">Home</a> | 
-    <a href="{{ '/method/' | relative_url }}">Method</a> | 
-    <a href="{{ '/moves/' | relative_url }}">Moves</a> | 
-    <a href="{{ '/contact/' | relative_url }}">Contact</a>
+    <div id="footer-links">
+      <a href="{{ '/' | relative_url }}">Home</a> | 
+      <a href="{{ '/method/' | relative_url }}">Method</a> | 
+      <a href="{{ '/moves/' | relative_url }}">Moves</a> | 
+      <a href="{{ '/contact/' | relative_url }}">Contact</a>
+    </div>
+    <div id="copyright">
+      {{ site.footer.copyright | default: '' }} 
+      <a href="{{ '/privacy/' | relative_url }}">Privacy</a>
+    </div>
   </footer>
 </body>
 </html>

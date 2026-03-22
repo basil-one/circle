@@ -147,6 +147,15 @@ COMPONENTS: FOOTER
     font-size: 14px;
     color: #3a3a3a;
   }
+
+  #footer-links {
+    text-align: center;
+  }
+
+  #copyright {
+    text-align: center;
+    margin-top: 20px;
+  }
 }
 
 /* ========================================
