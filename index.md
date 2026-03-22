@@ -24,4 +24,4 @@ From this learning, a simple, impactful method has emerged:
 
 A method that creates living spaces where change can take root, deepen, and flow—unlocking downstream measurable outcomes.
 
-👉 [Learn more](/method/)
+👉 [Learn more](../method)
