@@ -3,6 +3,7 @@ layout: default
 title: What is The Circle?
 description: The Circle is a living, continuous change adoption method for leaders and organizations.
 permalink: /method/
+css_id: method
 ---
 
 # What is The Circle?

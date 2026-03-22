@@ -3,6 +3,7 @@ layout: default
 title: Center
 description: While in a Circle session, awareness deepens and desire increases as participants explore the change.
 permalink: /center/
+css_id: center
 ---
 
 # Center

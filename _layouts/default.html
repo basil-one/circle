@@ -24,16 +24,17 @@
     <script src="{{ '/assets/js/analytics.js' | relative_url }}"></script>
   {% endif %}
 </head>
-<body id="{{ page.css_id }}">
-  <main>
+<body>
+  <main id="{{ page.css_id }}">
     {{ content }}
   </main>
   <footer>
     <span>{{ site.footer.copyright | default: '' }}</span>
     <a href="{{ '/privacy/' | relative_url }}">Privacy</a> | 
-    <a href="{{ '/' | relative_url }}">Home</a>
-    <a href="{{ '/method/' | relative_url }}">Method</a>
-    <a href="{{ '/moves/' | relative_url }}">Moves</a>
+    <a href="{{ '/' | relative_url }}">Home</a> | 
+    <a href="{{ '/method/' | relative_url }}">Method</a> | 
+    <a href="{{ '/moves/' | relative_url }}">Moves</a> | 
+    <a href="{{ '/contact/' | relative_url }}">Contact</a>
   </footer>
 </body>
 </html>

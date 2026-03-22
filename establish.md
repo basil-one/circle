@@ -3,6 +3,7 @@ layout: default
 title: Establish the Circle
 description: Create a small, recurring gathering where a few participants—representing multiple perspectives and guided by a skilled facilitator—reason together about a change initiative.
 permalink: /establish/
+css_id: establish
 ---
 
 # **Establish the Circle**

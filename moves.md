@@ -3,6 +3,7 @@ layout: default
 title: About the Moves
 description: Each of the three moves is a repeatable action pattern, designed to create living spaces where change can take root, deepen, and flow.
 permalink: /moves/
+css_id: moves
 ---
 
 # About the Moves

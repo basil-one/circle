@@ -1,3 +1,13 @@
+/* ========================================
+   DEFINE LAYER STACK
+   ======================================== */
+
+@layer reset, layout, typography, components, pages;
+
+/* ========================================
+   DESIGN TOKENS & VARIABLES
+   ======================================== */
+
 :root {
   color-scheme: light;
   --accent-muted: #1f3f3f;
@@ -5,167 +15,160 @@
   --tone-soft: rgba(31, 63, 63, 0.04);
 }
 
-/* Base document */
+/* ========================================
+   RESET & BASE
+   ======================================== */
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont,
-               "Segoe UI", Helvetica, Arial, sans-serif;
-  color: #1a1a1a;
-  background: #fdfcf9;
+@layer reset {
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    background: #fdfcf9;
+  }
 }
 
-/* Main reading column */
+/* ========================================
+   LAYOUT
+   ======================================== */
 
-main {
-  max-width: 70ch;
-  margin: 0 auto;
-  padding: 32px 20px 40px;
-  line-height: 1.6;
-  font-size: 18px;
+@layer layout {
+  main {
+    max-width: 70ch;
+    margin: 0 auto;
+    padding: 32px 20px 40px;
+    line-height: 1.6;
+    font-size: 18px;
+  }
+
+  section {
+    margin-bottom: 64px;
+  }
 }
 
-/* Section containment */
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
 
-section {
-  margin-bottom: 64px;
+@layer typography {
+  /* Headings */
+  h1,
+  h2 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  h1 {
+    font-size: 38px;
+    margin-bottom: 28px;
+    color: #0a0a0a;
+  }
+
+  h2 {
+    font-size: 23px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--accent-muted);
+    font-weight: 600;
+  }
+
+  h2::after {
+    content: "";
+    display: block;
+    width: 2.5rem;
+    height: 1px;
+    background: var(--rule-muted);
+    margin-top: 10px;
+  }
+
+  section > h2 {
+    margin-bottom: 24px;
+  }
+
+  h3 {
+    font-size: 18px;
+    margin-top: 32px;
+    margin-bottom: 12px;
+    font-style: italic;
+    color: #1f3f3f;
+  }
+
+  /* Body text & flow */
+  p {
+    margin: 0 0 18px;
+  }
+
+  p + p {
+    margin-top: 8px;
+  }
+
+  /* Lists */
+  ul {
+    padding-left: 22px;
+    margin: 12px 0 24px;
+  }
+
+  li {
+    margin-bottom: 8px;
+  }
+
+  /* Links */
+  a {
+    color: #0f4873;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    text-decoration-thickness: 2px;
+  }
 }
 
-section:last-of-type {
-  margin-bottom: 0;
+/* ========================================
+   PAGE-SPECIFIC: CONTACT
+   ======================================== */
+
+#contact {
+  text-align: center;
 }
 
-/* Headings (editorial tone) */
+/* ========================================
+COMPONENTS: FOOTER
+   ======================================== */
 
-h1,
-h2 {
-  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
+@layer components {
+  footer {
+    border-top: 1px solid var(--rule-muted);
+    padding: 20px 20px 32px;
+    max-width: 70ch;
+    margin: 20px auto 0;
+    font-size: 14px;
+    color: #3a3a3a;
+  }
 }
 
-/* Hero */
+/* ========================================
+   PAGE-SPECIFIC: CONTACT
+   ======================================== */
 
-#hero {
-  padding-bottom: 32px;
-  border-bottom: 1px solid var(--rule-muted);
-}
+@layer pages {
+  #contact {
+    text-align: center;
+  }
 
-h1 {
-  font-size: 38px;
-  margin-bottom: 28px;
-  color: #0a0a0a;
-}
+  #contact ul {
+    list-style: none;
+    padding-left: 0;
+  }
 
-/* Section headers */
-
-section > h2 {
-  margin-bottom: 24px;
-}
-
-h2 {
-  font-size: 23px;
-  margin-top: 0;
-  margin-bottom: 12px;
-  color: var(--accent-muted);
-  font-weight: 600;
-}
-
-h2::after {
-  content: "";
-  display: block;
-  width: 2.5rem;
-  height: 1px;
-  background: var(--rule-muted);
-  margin-top: 10px;
-}
-
-/* Sub-heads */
-
-h3 {
-  font-size: 18px;
-  margin-top: 32px;
-  margin-bottom: 12px;
-  font-style: italic;
-  color: #1f3f3f;
-}
-
-/* Text rhythm */
-
-p {
-  margin: 0 0 18px;
-}
-
-p + p {
-  margin-top: 8px;
-}
-
-.fine-print {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #5b5b5b;
-}
-
-/* Lists */
-
-ul {
-  padding-left: 22px;
-  margin: 12px 0 24px;
-}
-
-li {
-  margin-bottom: 8px;
-}
-
-/* Links */
-
-a {
-  color: #0f4873;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
-a:hover {
-  text-decoration-thickness: 2px;
-}
-
-/* Profile image */
-
-.profile-image {
-  display: block;
-  width: 180px;
-  max-width: 50%;
-  margin: 24px auto 0;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
-}
-
-/* Option A: Testimonial section toning */
-
-#testimonials {
-  background: var(--tone-soft);
-  padding: 32px 24px;
-  border-radius: 6px;
-}
-
-#testimonials h2 {
-  margin-top: 0;
-}
-
-/* Footer */
-
-footer {
-  border-top: 1px solid var(--rule-muted);
-  padding: 20px 20px 32px;
-  max-width: 70ch;
-  margin: 20px auto 0;
-  font-size: 14px;
-  color: #3a3a3a;
-}
-
-.footer-fine-print {
-  display: block;
-  margin-top: 10px;
-  font-size: 12px;
-  color: #676767;
+  #contact img {
+    display: block;
+    width: 180px;
+    max-width: 50%;
+    margin: 24px auto 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
 }
