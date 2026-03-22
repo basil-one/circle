@@ -1,0 +1,15 @@
+title: The Circle — A Method for Navigating Complex Change
+description: A simple, repeatable method that helps leaders create alignment, build momentum, and unlock downstream measurable outcomes in fast-moving, high-change environments.
+url: https://circle.basil.one
+baseurl: ""
+# Keep plugins list explicit so GitHub Pages matches local builds.
+plugins: []
+profile:
+  name: Michael Basil
+action_links:
+  email: "mailto:michael@basil.one"
+  connect: "https://connect.michael.basil.one"
+analytics:
+  ga_measurement_id: G-4EZ2K11GYN
+footer:
+  copyright: "© 2026 Michael Basil. All rights reserved."

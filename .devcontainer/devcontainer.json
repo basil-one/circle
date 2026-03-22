@@ -1,0 +1,16 @@
+{
+  "name": "circle.basil.one",
+  "image": "mcr.microsoft.com/devcontainers/ruby:3.2",
+  "features": {},
+  "postCreateCommand": "bundle install",
+  "forwardPorts": [4000],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/_site/**": true
+        }
+      }
+    }
+  }
+}
