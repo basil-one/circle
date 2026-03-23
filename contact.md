@@ -10,10 +10,8 @@ css_id: contact
 
 *{{ site.profile.name }}*
 
-**![{{ site.profile.name }}][profile]**
+![{{ site.profile.name }}](/images/profile.png)
 
 - [Email]({{ site.action_links.email }})
 - [LinkedIn]({{ site.action_links.linkedin }})
 - [Video]({{ site.action_links.video }})
-
-[profile]: {{ site.profile.image }}

@@ -55,4 +55,4 @@ We may update this policy periodically to reflect changes in our practices. Plea
 
 ## Contact Us
 
-If you have any questions about this Privacy Policy, please [contact us](../contact/){: data-ga-event="contact_meet" data-ga-label="privacy_contact"}.
+If you have any questions about this Privacy Policy, please [contact us](/contact/){: data-ga-event="contact_meet" data-ga-label="privacy_contact"}.
