@@ -227,9 +227,9 @@ The Circle serves a **nucleus where many of these and other patterns naturally o
 
 Interested in:
 
+- Unpacking this further
+- Sharing a similar method
 - Starting a Circle
-- Discussing further
-- Sharing your perspective
 
 👉 [Let's connect](../contact/){: data-ga-event="contact_click" data-ga-label="establish_page"}
 
