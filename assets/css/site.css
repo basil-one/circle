@@ -135,7 +135,7 @@
 }
 
 /* ========================================
-COMPONENTS: FOOTER
+   COMPONENTS: FOOTER
    ======================================== */
 
 @layer components {
@@ -180,4 +180,16 @@ COMPONENTS: FOOTER
     border-radius: 50%;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
   }
+
+  /* ========================================
+     MAIN IMAGES: FULL-WIDTH, CIRCULAR
+     ======================================== */
+  main img {
+    width: 100%;         /* always match main width */
+    max-width: 100%;     /* prevent overflow */
+    height: auto;        /* maintain aspect ratio */
+    object-fit: cover;   /* crop nicely if needed */
+    border-radius: 10%;  /* circular */
+  }
+
 }
