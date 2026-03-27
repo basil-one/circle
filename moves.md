@@ -1,29 +1,35 @@
 ---
 layout: default
 title: About the Moves
-description: Each of the three moves is a repeatable action pattern, designed to create living spaces where change can take root, deepen, and flow.
+description: Three balancing patterns for working with change.
 permalink: /moves/
 css_id: moves
 ---
 
 # About the Moves
 
-Each of the three moves is a repeatable action pattern, designed to create living spaces where change can take root, deepen, and flow. Together, they establish alignment, build momentum, and unlock downstream measurable outcomes.
+These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Use one, or all three—each keeps clarity, energy, and insight flowing.
 
-## Establish
+## Establish the Circle
 
-This forms the container where awareness can be raised and desire to engage is fostered—creating the relational nucleus where change begins.
+**When focus and alignment are unclear**  
+
+Create a relational center that holds the group together. Return regularly, iterate, and maintain momentum. The group starts to feel grounded, focused, ready to move.
 
 👉 [Learn more](/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
 
-## Center
+## Center the Conversation
 
-Within the Circle, awareness deepens and desire increases as participants explore the change with curiosity and reflection. As real work situations surface and are unpacked through different perspectives, knowledge and ability grow—creating alignment that is both practical and experiential.
+**When energy drifts or conversations lose focus**  
+
+Regulate attention, keep participants connected, and maintain clarity. People stay present, engaged, aligned.
 
 👉 [Learn more](/center/){: data-ga-event="learn_more" data-ga-label="moves_to_center"}
 
-## Leverage
+## Integrate the Vision
 
-Extend insights into teams, systems, champions, stakeholders, and social networks. As this happens, a continuous loop of reinforcement and awareness forms—gaining strength as downstream measurable outcomes become visible.
+**When insight is emerging but decisions feel unclear**  
 
-👉 [Learn more](/leverage/){: data-ga-event="learn_more" data-ga-label="moves_to_leverage"}
+Synthesize perspectives and check what matters. Decide what’s important and what’s not. Understanding becomes aligned action—not just more information.
+
+👉 [Learn more](/integrate/){: data-ga-event="learn_more" data-ga-label="moves_to_integrate"}

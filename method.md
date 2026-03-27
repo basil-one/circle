@@ -8,15 +8,31 @@ css_id: method
 
 # What is The Circle?
 
-*A Method for Conscious Change Leadership by* **Michael Basil**
+The Circle is a simple, continuous method for working with change.
 
-The Circle is a simple, continuous learning method for leaders and organizations navigating complex change. It creates small, repeatable spaces where people come together to make sense of what’s happening, align around what matters, and move forward with greater clarity.
+It creates small, repeatable spaces where people come together to make sense of what’s happening, align around what matters, and move forward with clarity.
+
+Over time, a consistent **pattern emerges**...
+
+When a group becomes clear on what actually matters:  
+
+- attention stabilizes  
+- alignment forms  
+- action follows naturally
 
 ## Why It Matters
 
-In complex environments, alignment rarely forms through communication alone. It emerges through shared experience—when a few key people engage meaningfully: surfacing what matters, sharing perspectives, and connecting across silos.
+In complex environments, alignment rarely forms through communication alone.
 
-As real situations are explored together, awareness deepens, understanding grows, and coordinated action becomes possible. These shifts are often visible early—conversations change, decisions clarify, and momentum begins to build.
+It emerges through shared experience—when a few key people engage meaningfully surfacing what matters, sharing perspectives, and connecting across silos.
+
+As real situations are explored together:
+
+- awareness deepens  
+- understanding grows  
+- decisions clarify  
+
+Momentum grows—not by force, but through shared clarity.
 
 Doing this upstream ensures that effort connects meaningfully for customers and unlocks downstream measurable outcomes.
 

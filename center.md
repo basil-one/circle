@@ -1,11 +1,11 @@
 ---
 layout: default
 title: Center
-description: While in a Circle session, awareness deepens and desire increases as participants explore the change.
+description: Coming soon.
 permalink: /center/
 css_id: center
 ---
 
 # Center
 
-This is a placeholder page. Fresh content coming soon.
+Coming soon.
