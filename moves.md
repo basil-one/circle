@@ -14,22 +14,22 @@ These patterns help groups restore balance and move forward when change feels ov
 
 **When focus and alignment are unclear**  
 
-Create a relational center that holds the group together. Return regularly, iterate, and maintain momentum. The group starts to feel grounded, focused, ready to move.
+Create a small, recurring gathering that becomes a relational center. Return regularly, iterate, and maintain momentum. The group starts to feel grounded, focused, ready to move.
 
 👉 [Learn more](/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
 
-## Center the Conversation
+## Balance the Conversation
 
-**When energy drifts or conversations lose focus**  
+**When energy drifts or discussions go off track**  
 
-Regulate attention, keep participants connected, and maintain clarity. People stay present, engaged, aligned.
+Guide attention, surface perspectives, and manage tension so insight flows. People stay present, engaged, and aligned.
 
-👉 [Learn more](/center/){: data-ga-event="learn_more" data-ga-label="moves_to_center"}
+👉 [Learn more](/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
 
-## Integrate the Vision
+## Realize the Vision
 
-**When insight is emerging but decisions feel unclear**  
+**When insights are emerging but action feels uncertain**  
 
-Synthesize perspectives and check what matters. Decide what’s important and what’s not. Understanding becomes aligned action—not just more information.
+Synthesize perspectives and check what truly matters. Turn shared understanding into aligned action, not just more information.
 
-👉 [Learn more](/integrate/){: data-ga-event="learn_more" data-ga-label="moves_to_integrate"}
+👉 [Learn more](/realize/){: data-ga-event="learn_more" data-ga-label="moves_to_realize"}
