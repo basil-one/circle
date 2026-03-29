@@ -231,4 +231,4 @@ Interested in:
 - Sharing a similar method
 - Starting a Circle
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="establish_page"}
+👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="establish_to_connect"}
