@@ -8,6 +8,8 @@ css_id: method
 
 # What is The Circle?
 
+![The Circle Method](/images/method.png)
+
 The Circle is a simple, continuous method for working with change—together.
 
 It creates small, repeatable spaces where people step out of the noise, make sense of what’s happening, align around what matters, and move forward with clarity.
