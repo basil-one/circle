@@ -8,23 +8,23 @@ css_id: method
 
 # What is The Circle?
 
-The Circle is a simple, continuous method for working with change.
+The Circle is a simple, continuous method for working with change—together.
 
-It creates small, repeatable spaces where people come together to make sense of what’s happening, align around what matters, and move forward with clarity.
+It creates small, repeatable spaces where people step out of the noise, make sense of what’s happening, align around what matters, and move forward with clarity.
 
-Over time, a consistent **pattern emerges**...
+Over time, a pattern begins to emerge:
 
-When a group becomes clear on what actually matters:  
+When a group becomes clear on what actually matters:
 
 - attention stabilizes  
 - alignment forms  
-- action follows naturally
+- action follows  
 
 ## Why It Matters
 
 In complex environments, alignment rarely forms through communication alone.
 
-It emerges through shared experience—when a few key people engage meaningfully surfacing what matters, sharing perspectives, and connecting across silos.
+It emerges through shared experience—when a few key people engage meaningfully to surface what matters, exchange perspectives, and connect across silos.
 
 As real situations are explored together:
 
@@ -32,9 +32,9 @@ As real situations are explored together:
 - understanding grows  
 - decisions clarify  
 
-Momentum grows—not by force, but through shared clarity.
+Momentum builds—not by force, but through shared clarity.
 
-Doing this upstream ensures that effort connects meaningfully for customers and unlocks downstream measurable outcomes.
+This happens upstream—before execution—so that effort connects meaningfully for customers and unlocks measurable outcomes downstream.
 
 ## Explore the Moves
 

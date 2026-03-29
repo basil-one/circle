@@ -122,7 +122,7 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
 
 *Description*: Tensions escalate into personal disputes.  
 
-*Mitigation*: Reframe conflicts around ideas, not individuals.
+*Mitigation*: Reframe conflicts around ideas, deepen understanding, and coaching of individuals.
 
 ### Avoiding Commitment
 
