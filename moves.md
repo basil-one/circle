@@ -1,35 +1,37 @@
 ---
 layout: default
 title: About the Moves
-description: Three balancing patterns for working with change.
+description: Three simple patterns for creating clarity, maintaining alignment, and turning insight into action.
 permalink: /moves/
 css_id: moves
 ---
 
 # About the Moves
 
-These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Use one, or all three—each keeps clarity, energy, and insight flowing.
+These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Each move can be used independently, but together they form a simple system for creating clarity, maintaining alignment, and turning insight into action.
+
+*Start where you are—the right move depends on what the group needs most right now.*
 
 ## Establish the Circle
 
 **When focus and alignment are unclear**  
 
-Create a small, recurring gathering that becomes a relational center. Return regularly, iterate, and maintain momentum. The group starts to feel grounded, focused, ready to move.
+Create a small, recurring gathering that becomes a relational center. It provides a space where people can make sense of the change together, connect across perspectives, and begin building shared understanding.
 
 👉 [Learn more](/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
 
 ## Balance the Conversation
 
-**When energy drifts or discussions go off track**  
+**When conversations drift, fragment, or stall**  
 
-Guide attention, surface perspectives, and manage tension so insight flows. People stay present, engaged, and aligned.
+Guide attention, surface perspectives, and manage tension so insight flows. The group stays engaged, integrates viewpoints, and maintains the conditions needed for alignment to emerge.
 
 👉 [Learn more](/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
 
 ## Realize the Vision
 
-**When insights are emerging but action feels uncertain**  
+**When understanding is growing but action remains unclear**  
 
-Synthesize perspectives and check what truly matters. Turn shared understanding into aligned action, not just more information.
+Synthesize perspectives and focus on what truly matters. Turn shared understanding into aligned commitments, enabling meaningful progress and visible outcomes.
 
 👉 [Learn more](/realize/){: data-ga-event="learn_more" data-ga-label="moves_to_realize"}
