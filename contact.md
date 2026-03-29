@@ -16,6 +16,8 @@ Before guiding leaders through change, Michael spent years in technology and org
 
 Whether you’re curious about starting a Circle, exploring conscious conversation, or seeking coaching for yourself or your team, Michael welcomes a conversation.
 
+*If this resonates, I’d be glad to connect.*
+
 - [Email]({{ site.action_links.email }})  
 - [LinkedIn]({{ site.action_links.linkedin }})  
 - [Video Call / Calendar]({{ site.action_links.video }})
