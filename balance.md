@@ -14,7 +14,7 @@ css_id: balance
 
 Guide attention, surface perspectives, and manage tension so insight flows. Without this balance, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
 
-This pattern is **both independent and foundational**, nourishing the effectiveness of the Circle itself. It enables subsequent moves like Realize the Vision and creates the conditions to **establish, evolve, or adjourn a Circle**, forming a more collaborative and responsive conversation system.
+This pattern is **both independent and foundational**, nourishing the effectiveness of the Circle itself. It enables subsequent moves like *Realize the Vision* and creates the conditions to **establish, evolve, or adjourn a Circle**, forming a more collaborative and responsive conversation system.
 
 ## Story
 
