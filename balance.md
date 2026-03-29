@@ -10,6 +10,8 @@ css_id: balance
 
 *A Pattern for Conscious Change Leadership by* **Michael Basil**
 
+![Balance the Conversation](/images/balance.png)
+
 ## Summary
 
 Guide attention, surface perspectives, and manage tension so insight flows. Without this balance, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
