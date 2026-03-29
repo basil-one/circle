@@ -4,8 +4,6 @@ url: https://circle.basil.one
 baseurl: ""
 # Keep plugins list explicit so GitHub Pages matches local builds.
 plugins: []
-profile:
-  name: Michael Basil
 action_links:
   email: "mailto:michael@basil.one"
   linkedin: "https://www.linkedin.com/in/michael-100-basil"
