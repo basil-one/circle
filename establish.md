@@ -157,7 +157,7 @@ But the essential move remains simple:
 
 **Establish the Circle.**
 
-## Key Characteristics of the Circle
+## Key Characteristics
 
 - begins with three people  
 - includes at least two subject matter perspectives  
