@@ -8,6 +8,8 @@ css_id: moves
 
 # About the Moves
 
+![About the Moves](/images/moves.png)
+
 These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Each move can be used independently, but together they form a simple system for creating clarity, maintaining alignment, and turning insight into action.
 
 *Start where you are—the right move depends on what the group needs most right now.*
