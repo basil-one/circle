@@ -12,6 +12,8 @@ css_id: establish
 
 ![Establish the Circle](/images/establish.png)
 
+*For leaders, facilitators, or change agents when people care about the change—but can’t connect, align, or move together.*
+
 ## Summary
 
 Create a small, recurring gathering where a few participants—representing multiple perspectives and guided by a skilled facilitator—reason together about a change initiative. The Circle surfaces tensions, builds shared understanding, and gradually connects isolated champions. Over time, it becomes a nucleus of alignment, fostering coherence and momentum across the organization.

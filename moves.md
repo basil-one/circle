@@ -10,7 +10,7 @@ css_id: moves
 
 ![About the Moves](/images/moves.png)
 
-These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Each move can be used independently, but together they form a simple system for creating clarity, maintaining alignment, and turning insight into action.
+These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Each move can be used independently, but together they form a simple system for creating clarity, maintaining alignment, and reconciling understanding into action.
 
 *Start where you are—the right move depends on what the group needs most right now.*
 
@@ -30,10 +30,10 @@ Guide attention, surface perspectives, and manage tension so insight flows. The 
 
 👉 [Learn more](/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
 
-## Realize the Vision
+## Reconcile the Vision
 
 **When understanding is growing but action remains unclear**  
 
-Synthesize perspectives and focus on what truly matters. Turn shared understanding into aligned commitments, enabling meaningful progress and visible outcomes.
+Bring diverse perspectives together and resolve tensions around what matters most. Transform shared understanding into aligned commitments, so progress becomes visible and intentional.
 
-👉 [Learn more](/realize/){: data-ga-event="learn_more" data-ga-label="moves_to_realize"}
+👉 [Learn more](/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"}
