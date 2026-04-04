@@ -1,39 +1,43 @@
 ---
 layout: default
-title: About the Moves
-description: Three simple patterns for creating clarity, maintaining alignment, and turning insight into action.
+title: The Three Moves
+description: Simple patterns to create clarity, maintain alignment, and turn insight into action.
 permalink: /moves/
 css_id: moves
 ---
 
-# About the Moves
+# The Three Moves
+
+*A Simple System for Navigating Continuous Change* **Michael Basil**
 
 ![About the Moves](/images/moves.png)
 
-These patterns help groups restore balance and move forward when change feels overwhelming, confusing, or scattered. Each move can be used independently, but together they form a simple system for creating clarity, maintaining alignment, and reconciling understanding into action.
+Change feels messy. Conversations fragment. Priorities scatter.  
 
-*Start where you are—the right move depends on what the group needs most right now.*
+These three moves help a group pause, see clearly, and act together. Each can stand alone. Together, they form a system for clarity, alignment, and intentional progress.  
+
+*Start where you are. Explore the move that fits your situation right now.*
 
 ## Establish the Circle
 
-**When focus and alignment are unclear**  
+**When focus and alignment are missing**  
 
-Create a small, recurring gathering that becomes a relational center. It provides a space where people can make sense of the change together, connect across perspectives, and begin building shared understanding.
+Create a small, recurring space where people connect, reason together, and begin building shared understanding.  
 
 👉 [Learn more](/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
 
 ## Balance the Conversation
 
-**When conversations drift, fragment, or stall**  
+**When energy drifts or discussion stalls**  
 
-Guide attention, surface perspectives, and manage tension so insight flows. The group stays engaged, integrates viewpoints, and maintains the conditions needed for alignment to emerge.
+Guide attention, surface perspectives, and manage tension so insight flows. Keep the group engaged, aligned, and moving forward.  
 
 👉 [Learn more](/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
 
-## Reconcile the Vision
+## Reconcile the Intention
 
-**When understanding is growing but action remains unclear**  
+**When clarity is forming but action is unclear**  
 
-Bring diverse perspectives together and resolve tensions around what matters most. Transform shared understanding into aligned commitments, so progress becomes visible and intentional.
+Connect perspectives, resolve tensions, and turn shared understanding into aligned commitments. Make progress visible and intentional.  
 
 👉 [Learn more](/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"}

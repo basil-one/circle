@@ -8,7 +8,7 @@ css_id: establish
 
 # Establish the Circle
 
-*A Pattern for Conscious Change Leadership by* **Michael Basil**
+*A Pattern for Adaptive Change Leadership by* **Michael Basil**
 
 ![Establish the Circle](/images/establish.png)
 

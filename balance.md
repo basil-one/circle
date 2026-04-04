@@ -8,7 +8,7 @@ css_id: balance
 
 # Balance the Conversation
 
-*A Pattern for Conscious Change Leadership by* **Michael Basil**
+*A Pattern for Adaptive Change Leadership by* **Michael Basil**
 
 ![Balance the Conversation](/images/balance.png)
 
@@ -18,7 +18,7 @@ css_id: balance
 
 Guide attention, surface perspectives, and manage tension so insight flows. Without this balance, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
 
-This pattern is **both independent and foundational**, nourishing the effectiveness of the Circle itself. It enables subsequent moves like *Reconcile the Vision* and creates the conditions to **establish, evolve, or adjourn a Circle**, forming a more collaborative and responsive conversation system.
+This pattern is **both independent and foundational**, nourishing the effectiveness of the Circle itself. It enables subsequent moves like *Reconcile the Intention* and creates the conditions to **establish, evolve, or adjourn a Circle**, forming a more collaborative and responsive conversation system.
 
 ## Story
 
@@ -95,7 +95,7 @@ When conversation balancing works:
 
 Over time, in a change-saturated environment where initiatives are fragmented and attention is scattered, balanced conversations enable critical outcomes to emerge. Strategic initiatives begin to move forward, connect, and deliver tangible results. Progress becomes visible, and alignment strengthens across the organization.
 
-A Circle session, and any conversation, becomes a **space to practice and reinforce this skill**, supporting its establishment, evolution, and adjournment. It also strengthens subsequent moves like Reconcile the Vision.
+A Circle session, and any conversation, becomes a **space to practice and reinforce this skill**, supporting its establishment, evolution, and adjournment. It also strengthens subsequent moves like *Reconcile the Intention*.
 
 ## Key Characteristics
 
@@ -141,7 +141,7 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
 ## Related Patterns
 
 - [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"} – provides the foundation and conditioning for creating, evolving, or adjourning a Circle. This pattern and Establish the Circle are interdependent—each strengthens the other.  
-- [Reconcile the Vision](/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"} – relies on balanced conversations to synthesize perspectives and align action.  
+- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"} – relies on balanced conversations to synthesize perspectives and align action.  
 
 ## Explore in Your Context
 
