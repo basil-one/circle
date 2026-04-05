@@ -1,14 +1,14 @@
 ---
 layout: default
 title: The Three Moves
-description: Simple patterns to create clarity, maintain alignment, and turn insight into action.
+description: A Lightweight System for Navigating Continuous Change through three repeatable moves that create clarity, align groups, and turn shared understanding into coordinated action.
 permalink: /moves/
 css_id: moves
 ---
 
 # The Three Moves
 
-*A Simple System for Navigating Continuous Change* **Michael Basil**
+*A Lightweight System for Navigating Continuous Change by* **Michael Basil**
 
 ![About the Moves](/images/moves.png)
 
