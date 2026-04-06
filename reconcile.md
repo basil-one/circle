@@ -41,11 +41,12 @@ Without intervention, ambiguity persists, decisions remain reactive, and opportu
 How do you help a group align when:
 
 - principles are unclear or inconsistently understood  
-- key voices are isolated or unaware of each other  
+- key voices are isolated or not sufficiently aware of each other 
 - cultural norms drift away from formal charters  
-- leadership relies on outputs rather than conversations  
+- leadership focuses on outputs rather than fostering shared understanding  
+- the organization lacks mechanisms to revisit performance, success metrics, or impact regularly  
 
-Conventional meetings or status updates rarely surface misalignment or build shared understanding.
+Conventional meetings or status updates rarely surface misalignment or build collective clarity. Without structured conversation, ambiguity persists, decisions remain reactive, and opportunities for coordinated impact are lost.
 
 ## Forces
 
@@ -85,11 +86,14 @@ The **conversation is the value**, not the artifact alone. Each iteration streng
 
 ## Resulting Context
 
+When the pattern succeeds:
+
 - Mental models are aligned; ambiguity is reduced.  
 - Participants share a common language for intent, priorities, and principles.  
-- Interactions with other teams or departments become more predictable and effective.  
-- Leadership gains a clear reference point for guidance and decisions.  
-- The artifact becomes a **living, iterative tool** for ongoing alignment and cultural reinforcement.
+- Interactions with other teams or departments become smoother, more predictable, and effective.  
+- Leadership gains a clear reference point to guide decisions, set priorities, and support the group.  
+- Teams understand which metrics matter, track progress over time, and revisit performance to inform alignment.  
+- The artifact becomes a **living, iterative tool**—anchoring culture, decision-making, and ongoing alignment across the organization.  
 
 ## Key Characteristics
 
@@ -128,9 +132,8 @@ The **conversation is the value**, not the artifact alone. Each iteration streng
 
 ## Related Patterns
 
-- **Establish the Circle** – builds the nucleus of shared understanding.  
-- **Balance the Conversation** – surfaces tensions and ensures all perspectives are heard.  
-- **Small Wins & Iteration** – strengthens alignment through repeated cycles of refinement.  
+- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – builds the nucleus of shared understanding.  
+- [Balance the Conversation](/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – surfaces tensions and ensures all perspectives are heard.   
 
 ## Explore in Your Context
 
