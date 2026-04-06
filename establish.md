@@ -214,16 +214,13 @@ But the essential move remains simple:
 
 ## Related Patterns
 
-This pattern complements several patterns described in [Fearless Change](https://fearlesschangepatterns.com){: data-ga-event="external_click" data-ga-label="fearless_change_book"} by Mary Lynn Manns, PhD and Linda Rising, PhD.
-
-Examples include:
-
-- *Ask for Help* – inviting others into the change effort builds broader ownership.  
-- *Personal Touch* – change spreads through relationships and personal conversations.  
-- *Small Successes* – early wins within the Circle build confidence and momentum.  
-- *Champion Skeptic* – thoughtful skeptics can deepen understanding of the change.
-
-The Circle serves a **nucleus where many of these and other patterns naturally occur**.
+- [Balance the Conversation](/balance/){: data-ga-event="learn_more" data-ga-label="establish_to_balance"} – Balanced conversations ensure diverse voices are heard and tensions are productively surfaced, supporting the Circle’s nucleus.
+- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Aligning on shared principles or artifacts strengthens the Circle’s output and ensures early insights are codified and actionable.
+- [Fearless Change](https://fearlesschangepatterns.com):
+  - Ask For Help – Engage key participants early to strengthen the nucleus and expand reach.
+  - Study Group – Form a small learning or reflective group to support iterative reasoning.
+  - Go-To Person – Identify people who can unblock issues and bring critical perspectives to the early Circle.
+  - Future Commitment – Encourage participants to make small commitments that sustain engagement over time.
 
 ## Explore in Your Context
 

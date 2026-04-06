@@ -132,8 +132,13 @@ When the pattern succeeds:
 
 ## Related Patterns
 
-- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – builds the nucleus of shared understanding.  
-- [Balance the Conversation](/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – surfaces tensions and ensures all perspectives are heard.   
+- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for iterative review, discussion, and surfacing key tensions.
+- [Balance the Conversation](/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Balanced facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
+- [Fearless Change Patterns](https://fearlesschangepatterns.com):
+  - Evolving Vision – Periodically revisit vision and priorities to maintain alignment over time.
+  - Concrete Action Plan – Define concrete next steps that anchor aligned intentions in observable outputs.
+  - Small Successes – Celebrate iterative progress to reinforce alignment and build credibility.
+  - Big Jolt – Showcase alignment achievements visibly to create momentum and influence adoption.
 
 ## Explore in Your Context
 

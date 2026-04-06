@@ -140,8 +140,13 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
 
 ## Related Patterns
 
-- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"} – provides the foundation and conditioning for creating, evolving, or adjourning a Circle. This pattern and Establish the Circle are interdependent—each strengthens the other.  
-- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"} – relies on balanced conversations to synthesize perspectives and align action.  
+- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"} – Balanced conversations are critical to forming and sustaining the initial nucleus; without a small, recurring gathering, efforts to manage group energy have no stable home.
+- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"} – Balanced facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
+- [Fearless Change Patterns](https://fearlesschangepatterns.com):
+  - Time for Reflection – Use structured pauses to observe group energy and recalibrate.
+  - Plant the Seeds – Introduce ideas strategically to encourage participation and contribution.
+  - Personal Touch – Engage individuals meaningfully to surface otherwise silent perspectives.
+  - Just Do It – Small iterative interventions maintain momentum without overplanning.
 
 ## Explore in Your Context
 
