@@ -10,6 +10,8 @@ css_id: reconcile
 
 *A Pattern for Adaptive Change Leadership by* **Michael Basil**
 
+![Reconcile the Intention](/images/reconcile.png)
+
 *For leaders, facilitators, or change agents when a group struggles to act cohesively due to ambiguous priorities, fragmented mental models, or misaligned intentions.*
 
 ## Summary
