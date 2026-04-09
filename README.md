@@ -14,5 +14,4 @@ The site will be available at http://localhost:4000.
 
 The HTML structure and site code in this repository are licensed under the MIT License.
 
-The written content and copy are © Michael Basil.  
-All rights reserved unless otherwise noted.
+The written content and patterns are licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit [https://creativecommons.org/licenses/by-sa/4.0/](https://creativecommons.org/licenses/by-sa/4.0/).
