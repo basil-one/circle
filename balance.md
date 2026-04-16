@@ -154,6 +154,9 @@ Interested in:
 
 - Deepening or formalizing a Circle within your organization  
 - Practicing conscious conversation skills and facilitator micro-moves  
+- Exploring how different relational energies show up in conversation  
 - Learning communities, tools, and coaching to improve conscious leadership  
+
+👉 [Try the Energy Awareness Reflection exercise](/energy-awareness-reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_energy_reflection"}
 
 👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="balance_to_connect"}
