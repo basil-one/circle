@@ -12,68 +12,64 @@ css_id: reflection
 
 This exercise helps you notice how different relational energies show up in real interactions.
 
-The archetypes below describe common ways personality can express itself in interaction.
+The archetypes below describe common patterns of energy expression in conversation. They are not personality types or diagnostics, but ways of noticing variation in how interaction unfolds.
 
-This is not a diagnostic tool. It is not about judging people or defining personality. 
-
-It is a way to build awareness of relational patterns over time.
+You’ll be asked to rate how present each energy feels on a simple 1–10 scale (1 = minimal presence, 10 = highly present or dominant).
 
 ## How to use this exercise
 
 You can use this:
 
-- on your own
-- with another person
-- or in a group setting
+- on your own  
+- with another person  
+- or in a group setting  
 
-If you are facilitating this with a group, the questions below can be shared as a Google Form or Microsoft Form, or asked verbally in sequence.
+If you are facilitating this with a group, the questions can be shared as a form or asked verbally in sequence.
 
 There is no required format—only consistency of reflection.
 
 ## The reflection exercise
 
-Work through the following sections:
-
 ### 1. Who is this reflection about?
 
-- Myself
-- Someone else
+- Myself  
+- Someone else  
 
 If someone else, you may name them if it is helpful.
 
 ### 2. Driver
 
-Driver energy tends to show up as direct, action-oriented, movement toward outcomes, and momentum.
+Driver energy is the push of action and direction. It shows up as initiating, deciding, moving things forward, and creating momentum toward outcomes.
 
-- Minimum recognition (1–10): ___
-- Maximum recognition (1–10): ___
+- Minimum recognition (1–10): ___  
+- Maximum recognition (1–10): ___  
 
 What does this seem to depend on?
 
 ### 3. Organizer
 
-Organizer energy tends to show up as structure, planning, stabilization, and creating clarity.
+Organizer energy is the shaping of structure and clarity. It shows up as planning, sequencing, stabilizing, and making things understandable or workable.
 
-- Minimum recognition (1–10): ___
-- Maximum recognition (1–10): ___
+- Minimum recognition (1–10): ___  
+- Maximum recognition (1–10): ___  
 
 What does this seem to depend on?
 
 ### 4. Collaborator
 
-Collaborator energy tends to show up as connection, support, alignment, and relational awareness.
+Collaborator energy is the quality of relational attunement. It shows up as listening, aligning, supporting, and creating shared understanding or connection.
 
-- Minimum recognition (1–10): ___
-- Maximum recognition (1–10): ___
+- Minimum recognition (1–10): ___  
+- Maximum recognition (1–10): ___  
 
 What does this seem to depend on?
 
 ### 5. Visionary
 
-Visionary energy tends to show up as future orientation, idea generation, possibility thinking, and reframing.
+Visionary energy is the movement toward possibility. It shows up as imagining futures, reframing situations, generating ideas, and expanding what feels possible.
 
-- Minimum recognition (1–10): ___
-- Maximum recognition (1–10): ___
+- Minimum recognition (1–10): ___  
+- Maximum recognition (1–10): ___  
 
 What does this seem to depend on?
 
@@ -83,11 +79,12 @@ Take a moment to notice your current emotional and bodily state after completing
 
 ## Context for interpretation
 
-These patterns are not fixed traits or personality types. They are ways of describing how energy is experienced in a specific moment and context.
+These patterns are not fixed traits or personality types. They describe how energy can appear in a specific interaction or moment.
 
-The same person may experience these patterns very differently depending on situation, role, relationship, and internal state. Variation over time is expected and often meaningful.
+The same person may express all four energies differently depending on context, role, relationship, and internal state. Variation is expected and often meaningful.
 
-If something feels inconsistent or changes across contexts, that is useful information rather than a problem to resolve.
+If something feels inconsistent across situations, treat that as useful signal rather than error.
+
 
 ## Sharing
 
