@@ -148,15 +148,20 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
   - Personal Touch – Engage individuals meaningfully to surface otherwise silent perspectives.
   - Just Do It – Small iterative interventions maintain momentum without overplanning.
 
-## Explore in Your Context
+## Explore in your context
 
-Interested in:
+This pattern is most useful when it is brought directly into real conversations, not just understood conceptually.
 
-- Deepening or formalizing a Circle within your organization  
-- Practicing conscious conversation skills and facilitator micro-moves  
-- Exploring how different relational energies show up in conversation  
-- Learning communities, tools, and coaching to improve conscious leadership  
+If it resonates with your work, you may want to explore how it applies in practice.
 
 👉 [Try the Energy Awareness Reflection exercise](/energy-awareness-reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_energy_reflection"}
+
+This helps you notice how relational energy is showing up before and during conversation, so you can facilitate with greater awareness.
+
+If you’d like to deepen this work further:
+
+- developing or formalizing a Circle in your organization  
+- practicing conscious facilitation and conversational micro-moves  
+- exploring relational energy dynamics in real teams and systems  
 
 👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="balance_to_connect"}

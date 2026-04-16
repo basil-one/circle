@@ -8,13 +8,14 @@ css_id: reflection
 
 # Energy Awareness Reflection
 
-*A Reflective Exercise for the Balance the Conversation move*
+*A reflective exercise to Balance the Conversation*
 
-This is a simple reflective exercise for noticing how different types of energy show up in conversations and relationships.
+This exercise helps you notice how different relational energies show up in real interactions.
 
 The archetypes below describe common ways personality can express itself in interaction.
 
-This is not a diagnostic tool. It is not about judging people or defining personality.
+This is not a diagnostic tool. It is not about judging people or defining personality. 
+
 It is a way to build awareness of relational patterns over time.
 
 ## How to use this exercise
@@ -86,14 +87,13 @@ These patterns are not fixed traits or personality types. They are ways of descr
 
 The same person may experience these patterns very differently depending on situation, role, relationship, and internal state. Variation over time is expected and often meaningful.
 
-If something feels inconsistent or changes across contexts, that is useful information—not an error in the reflection.
+If something feels inconsistent or changes across contexts, that is useful information rather than a problem to resolve.
 
 ## Sharing
 
 If this is useful, please share it with others or reuse it in your own context.
 
-The intention is simple:
-to support clearer awareness of how relational energy is experienced across different situations.
+The intention is to support clearer awareness of how relational energy is experienced across different situations.
 
 ## Continue exploring
 
