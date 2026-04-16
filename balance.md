@@ -154,7 +154,7 @@ This pattern is most useful when it is brought directly into real conversations,
 
 If it resonates with your work, you may want to explore how it applies in practice.
 
-👉 [Try the Energy Awareness Reflection exercise](/energy-awareness-reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_energy_reflection"}
+👉 [Try the Energy Awareness Reflection exercise](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
 
 This helps you notice how relational energy is showing up before and during conversation, so you can facilitate with greater awareness.
 
