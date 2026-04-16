@@ -73,7 +73,21 @@ Visionary energy is the movement toward possibility. It shows up as imagining fu
 
 What does this seem to depend on?
 
-### 6. How do you feel after this reflection?
+### 6. What other energies or archetypes do you notice?
+
+The four archetypes above may not feel exhaustive. You may notice other patterns of energy that feel meaningful in your experience.
+
+Name any additional archetypes or energies that arise for you.
+
+For each one:
+
+- Name of the energy: __________  
+- Minimum recognition (1–10): ___  
+- Maximum recognition (1–10): ___  
+
+What does this seem to depend on?
+
+### 7. How do you feel after this reflection?
 
 Take a moment to notice your current emotional and bodily state after completing this exercise.
 
@@ -84,7 +98,6 @@ These patterns are not fixed traits or personality types. They describe how ener
 The same person may express all four energies differently depending on context, role, relationship, and internal state. Variation is expected and often meaningful.
 
 If something feels inconsistent across situations, treat that as useful signal rather than error.
-
 
 ## Sharing
 
