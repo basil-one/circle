@@ -8,7 +8,7 @@ css_id: reflection
 
 # Energy Awareness Reflection
 
-*A reflective exercise to Balance the Conversation*
+*A Reflective Exercise for Understanding Energy in Conversation* by **Michael Basil**
 
 This exercise helps you notice how different relational energies show up in real interactions.
 
