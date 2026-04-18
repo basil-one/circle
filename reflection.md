@@ -10,6 +10,8 @@ css_id: reflection
 
 *A Reflective Exercise for Understanding Energy in Conversation* by **Michael Basil**
 
+![Energy Awareness Reflection](/images/reflection.png)
+
 This exercise helps you notice how different relational energies show up in real interactions.
 
 The archetypes below describe common patterns of energy expression in conversation. They are not personality types or diagnostics, but ways of noticing variation in how interaction unfolds.
