@@ -69,10 +69,10 @@ Think of a moment where this feeling was present.
 
 When joy is present, how strongly does each energy show up?
 
-- Driver (1–10): ___  
-- Organizer (1–10): ___  
-- Collaborator (1–10): ___  
-- Visionary (1–10): ___  
+- Driver (1–10)  
+- Organizer (1–10)  
+- Collaborator (1–10)  
+- Visionary (1–10)  
 
 ### 3. Sadness
 
@@ -82,10 +82,10 @@ Think of a moment where this feeling was present.
 
 When sadness is present, how strongly does each energy show up?
 
-- Driver (1–10): ___  
-- Organizer (1–10): ___  
-- Collaborator (1–10): ___  
-- Visionary (1–10): ___  
+- Driver (1–10)  
+- Organizer (1–10)  
+- Collaborator (1–10)  
+- Visionary (1–10)  
 
 ### 4. Fear
 
@@ -95,10 +95,10 @@ Think of a moment where this feeling was present.
 
 When fear is present, how strongly does each energy show up?
 
-- Driver (1–10): ___  
-- Organizer (1–10): ___  
-- Collaborator (1–10): ___  
-- Visionary (1–10): ___  
+- Driver (1–10)  
+- Organizer (1–10)  
+- Collaborator (1–10)  
+- Visionary (1–10)  
 
 ### 5. Anger
 
@@ -108,10 +108,10 @@ Think of a moment where this feeling was present.
 
 When anger is present, how strongly does each energy show up?
 
-- Driver (1–10): ___  
-- Organizer (1–10): ___  
-- Collaborator (1–10): ___  
-- Visionary (1–10): ___  
+- Driver (1–10)  
+- Organizer (1–10)  
+- Collaborator (1–10)  
+- Visionary (1–10)  
 
 ### 6. What stands out?
 
