@@ -26,9 +26,29 @@ You can use this:
 - with another person  
 - or in a group setting  
 
-If you are facilitating this with a group, the questions can be shared as a form or asked verbally in sequence.
+You may reflect on:
+- yourself  
+- or how someone shows up for you  
 
-There is no required format—only consistency of reflection.
+If reflecting on someone else, focus on your experience of how they show up in interaction.
+
+## The four archetypes
+
+### Driver
+
+Driver energy is the push of action and direction. It shows up as initiating, deciding, moving things forward, and creating momentum toward outcomes.
+
+### Organizer
+
+Organizer energy is the shaping of structure and clarity. It shows up as planning, sequencing, stabilizing, and making things understandable or workable.
+
+### Collaborator
+
+Collaborator energy is the quality of relational attunement. It shows up as listening, aligning, supporting, and creating shared understanding or connection.
+
+### Visionary
+
+Visionary energy is the movement toward possibility. It shows up as imagining futures, reframing situations, generating ideas, and expanding what feels possible.
 
 ## The reflection exercise
 
@@ -39,59 +59,65 @@ There is no required format—only consistency of reflection.
 
 If someone else, you may name them if it is helpful.
 
-### 2. Driver
+### 2. Joy
 
-Driver energy is the push of action and direction. It shows up as initiating, deciding, moving things forward, and creating momentum toward outcomes.
+*Feeling open, engaged, or at ease*
 
-- Minimum recognition (1–10): ___  
-- Maximum recognition (1–10): ___  
+Think of a moment where this feeling was present.
 
-What does this seem to depend on?
+When joy is present, how strongly does each energy show up?
 
-### 3. Organizer
+- Driver (1–10): ___  
+- Organizer (1–10): ___  
+- Collaborator (1–10): ___  
+- Visionary (1–10): ___  
 
-Organizer energy is the shaping of structure and clarity. It shows up as planning, sequencing, stabilizing, and making things understandable or workable.
+### 3. Sadness
 
-- Minimum recognition (1–10): ___  
-- Maximum recognition (1–10): ___  
+*Feeling low, quiet, or withdrawn*
 
-What does this seem to depend on?
+Think of a moment where this feeling was present.
 
-### 4. Collaborator
+When sadness is present, how strongly does each energy show up?
 
-Collaborator energy is the quality of relational attunement. It shows up as listening, aligning, supporting, and creating shared understanding or connection.
+- Driver (1–10): ___  
+- Organizer (1–10): ___  
+- Collaborator (1–10): ___  
+- Visionary (1–10): ___  
 
-- Minimum recognition (1–10): ___  
-- Maximum recognition (1–10): ___  
+### 4. Fear
 
-What does this seem to depend on?
+*Feeling uncertain, cautious, or on edge*
 
-### 5. Visionary
+Think of a moment where this feeling was present.
 
-Visionary energy is the movement toward possibility. It shows up as imagining futures, reframing situations, generating ideas, and expanding what feels possible.
+When fear is present, how strongly does each energy show up?
 
-- Minimum recognition (1–10): ___  
-- Maximum recognition (1–10): ___  
+- Driver (1–10): ___  
+- Organizer (1–10): ___  
+- Collaborator (1–10): ___  
+- Visionary (1–10): ___  
 
-What does this seem to depend on?
+### 5. Anger
 
-### 6. What other energies or archetypes do you notice?
+*Feeling activated, frustrated, or in tension*
 
-The four archetypes above may not feel exhaustive. You may notice other patterns of energy that feel meaningful in your experience.
+Think of a moment where this feeling was present.
 
-Name any additional archetypes or energies that arise for you.
+When anger is present, how strongly does each energy show up?
 
-For each one:
+- Driver (1–10): ___  
+- Organizer (1–10): ___  
+- Collaborator (1–10): ___  
+- Visionary (1–10): ___  
 
-- Name of the energy: __________  
-- Minimum recognition (1–10): ___  
-- Maximum recognition (1–10): ___  
+### 6. What stands out?
 
-What does this seem to depend on?
+Across these reflections:
 
-### 7. How do you feel after this reflection?
-
-Take a moment to notice your current emotional and bodily state after completing this exercise.
+- What patterns do you notice?  
+- Where does energy seem to shift most across emotions?  
+- What feels consistent?
 
 ## Context for interpretation
 
