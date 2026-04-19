@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Energy Awareness Reflection
-description: A simple reflective exercise for noticing how different types of energy show up in conversations and relationships.
+description: A simple reflective exercise for noticing how energy shows up in conversations and relationships.
 permalink: /reflection/
 css_id: reflection
 ---
@@ -12,62 +12,58 @@ css_id: reflection
 
 ![Energy Awareness Reflection](/images/reflection.png)
 
-This exercise helps you notice how different relational energies show up in real interactions.
+This exercise helps you notice how energy shows up in your conversations.
 
-The archetypes below describe common patterns of energy expression in conversation. They are not personality types or diagnostics, but ways of noticing variation in how interaction unfolds.
+Below are a few common ways energy shows up in interaction. These aren’t personality types or labels—just different ways conversations can unfold.
 
-You’ll be asked to rate how present each energy feels on a simple 1–10 scale (1 = minimal presence, 10 = highly present or dominant).
+You’ll rate how strongly each type of energy shows up on a simple scale:
+
+**1 = barely there, 10 = very strong**
 
 ## How to use this exercise
 
-You can use this:
+You can do this on your own, with another person, or in a group.
 
-- on your own  
-- with another person  
-- or in a group setting  
+You can reflect on yourself or on how someone shows up for you.  
 
-You may reflect on:
-- yourself  
-- or how someone shows up for you  
+If you’re reflecting on someone else, focus on your experience of them in interaction.
 
-If reflecting on someone else, focus on your experience of how they show up in interaction.
+## Ways energy shows up
 
-## Relational energy archetypes
-
-Relational energy archetypes describe recurring ways energy shows up in interaction. A single person will often move through all of these archetypes depending on context, emotion, role, and situation.
+A single person may move through all of these depending on the situation, emotion, or relationship.
 
 ### Driver
 
-Driver energy is the push of action and direction. It shows up as initiating, deciding, moving things forward, and creating momentum toward outcomes.
+Driver energy is about action and forward movement—initiating, deciding, and helping things move.
 
 ### Organizer
 
-Organizer energy is the shaping of structure and clarity. It shows up as planning, sequencing, stabilizing, and making things understandable or workable.
+Organizer energy is about structure and clarity—planning, shaping, and making things workable.
 
 ### Collaborator
 
-Collaborator energy is the quality of relational attunement. It shows up as listening, aligning, supporting, and creating shared understanding or connection.
+Collaborator energy is about connection—listening, aligning, and building shared understanding.
 
 ### Visionary
 
-Visionary energy is the movement toward possibility. It shows up as imagining futures, reframing situations, generating ideas, and expanding what feels possible.
+Visionary energy is about possibility—imagining, reframing, and opening up new directions.
 
-## The reflection exercise
+## The reflection
 
 ### 1. Who is this reflection about?
 
 - Myself  
 - Someone else  
 
-If someone else, you may name them if it is helpful.
+(If someone else, you can name them if helpful.)
 
 ### 2. Joy
 
 *Feeling open, engaged, or at ease*
 
-Think of a moment where this feeling was present.
+Think of a moment when you felt this.
 
-When joy is present, how strongly does each energy show up?
+When joy is present, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -78,9 +74,9 @@ When joy is present, how strongly does each energy show up?
 
 *Feeling low, quiet, or withdrawn*
 
-Think of a moment where this feeling was present.
+Think of a moment when you felt this.
 
-When sadness is present, how strongly does each energy show up?
+When sadness is present, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -91,9 +87,9 @@ When sadness is present, how strongly does each energy show up?
 
 *Feeling uncertain, cautious, or on edge*
 
-Think of a moment where this feeling was present.
+Think of a moment when you felt this.
 
-When fear is present, how strongly does each energy show up?
+When fear is present, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -104,9 +100,9 @@ When fear is present, how strongly does each energy show up?
 
 *Feeling activated, frustrated, or in tension*
 
-Think of a moment where this feeling was present.
+Think of a moment when you felt this.
 
-When anger is present, how strongly does each energy show up?
+When anger is present, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -115,28 +111,28 @@ When anger is present, how strongly does each energy show up?
 
 ### 6. What stands out?
 
-Across these reflections:
+Looking across your responses:
 
 - What patterns do you notice?  
-- Where does energy seem to shift most across emotions?  
-- What feels consistent?
+- Where does energy shift the most?  
+- What stays consistent?
 
 ## Context for interpretation
 
-These patterns are not fixed traits or personality types. They describe how energy can appear in a specific interaction or moment.
+These aren’t fixed traits or personality types. They’re simply ways energy can show up in a given moment.
 
-The same person may express all four energies differently depending on context, role, relationship, and internal state. Variation is expected and often meaningful.
+The same person may show all four in different ways depending on the situation.
 
-If something feels inconsistent across situations, treat that as useful signal rather than error.
+If something shifts across situations, that’s useful to notice—not a problem.
 
 ## Sharing
 
-If this is useful, please share it with others or reuse it in your own context.
+If this was useful, feel free to share it or use it in your own context.
 
-The intention is to support clearer awareness of how relational energy is experienced across different situations.
+The intention is to support clearer awareness of how energy is experienced in different situations.
 
 ## Continue exploring
 
-If you’d like to deepen this kind of awareness or explore additional dimensions of this work, you’re welcome to connect.
+If you’d like to go further with this work or explore additional dimensions, you’re welcome to connect.
 
 👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="reflection_to_connect"}
