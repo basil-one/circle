@@ -32,7 +32,9 @@ You may reflect on:
 
 If reflecting on someone else, focus on your experience of how they show up in interaction.
 
-## The four archetypes
+## Relational energy archetypes
+
+Relational energy archetypes describe recurring ways energy shows up in interaction. A single person will often move through all of these archetypes depending on context, emotion, role, and situation.
 
 ### Driver
 
