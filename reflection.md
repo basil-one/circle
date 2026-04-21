@@ -14,7 +14,7 @@ css_id: reflection
 
 This exercise helps you notice how energy shows up in your conversations.
 
-Below are a few common ways energy shows up in interaction. These aren’t personality types or labels—just different ways conversations can unfold.
+Below are common patterns of relational energy that show up in interaction. They help us notice how conversations tend to move and organize in real time.
 
 You’ll rate how strongly each type of energy shows up on a simple scale:
 
@@ -119,11 +119,11 @@ Looking across your responses:
 
 ## Context for interpretation
 
-These aren’t fixed traits or personality types. They’re simply ways energy can show up in a given moment.
+These patterns can shift from moment to moment and situation to situation.
 
 The same person may show all four in different ways depending on the situation.
 
-If something shifts across situations, that’s useful to notice—not a problem.
+They offer a way to notice how relational energy organizes itself in different contexts and emotional states.
 
 ## Sharing
 
