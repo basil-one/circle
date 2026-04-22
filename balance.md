@@ -148,20 +148,42 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
   - Personal Touch – Engage individuals meaningfully to surface otherwise silent perspectives.
   - Just Do It – Small iterative interventions maintain momentum without overplanning.
 
+## Practical Resources
+
+Developing the ability to balance a conversation requires both reflection and exposure to complementary lenses and practices.
+
+### Energy Awareness Reflection
+
+👉 [Explore](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
+
+Build awareness of how relational energy is showing up in your conversations—and how your interventions influence attention, tension, and participation.
+
+### Stepping into Two Sides
+
+👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E)
+
+Recognize the core polarities present in every conversation—such as speaking and listening, control and emergence, or divergence and convergence—and learn to work with them rather than resolve them.
+
+### Accessing the Four Patterns
+
+👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg)
+
+Explore practical patterns for working with relational dynamics in real time as a core facilitation move.
+
 ## Explore in your context
 
-This pattern is most useful when it is brought directly into real conversations, not just understood conceptually.
+This pattern becomes meaningful when applied in real conversations, not just understood conceptually.
 
-If it resonates with your work, you may want to explore how it applies in practice.
+If it resonates with your work, consider:
 
-👉 [Try the Energy Awareness Reflection exercise](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
+- Where are conversations becoming imbalanced or stuck?  
+- Which voices or perspectives are dominating, and which are missing?  
+- What small shift could help restore balance and move the group forward?  
 
-This helps you notice how relational energy is showing up before and during conversation, so you can facilitate with greater awareness.
-
-If you’d like to deepen this work further:
+If you’d like to deepen this work:
 
 - developing or formalizing a Circle in your organization  
 - practicing conscious facilitation and conversational micro-moves  
-- exploring relational energy dynamics in real teams and systems  
+- working more intentionally with relational energy in teams and systems  
 
 👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="balance_to_connect"}
