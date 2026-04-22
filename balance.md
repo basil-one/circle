@@ -140,13 +140,25 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
 
 ## Related Patterns
 
-- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"} – Balanced conversations are critical to forming and sustaining the initial nucleus; without a small, recurring gathering, efforts to manage group energy have no stable home.
-- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"} – Balanced facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
-- [Fearless Change Patterns](https://fearlesschangepatterns.com):
-  - Time for Reflection – Use structured pauses to observe group energy and recalibrate.
-  - Plant the Seeds – Introduce ideas strategically to encourage participation and contribution.
-  - Personal Touch – Engage individuals meaningfully to surface otherwise silent perspectives.
-  - Just Do It – Small iterative interventions maintain momentum without overplanning.
+- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"}  
+  - Balanced conversations are critical to forming and sustaining the initial nucleus; without a small, recurring gathering, efforts to manage group energy have no stable home.
+
+- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"}  
+  - Balanced facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
+
+### [Zen Leadership](https://zenleader.global)
+
+- *Driver*: Brings focus, urgency, and movement toward decisions and action.
+- *Organizer*: Creates structure, clarity, and coordination across people and work.
+- *Collaborator*: Builds connection, inclusion, and shared understanding across perspectives.
+- *Visionary*: Expands possibility, introduces new ideas, and challenges current thinking.
+
+### [Fearless Change Patterns](https://fearlesschangepatterns.com)
+
+- *Time for Reflection*: Use structured pauses to observe group energy and recalibrate.
+- *Plant the Seeds*: Introduce ideas strategically to encourage participation and contribution.
+- *Personal Touch*: Engage individuals meaningfully to surface otherwise silent perspectives.
+- *Just Do It*: Small iterative interventions maintain momentum without overplanning.
 
 ## Practical Resources
 
@@ -154,21 +166,21 @@ Developing the ability to balance a conversation requires both reflection and ex
 
 ### Energy Awareness Reflection
 
-👉 [Explore](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
-
 Build awareness of how relational energy is showing up in your conversations—and how your interventions influence attention, tension, and participation.
+
+👉 [Explore](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
 
 ### Stepping into Two Sides
 
-👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E)
-
 Recognize the core polarities present in every conversation—such as speaking and listening, control and emergence, or divergence and convergence—and learn to work with them rather than resolve them.
+
+👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E)
 
 ### Accessing the Four Patterns
 
-👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg)
-
 Explore practical patterns for working with relational dynamics in real time as a core facilitation move.
+
+👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg)
 
 ## Explore in your context
 
