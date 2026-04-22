@@ -146,7 +146,7 @@ A Circle session, and any conversation, becomes a **space to practice and reinfo
 - [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"}  
   - Balanced facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
 
-### [Zen Leadership](https://zenleader.global)
+### [Zen Leadership Patterns](https://zenleader.global)
 
 - *Driver*: Brings focus, urgency, and movement toward decisions and action.
 - *Organizer*: Creates structure, clarity, and coordination across people and work.
@@ -170,13 +170,13 @@ Build awareness of how relational energy is showing up in your conversations—a
 
 👉 [Explore](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
 
-### Stepping into Two Sides
+### Two Sides Reflection
 
 Recognize the core polarities present in every conversation—such as speaking and listening, control and emergence, or divergence and convergence—and learn to work with them rather than resolve them.
 
 👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E)
 
-### Accessing the Four Patterns
+### Accessing Energy Patterns
 
 Explore practical patterns for working with relational dynamics in real time as a core facilitation move.
 
