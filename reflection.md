@@ -6,56 +6,47 @@ permalink: /reflection/
 css_id: reflection
 ---
 
-# Energy Awareness Reflection
+# Energy Awareness Reflection  
 
 *A Reflective Exercise for Understanding Energy in Conversation* by **Michael Basil**
 
 ![Energy Awareness Reflection](/images/reflection.png)
 
-This exercise helps you notice how energy shows up in your conversations.
+This exercise helps you notice how energy shows up in your conversations with another person over time.
 
-Below are common patterns of relational energy that show up in interaction. They help us notice how conversations tend to move and organize in real time.
+You’ll reflect on how this person shows up across different emotional contexts.
 
 You’ll rate how strongly each type of energy shows up on a simple scale:
 
 **1 = barely there, 10 = very strong**
 
-## How to use this exercise
-
-You can do this on your own, with another person, or in a group.
-
-You can reflect on yourself or on how someone shows up for you.  
-
-If you’re reflecting on someone else, focus on your experience of them in interaction.
-
 ## Ways energy shows up
 
-A single person may move through all of these depending on the situation, emotion, or relationship.
+A single person may move through all of these depending on the situation, emotion, or conversation.
 
-### Driver
+### Driver  
 
 Driver energy is about action and forward movement—initiating, deciding, and helping things move.
 
-### Organizer
+### Organizer  
 
 Organizer energy is about structure and clarity—planning, shaping, and making things workable.
 
-### Collaborator
+### Collaborator  
 
 Collaborator energy is about connection—listening, aligning, and building shared understanding.
 
-### Visionary
+### Visionary  
 
 Visionary energy is about possibility—imagining, reframing, and opening up new directions.
 
 ## The reflection
 
+Take a moment to settle your attention before beginning. You may use breathing, meditation, or any simple mindfulness practice that helps you slow down and become present. Let your attention shift away from immediate thoughts and into memory.
+
 ### 1. Who is this reflection about?
 
-- Myself  
-- Someone else  
-
-(If someone else, you can name them if helpful.)
+Bring the person you are refecting on to mind.
 
 ### 2. Joy
 
@@ -115,7 +106,7 @@ Looking across your responses:
 
 - What patterns do you notice?  
 - Where does energy shift the most?  
-- What stays consistent?
+- What remains consistent?  
 
 ## Context for interpretation
 
@@ -127,9 +118,13 @@ They offer a way to notice how relational energy organizes itself in different c
 
 ## Sharing
 
-If this was useful, feel free to share it or use it in your own context.
+If this was useful, feel free to share it with the person you reflected on.
 
-The intention is to support clearer awareness of how energy is experienced in different situations.
+You can also invite them to complete the same reflection from their own perspective of conversations with you.
+
+If both perspectives exist, differences in experience can become visible and discussed.
+
+The intention is to support clearer awareness of how energy is experienced between people across situations over time.
 
 ## Continue exploring
 
