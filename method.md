@@ -1,28 +1,46 @@
 ---
 layout: default
-title: What is Circle3?
+title: What is Circle3™?
 description: Circle3 helps leaders create alignment and momentum in complex environments where change doesn’t follow a plan.
 permalink: /method/
 css_id: method
 ---
 
-# What is Circle3™?
+# What is Circle3™
 
 ![Circle3](/images/method.png)
 
 Circle3 is a simple way of working with change in environments that don’t behave predictably.
 
-It creates small, repeatable spaces where people work on real situations together and align on what actually matters.
+It creates small, repeatable spaces where people work on real situations together and make sense of what is happening in real time.
 
-## Why It Matters
+## Why It Works
 
 In complex environments, alignment rarely comes from communication alone.
 
-It comes from working on real situations together.
+It comes from shared sensemaking around real situations.
 
-Early champions often emerge in that work—people who connect across silos and surface what matters.
+When people work this way together, a few things begin to happen:
 
-Change efforts often stall. Resistance is a real signal, and so is the system pulling behavior back toward what it already rewards.
+- they begin to see the same situation more clearly  
+- they develop shared language for what matters  
+- early champions emerge who connect across silos and perspectives  
+
+Circle3 does not impose alignment.
+
+It creates the conditions where alignment can emerge.
+
+## Change in Complex Systems
+
+Change efforts often stall in complex environments.
+
+Resistance is real.
+
+But so is something deeper:
+
+the system reinforces what already works faster than it allows new patterns to stabilize.
+
+Without shared sensemaking in real situations, change fragments—not because people fail to understand it, but because they are operating from different interpretations of what is happening.
 
 ## Explore the Moves
 
