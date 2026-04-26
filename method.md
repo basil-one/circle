@@ -1,45 +1,31 @@
 ---
 layout: default
-title: What is The Circle?
-description: The Circle is a living, continuous change adoption method for leaders and organizations.
+title: What is Circle3?
+description: Circle3 helps leaders create alignment and momentum in complex environments where change doesn’t follow a plan.
 permalink: /method/
 css_id: method
 ---
 
-# What is The Circle?
+# What is Circle3?
 
-![The Circle Method](/images/method.png)
+![Circle3](/images/method.png)
 
-The Circle is a simple, continuous method for working with change—together.
+Circle3 is a simple way of working with change in environments that don’t behave predictably.
 
-It creates small, repeatable spaces where people step out of the noise, make sense of what’s happening, align around what matters, and move forward with clarity.
-
-Over time, a pattern begins to emerge:
-
-When a group becomes clear on what actually matters:
-
-- attention stabilizes  
-- alignment forms  
-- action follows  
+It creates small, repeatable spaces where people work on real situations together and align on what actually matters.
 
 ## Why It Matters
 
-In complex environments, alignment rarely forms through communication alone.
+In complex environments, alignment rarely comes from communication alone.
 
-It emerges through shared experience—when a few key people engage meaningfully to surface what matters, exchange perspectives, and connect across silos.
+It comes from working on real situations together.
 
-As real situations are explored together:
+Early champions often emerge in that work—people who connect across silos and surface what matters.
 
-- awareness deepens  
-- understanding grows  
-- decisions clarify  
-
-Momentum builds—not by force, but through shared clarity.
-
-This happens upstream—before execution—so that effort connects meaningfully for customers and unlocks measurable outcomes downstream.
+Change efforts often stall. Resistance is a real signal, and so is the system pulling behavior back toward what it already rewards.
 
 ## Explore the Moves
 
-The Circle is practiced through three simple, repeatable moves.
+Circle3 is practiced through three simple, repeatable moves.
 
 👉 [Learn more](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
