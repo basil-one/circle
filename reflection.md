@@ -12,9 +12,9 @@ css_id: reflection
 
 ![Energy Awareness Reflection](/images/reflection.png)
 
-This exercise helps you notice how energy shows up in your conversations with another person over time.
+This exercise helps you create a structured reflection of how another person shows up across your conversations over time, across different emotional contexts.
 
-You’ll reflect on how this person shows up across different emotional contexts.
+It is a way of noticing patterns in how a person’s presence in conversation shifts, stabilizes, or varies across emotional conditions.
 
 You’ll rate how strongly each type of energy shows up on a simple scale:
 
@@ -22,7 +22,7 @@ You’ll rate how strongly each type of energy shows up on a simple scale:
 
 ## Ways energy shows up
 
-A single person may move through all of these depending on the situation, emotion, or conversation.
+A person may move through all of these depending on the situation, emotion, or conversation.
 
 ### Driver  
 
@@ -46,15 +46,15 @@ Take a moment to settle your attention before beginning. You may use breathing, 
 
 ### 1. Who is this reflection about?
 
-Bring the person you are refecting on to mind.
+Bring the person you are reflecting on to mind.
 
 ### 2. Joy
 
 *Feeling open, engaged, or at ease*
 
-Think of a moment when you felt this.
+Think of moments when this was present.
 
-When joy is present, how strongly does each type of energy show up?
+When joy is present across conversations, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -65,9 +65,9 @@ When joy is present, how strongly does each type of energy show up?
 
 *Feeling low, quiet, or withdrawn*
 
-Think of a moment when you felt this.
+Think of moments when this was present.
 
-When sadness is present, how strongly does each type of energy show up?
+When sadness is present across conversations, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -78,9 +78,9 @@ When sadness is present, how strongly does each type of energy show up?
 
 *Feeling uncertain, cautious, or on edge*
 
-Think of a moment when you felt this.
+Think of moments when this was present.
 
-When fear is present, how strongly does each type of energy show up?
+When fear is present across conversations, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -91,9 +91,9 @@ When fear is present, how strongly does each type of energy show up?
 
 *Feeling activated, frustrated, or in tension*
 
-Think of a moment when you felt this.
+Think of moments when this was present.
 
-When anger is present, how strongly does each type of energy show up?
+When anger is present across conversations, how strongly does each type of energy show up?
 
 - Driver (1–10)  
 - Organizer (1–10)  
@@ -102,29 +102,23 @@ When anger is present, how strongly does each type of energy show up?
 
 ### 6. What stands out?
 
-Looking across your responses:
+Looking across your responses for this person:
 
-- What patterns do you notice?  
-- Where does energy shift the most?  
-- What remains consistent?  
-
-## Context for interpretation
-
-These patterns can shift from moment to moment and situation to situation.
-
-The same person may show all four in different ways depending on the situation.
-
-They offer a way to notice how relational energy organizes itself in different contexts and emotional states.
+- What patterns do you notice in how this person shows up across emotional contexts?  
+- Where does their energy shift most across emotional contexts?  
+- What remains consistent over time?  
 
 ## Sharing
 
-If this was useful, feel free to share it with the person you reflected on.
+This reflection represents your current perception of how this person shows up across conversations in different emotional states.
+
+If this reflection surfaced meaningful insights, feel free to share it with the person you reflected on.
 
 You can also invite them to complete the same reflection from their own perspective of conversations with you.
 
-If both perspectives exist, differences in experience can become visible and discussed.
+When both perspectives exist, differences in experience can become visible and discussed.
 
-The intention is to support clearer awareness of how energy is experienced between people across situations over time.
+The intention is to support clearer awareness of how energy is experienced between people across conversations over time.
 
 ## Continue exploring
 
