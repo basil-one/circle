@@ -28,6 +28,6 @@ In these environments, change doesn’t behave predictably—it emerges through 
 
 From this learning, a simple, impactful method has emerged:
 
-## Circle3
+## Circle3™
 
 👉 [Learn more](/method/){: data-ga-event="learn_more" data-ga-label="home_to_method"}

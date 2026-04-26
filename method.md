@@ -6,7 +6,7 @@ permalink: /method/
 css_id: method
 ---
 
-# What is Circle3?
+# What is Circle3™?
 
 ![Circle3](/images/method.png)
 
