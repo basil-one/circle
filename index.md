@@ -3,7 +3,7 @@ layout: default
 permalink: /
 css_id: home
 title: Circle3 | Helping Change Actually Take Hold in Complex Organizations
-description: Circle3 helps leaders make sense of change in complex environments where plans alone don’t create adoption, alignment, or momentum.
+description: Circle3 helps leaders make sense of change in complex environments where plans alone don’t create coherence, alignment, or momentum.
 ---
 
 # Feeling Overwhelmed by Constant Change?
@@ -16,9 +16,9 @@ You’re responsible for delivering outcomes. The business depends on you—but 
 
 We’ve learned that traditional change approaches rarely move beyond the surface.
 
-People don’t adopt. Alignment stalls. Momentum fades. Outcomes get delayed, diluted, or lost.
+People don’t adopt. Coherence never forms. Momentum fades. Outcomes get delayed, diluted, or lost.
 
-In many cases, change doesn’t fail at the start—it breaks down in the gap between early agreement and real adoption, where alignment weakens and effort fragments.
+In many cases, change doesn’t fail at the start—it breaks down in the gap between early agreement and real adoption, where shared understanding weakens and effort fragments.
 
 These approaches assume change can be designed and rolled out in a stable environment.
 
@@ -30,7 +30,9 @@ In response, we began working differently inside real situations—working with 
 
 What became clear across contexts was simple:
 
-**alignment forms when people work on real situations together.**
+**coherence forms when people work on real situations together.**
+
+When coherence forms, alignment and momentum become possible.
 
 In these environments, change doesn’t follow a plan.
 
