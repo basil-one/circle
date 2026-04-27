@@ -12,13 +12,11 @@ css_id: reflection
 
 ![Energy Awareness Reflection](/images/reflection.png)
 
-This exercise helps you create a structured reflection of how another person shows up across your conversations over time, across different emotional contexts.
+This exercise supports a structured reflection of how another person shows up across your conversations over time and in different emotional contexts.
 
-It is a way of noticing patterns in how a person’s presence in conversation shifts, stabilizes, or varies across emotional conditions.
+It helps you notice patterns in how their presence shifts, stabilizes, or varies depending on what is present emotionally.
 
-You’ll rate how strongly each type of energy shows up on a simple scale:
-
-**1 = barely there, 10 = very strong**
+You’ll rate how strongly each type of energy shows up on a simple scale from 1 (barely there) to 10 (very strong).
 
 ## Ways energy shows up
 
@@ -40,13 +38,23 @@ Collaborator energy is about connection—listening, aligning, and building shar
 
 Visionary energy is about possibility—imagining, reframing, and opening up new directions.
 
-## The reflection
+## The exercise
 
-Take a moment to settle your attention before beginning. You may use breathing, meditation, or any simple mindfulness practice that helps you slow down and become present. Let your attention shift away from immediate thoughts and into memory.
+Take a moment to settle your attention before beginning.
+
+Use a simple mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.
+
+Let your attention shift from immediate thinking into memory.
+
+Engage the following prompts from that state of awareness.
 
 ### 1. Who is this reflection about?
 
 Bring the person you are reflecting on to mind.
+
+If you notice anything arising about this person, you might also pause and ask:
+
+*What am I actually noticing, versus what am I assuming?*
 
 ### 2. Joy
 
@@ -108,17 +116,25 @@ Looking across your responses for this person:
 - Where does their energy shift most across emotional contexts?  
 - What remains consistent over time?  
 
-## Sharing
+## Reflection
 
 This reflection represents your current perception of how this person shows up across conversations in different emotional states.
 
-If this reflection surfaced meaningful insights, feel free to share it with the person you reflected on.
+This can support clearer awareness of what is actually happening between you in real time, relief from confusion or interpretations carried from past interactions, and new possibilities for how you understand and engage with this person going forward.
 
-You can also invite them to complete the same reflection from their own perspective of conversations with you.
+## Sharing
 
-When both perspectives exist, differences in experience can become visible and discussed.
+One perspective brings useful clarity.
 
-The intention is to support clearer awareness of how energy is experienced between people across conversations over time.
+A second perspective adds contrast, and that contrast deepens understanding.
+
+When a reciprocal perspective is added, you can see both what is shared and what is different. New dimensions emerge, and understanding between you becomes clearer and more complete.
+
+If you choose to share it, you might begin simply with:
+
+*Would you be open to hearing a reflection I’ve been sitting with?*
+
+And invite the person to complete the same reflection from their side.
 
 ## Continue exploring
 
