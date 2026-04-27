@@ -16,7 +16,7 @@ This exercise supports a structured reflection of how another person shows up ac
 
 It helps you notice patterns in how their presence shifts, stabilizes, or varies depending on what is present emotionally.
 
-You’ll rate how strongly each type of energy shows up on a simple scale from 1 (barely there) to 10 (very strong).
+You’ll rate how strongly each type of energy shows up on a scale from 1 (barely there) to 10 (very strong).
 
 ## Ways energy shows up
 
@@ -42,7 +42,7 @@ Visionary energy is about possibility—imagining, reframing, and opening up new
 
 Take a moment to settle your attention before beginning.
 
-Use a simple mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.
+Use a short mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.
 
 Let your attention shift from immediate thinking into memory.
 
@@ -60,8 +60,6 @@ If you notice anything arising about this person, you might also pause and ask:
 
 *Feeling open, engaged, or at ease*
 
-Think of moments when this was present.
-
 When joy is present across conversations, how strongly does each type of energy show up?
 
 - Driver (1–10)  
@@ -72,8 +70,6 @@ When joy is present across conversations, how strongly does each type of energy 
 ### 3. Sadness
 
 *Feeling low, quiet, or withdrawn*
-
-Think of moments when this was present.
 
 When sadness is present across conversations, how strongly does each type of energy show up?
 
@@ -86,8 +82,6 @@ When sadness is present across conversations, how strongly does each type of ene
 
 *Feeling uncertain, cautious, or on edge*
 
-Think of moments when this was present.
-
 When fear is present across conversations, how strongly does each type of energy show up?
 
 - Driver (1–10)  
@@ -98,8 +92,6 @@ When fear is present across conversations, how strongly does each type of energy
 ### 5. Anger
 
 *Feeling activated, frustrated, or in tension*
-
-Think of moments when this was present.
 
 When anger is present across conversations, how strongly does each type of energy show up?
 
