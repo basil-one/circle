@@ -1,16 +1,16 @@
 ---
 layout: default
-title: What is Circle3™?
+title: What is Circle3?
 description: Circle3 helps leaders create alignment and momentum in complex environments where change doesn’t follow a plan.
 permalink: /method/
 css_id: method
 ---
 
-# What is Circle3™
+# What is Circle3
 
 ![Circle3](/images/method.png)
 
-Circle3 is a simple way of working with change in environments that don’t behave predictably.
+*Circle3™* is a simple way of working with change in environments that don’t behave predictably.
 
 It creates small, repeatable spaces where people work on real situations together and make sense of what is happening in real time.
 

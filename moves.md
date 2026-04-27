@@ -14,7 +14,7 @@ css_id: moves
 
 Change feels messy. Conversations fragment. Priorities scatter.  
 
-These three moves help a group pause, see clearly, and act together. Each can stand alone. Together, they form a system for clarity, alignment, and intentional progress.  
+*The Three Moves™* help a group pause, see clearly, and act together. Each can stand alone. Together, they form a system for clarity, alignment, and intentional progress.  
 
 *Start where you are. Explore the move that fits your situation right now.*
 
