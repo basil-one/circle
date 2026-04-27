@@ -1,12 +1,12 @@
 ---
 layout: default
-title: The Three Moves
-description: A Lightweight System for Navigating Continuous Change through three repeatable moves that create clarity, align groups, and turn shared understanding into coordinated action.
+title: Three Guiding Moves for Coherence
+description: A lightweight system for navigating continuous change through three guiding moves that build coherence, create clarity, align groups, and turn shared understanding into coordinated action.
 permalink: /moves/
 css_id: moves
 ---
 
-# The Three Moves
+# Three Guiding Moves for Coherence
 
 *A Lightweight System for Navigating Continuous Change by* **Michael Basil**
 
@@ -14,7 +14,7 @@ css_id: moves
 
 Change feels messy. Conversations fragment. Priorities scatter.  
 
-*The Three Moves™* help a group pause, see clearly, and act together. Each can stand alone. Together, they form a system for clarity, alignment, and intentional progress.  
+*Three Guiding Moves™* help a group pause, see clearly, and act together. Each can stand alone. Together, they build coherence—creating clarity, alignment, and intentional progress.  
 
 *Start where you are. Explore the move that fits your situation right now.*
 

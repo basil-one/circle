@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 helps leaders create alignment and momentum in complex environments where change doesn’t follow a plan.
+description: Circle3 helps leaders create coherence, alignment, and momentum in complex environments where change doesn’t follow a plan.
 permalink: /method/
 css_id: method
 ---
@@ -16,7 +16,7 @@ It creates small, repeatable spaces where people work on real situations togethe
 
 ## Why It Works
 
-In complex environments, alignment rarely comes from communication alone.
+In complex environments, coherence rarely comes from communication alone.
 
 It comes from shared sensemaking around real situations.
 
@@ -28,7 +28,7 @@ When people work this way together, a few things begin to happen:
 
 Circle3 does not impose alignment.
 
-It creates the conditions where alignment can emerge.
+It creates the conditions where coherence—and therefore alignment—can emerge.
 
 ## Change in Complex Systems
 
@@ -42,8 +42,10 @@ the system reinforces what already works faster than it allows new patterns to s
 
 Without shared sensemaking in real situations, change fragments—not because people fail to understand it, but because they are operating from different interpretations of what is happening.
 
+In other words, coherence never forms.
+
 ## Explore the Moves
 
-Circle3 is practiced through three simple, repeatable moves.
+Circle3 comes to life through three guiding moves for coherence.
 
 👉 [Learn more](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
