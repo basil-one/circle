@@ -16,7 +16,9 @@ css_id: establish
 
 ## Summary
 
-Create a small, recurring gathering where a few participants—representing multiple perspectives and guided by a skilled facilitator—reason together about a change initiative. The Circle surfaces tensions, builds shared understanding, and gradually connects isolated champions. Over time, it becomes a nucleus of alignment, fostering coherence and momentum across the organization.
+Create a small, recurring gathering where a few participants come together to reason about a change initiative. They represent multiple perspectives and are guided by a skilled facilitator.
+
+The Circle surfaces tensions, builds shared understanding, and gradually connects isolated champions. Over time, it becomes a nucleus of alignment, fostering coherence and momentum across the organization.
 
 ## Story
 
@@ -26,7 +28,7 @@ Conversations about the initiative occurred everywhere—project meetings, hallw
 
 As a result, awareness was uneven, desire was fragmented, and potential champions remained isolated.
 
-A change leader introduced a simple practice: a weekly meeting called the **Circle**.
+A change leader introduced a simple practice: a weekly gathering called the **Circle**.
 
 At first, only three people attended: a technical practitioner, a second subject matter expert from another perspective, and a facilitator skilled in guiding reflective conversation.
 
@@ -44,7 +46,7 @@ But it all began with one move:
 
 ## Context
 
-You are leading or supporting change in a complex organization.
+You are leading or supporting change inside a complex organization.
 
 Multiple initiatives compete for attention. Stakeholders hold different mental models of the change. People experience the initiative through different roles, incentives, and pressures.
 
@@ -67,7 +69,7 @@ How do you create coherence and momentum for change when:
 
 Large meetings often become performative rather than reflective. Broadcast communication increases awareness but rarely creates commitment.
 
-You need a small, relational space where coherence can form.
+You need a small relational space where coherence can actually form.
 
 ## Forces
 
@@ -99,7 +101,7 @@ Organizations reward action and execution, yet meaningful change requires time f
 
 **Establish the Circle.**
 
-Create a small recurring gathering where participants reason together about the change.
+Create a small recurring gathering where participants reason together about the change in real time.
 
 The Circle begins with a **three-person nucleus**.
 
@@ -136,7 +138,7 @@ Participants invite others when it becomes useful for learning or progress.
 
 ## Resulting Context
 
-When the Circle works well, several shifts occur.
+When the Circle works well, something shifts.
 
 Participants develop a shared language for the change.
 

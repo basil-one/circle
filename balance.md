@@ -16,7 +16,7 @@ css_id: balance
 
 ## Summary
 
-Guide attention, surface perspectives, and manage tension so insight flows. Without this balance, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
+Guide attention, surface perspectives, and shift tension so insight flows. Without this balance, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
 
 This pattern is **both independent and foundational**, nourishing the effectiveness of the Circle itself. It enables subsequent moves like *Reconcile the Intention* and creates the conditions to **establish, evolve, or adjourn a Circle**, forming a more collaborative and responsive conversation system.
 
@@ -24,7 +24,7 @@ This pattern is **both independent and foundational**, nourishing the effectiven
 
 In a large enterprise, a team had been meeting for months, generating ideas but failing to act. Visionaries dominated with unbounded ideation. Drivers clashed over priorities. Organizers focused on silos. Collaborators withdrew, feeling unheard. Decisions stalled, and outdated priorities persisted, leaving frustration and confusion in their wake.
 
-A change leader entered the conversation and observed the group’s energy. They intervened with small shifts: grounding ideas, inviting cross-silo perspectives, and creating space for quieter voices. Using **affect labeling** (“It seems like we’re frustrated”) followed by **dynamic silence**, the group began to surface and process stuck tension.
+A change leader entered the conversation and observed the group’s dynamics. They intervened with small shifts: grounding ideas, inviting cross-silo perspectives, and creating space for quieter voices. Using **affect labeling** (“It seems like we’re frustrated”) followed by **dynamic silence**, the group began to surface and process stuck tension.
 
 Over time, participants cleared out ideas and priorities that no longer made sense, integrated perspectives, and made aligned commitments. Strategic initiatives that had stalled began producing tangible deliverables—completed, showcased, and connected to broader goals. Conversations shifted from fragmented debate to a **collaborative, flowing system**, where energy, insight, and action moved in harmony. The group became capable of learning, adapting, and responding to volatility and ambiguity in real time.
 
@@ -32,7 +32,7 @@ Over time, participants cleared out ideas and priorities that no longer made sen
 
 You are facilitating or participating in a group navigating complex change, where initiatives are fragmented, attention is scattered, and priorities are unclear. Conversations may be energetic but misaligned; some participants dominate while others withdraw, and action stalls.
 
-By practicing this pattern, the group develops **higher-order awareness**—of each other, stakeholders, customers, and strategic initiatives. Outdated priorities are released, decisions become actionable, and deliverables begin to be completed and showcased. Over time, a **more collaborative and responsive conversation system** emerges—one where attention stabilizes, priorities become clearer, and work begins to connect across initiatives.
+Through this pattern, the group develops **higher-order awareness**—of each other, stakeholders, customers, and strategic initiatives. Outdated priorities are released, decisions become actionable, and deliverables begin to be completed and showcased. Over time, a **more collaborative and responsive conversation system** emerges—one where attention stabilizes, priorities become clearer, and work begins to connect across initiatives.
 
 ## Problem
 
@@ -95,7 +95,7 @@ When conversation balancing works:
 
 Over time, in a change-saturated environment where initiatives are fragmented and attention is scattered, balanced conversations enable critical outcomes to emerge. Strategic initiatives begin to move forward, connect, and deliver tangible results. Progress becomes visible, and alignment strengthens across the organization.
 
-A Circle session, and any conversation, becomes a **space to practice and reinforce this skill**, supporting its establishment, evolution, and adjournment. It also strengthens subsequent moves like *Reconcile the Intention*.
+A Circle session—and any conversation—becomes a space to practice and reinforce this skill. This supports the establishment, evolution, and adjournment of a Circle, and strengthens subsequent moves like Reconcile the Intention.
 
 ## Key Characteristics
 

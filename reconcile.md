@@ -16,13 +16,13 @@ css_id: reconcile
 
 ## Summary
 
-Take the group through structured, iterative conversations anchored on a **visible alignment artifact**—a charter, principles document, or other codified intention. The focus is on the **conversation itself**, surfacing ambiguity, reconciling perspectives, and creating shared understanding. Over time, this strengthens culture, clarifies roles, and aligns actions within and beyond the group.
+Guide a group through structured, iterative conversations anchored on a **visible alignment artifact**—a charter, principles document, or other codified intention. The focus is on the **conversation itself**, surfacing ambiguity, reconciling perspectives, and creating shared understanding. Over time, this strengthens culture, clarifies roles, and aligns actions within and beyond the group.
 
 ## Story
 
 A department led a major initiative spanning multiple teams. They had a charter and principles on paper, but in practice, people held different interpretations. Misalignment caused duplicated effort, missed opportunities, and occasional friction.
 
-A change leader introduced a **series of alignment exercises** centered on a visible artifact—a living charter. Over several sessions, key participants revisited principles, clarified roles, and reconciled differences.
+A change leader introduced a **series of conversations** centered on a visible artifact—a living charter. Over several sessions, key participants revisited principles, clarified roles, and reconciled differences.
 
 Some social leaders were quiet at first, others vocal. Each engaged through successive iterations until they could affirm the final artifact: “This captures our intent—and here’s why and how it helps in my role.”
 
@@ -32,7 +32,7 @@ The result: **a culture of iterative alignment and clarity**—not just a docume
 
 ## Context
 
-You are leading or supporting change in a complex, ambiguous environment.  
+You are leading or supporting change inside a complex, ambiguous environment.
 
 Existing charters or guiding documents may be stale, incomplete, or misunderstood. Mental models across the group are fragmented. People pursue initiatives in isolation. Stakeholders outside the group need clarity to collaborate effectively. Organizational culture rewards action but lacks structured spaces for alignment.
 
