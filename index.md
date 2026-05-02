@@ -2,44 +2,49 @@
 layout: default
 permalink: /
 css_id: home
-title: Circle3 | Helping Change Actually Take Hold in Complex Organizations
-description: Circle3 helps leaders make sense of change in complex environments where plans alone don’t create coherence, alignment, or momentum.
+title: Circle3 | Make Change Clear and Aligned
+description: Circle3 helps leaders create coherence so change becomes clear, aligned, and easier to adopt—especially in complex, fast-moving environments like AI and transformation.
 ---
 
-# Feeling Overwhelmed by Constant Change?
+# Frustrated by change that won’t take root?
 
 ![Feeling Overwhelmed by Constant Change?](/images/index.png)
 
-You’re responsible for delivering outcomes. The business depends on you—but constant change, accelerating AI, and competing priorities leave you overwhelmed, struggling, and unsure where to focus, when to step in, or how deeply to engage.
+You’re driving something important—AI, new ways of working, infrastructure change.
 
-## Traditional Approaches Fall Short
+But it doesn’t land the way it should.
 
-We’ve learned that traditional change approaches rarely move beyond the surface.
+Sometimes everything feels like it’s moving at once.  
+Too many priorities. Constant shifting. No real traction.
 
-People don’t adopt. Coherence never forms. Momentum fades. Outcomes get delayed, diluted, or lost.
+Other times, it feels like things slow down or stall.  
+Energy fades. Decisions don’t stick. Momentum disappears.
 
-In many cases, change doesn’t fail at the start—it breaks down in the gap between early agreement and real adoption, where shared understanding weakens and effort fragments.
+Different symptoms. Same experience:
 
-These approaches assume change can be designed and rolled out in a stable environment.
+People aren’t fully aligned on what is actually happening.
 
-But in reality, priorities shift, incentives compete, and people respond to what is reinforced—not what is intended.
+And so they respond differently.
 
-## A Different Pattern Is Needed
+Some push harder.  
+Some try to stabilize things.  
+Some try to bring people back together.  
+Some step back and rethink the direction entirely.
 
-In response, we began working differently inside real situations—working with small groups, focusing on what actually mattered, and paying attention to how people were making sense of what was happening.
+Each response makes sense.
 
-What became clear across contexts was simple:
+But together, it’s confusing.
 
-**coherence forms when people work on real situations together.**
+What looks like overload, resistance, or slow adoption is often something simpler—and harder:
 
-When coherence forms, alignment and momentum become possible.
+nothing is holding the situation together long enough for change to take root.
 
-In these environments, change doesn’t follow a plan.
+Most change efforts try to fix this by scaling communication, alignment, or execution.
 
-It emerges through shared sensemaking over time.
+But change doesn’t start everywhere at once.
 
-From this learning, a simple method emerged:
+**It starts somewhere.**
 
-## Circle3
+## Circle3 creates that “somewhere”
 
 👉 [Learn more](/method/){: data-ga-event="learn_more" data-ga-label="home_to_method"}
