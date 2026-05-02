@@ -14,37 +14,41 @@ You’re driving something important—AI, new ways of working, infrastructure c
 
 But it doesn’t land the way it should.
 
-Sometimes everything feels like it’s moving at once.  
+At times, everything feels like it’s moving at once.  
 Too many priorities. Constant shifting. No real traction.
 
-Other times, it feels like things slow down or stall.  
+At other times, things slow down or stall.  
 Energy fades. Decisions don’t stick. Momentum disappears.
 
-Different symptoms. Same experience:
+Different symptoms. Same underlying experience:
 
-People aren’t fully aligned on what is actually happening.
+People are not fully aligned on what is actually happening.
 
-And so they respond differently.
+And because of that, they respond differently.
+
+## How misalignment shows up
 
 Some push harder.  
 Some try to stabilize things.  
 Some try to bring people back together.  
 Some step back and rethink the direction entirely.
 
-Each response makes sense.
+Each response makes sense on its own.
 
-But together, it’s confusing.
+But together, they create confusion.
 
-What looks like overload, resistance, or slow adoption is often something simpler—and harder:
+## What’s actually happening
+
+What looks like overload, resistance, or slow adoption is often something simpler—and harder to see:
 
 nothing is holding the situation together long enough for change to take root.
 
 Most change efforts try to fix this by scaling communication, alignment, or execution.
 
-But change doesn’t start everywhere at once.
+But change doesn’t begin everywhere at once.
 
-**It starts somewhere.**
+## It starts somewhere
 
-## Circle3 creates that “somewhere”
+Circle3 creates that “somewhere”.
 
 👉 [Learn more](/method/){: data-ga-event="learn_more" data-ga-label="home_to_method"}

@@ -1,51 +1,72 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 helps leaders create coherence, alignment, and momentum in complex environments where change doesn’t follow a plan.
+description: Circle3 is a way of working with change when things are not yet taking root.
 permalink: /method/
 css_id: method
 ---
 
-# What is Circle3
+# What is Circle3?
 
 ![Circle3](/images/method.png)
 
-*Circle3™* is a simple way of working with change in environments that don’t behave predictably.
+*Circle3™* is a way of working with change when things are not yet taking root.
 
-It creates small, repeatable spaces where people work on real situations together and make sense of what is happening in real time.
+Every change effort has a small group of people responsible for making it real.
 
-## Why It Works
+Sometimes this group is formal.  
+Sometimes it is informal.
 
-In complex environments, coherence rarely comes from communication alone.
+But it is always present.
 
-It comes from shared sensemaking around real situations.
+This is the working center of the change.
 
-When people work this way together, a few things begin to happen:
+## When alignment breaks
 
-- they begin to see the same situation more clearly  
-- they develop shared language for what matters  
-- early champions emerge who connect across silos and perspectives  
+When that center is not aligned in how it is interpreting what is happening, coordination breaks down.
 
-Circle3 does not impose alignment.
+Priorities compete.  
+Messages multiply.  
+Attention fragments.
 
-It creates the conditions where coherence—and therefore alignment—can emerge.
+## How Circle3 works
 
-## Change in Complex Systems
+Circle3 works by grounding this group in the same live reality they are trying to move forward.
 
-Change efforts often stall in complex environments.
+Not in theory.  
+Not in abstraction.  
+But in what is actually unfolding.
 
-Resistance is real.
+## What changes over time
 
-But so is something deeper:
+As this grounding strengthens, something shifts.
 
-the system reinforces what already works faster than it allows new patterns to stabilize.
+A shared perception begins to form—people start seeing the same thing.  
+A shared language develops—they begin describing it in similar ways.  
+And decisions begin to hold instead of unraveling.
 
-Without shared sensemaking in real situations, change fragments—not because people fail to understand it, but because they are operating from different interpretations of what is happening.
+## When coherence emerges
 
-In other words, coherence never forms.
+At that point, something shifts.
 
-## Explore the Moves
+The change becomes easier to recognize.
 
-Circle3 comes to life through three guiding moves for coherence.
+Not because it has been simplified.
+
+But because it has become consistent.
+
+A clearer signal begins to form.
+
+## What becomes possible next
+
+When this becomes visible:
+
+- others can recognize what is emerging more easily  
+- they can decide when and how to engage  
+- and it becomes easier to sponsor and reinforce the change in a way that strengthens what is forming, rather than fragmenting it  
+
+## Unlocking the change
+
+There are three guiding moves that make this possible.
 
 👉 [Learn more](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
