@@ -14,7 +14,7 @@ css_id: moves
 
 *Three Guiding Moves™* help a group pause, see clearly, and act together. Each can stand alone. Together, they build coherence—creating clarity, alignment, and intentional progress.  
 
-*Circle3 is not a linear process. Start where you are. Explore the move that fits your situation right now.*
+*Circle3™ is not a linear process. Start where you are. Choose the move that fits your situation right now.*
 
 ## Establish the Circle
 
