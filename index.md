@@ -22,7 +22,7 @@ Energy fades. Decisions don’t stick. Momentum disappears.
 
 Different symptoms. Same underlying experience:
 
-People are not fully aligned on what is actually happening.
+People are not operating from the same understanding of what is happening.
 
 And because of that, they respond differently.
 
@@ -41,7 +41,7 @@ But together, they create confusion.
 
 What looks like overload, resistance, or slow adoption is often something simpler—and harder to see:
 
-nothing is holding the situation together long enough for change to take root.
+nothing is holding the situation together long enough for change to actually take root.
 
 Most change efforts try to fix this by scaling communication, alignment, or execution.
 
@@ -49,6 +49,6 @@ But change doesn’t begin everywhere at once.
 
 ## It starts somewhere
 
-Circle3 creates that “somewhere”.
+Circle3 creates that “somewhere it can actually start.”
 
 👉 [Learn more](/method/){: data-ga-event="learn_more" data-ga-label="home_to_method"}

@@ -12,18 +12,18 @@ css_id: method
 
 *Circle3™* is a way of working with change when things are not yet taking root.
 
-Every change effort has a small group of people responsible for making it real.
+Every change effort has a small group of people responsible for making it real in practice.
 
 Sometimes this group is formal.  
 Sometimes it is informal.
 
 But it is always present.
 
-This is the working center of the change.
+This is the working center where change actually happens.
 
 ## When alignment breaks
 
-When that center is not aligned in how it is interpreting what is happening, coordination breaks down.
+When that center is not aligned in how it is interpreting what is happening, coordination starts to break down.
 
 Priorities compete.  
 Messages multiply.  
@@ -35,7 +35,7 @@ Circle3 works by grounding this group in the same live reality they are trying t
 
 Not in theory.  
 Not in abstraction.  
-But in what is actually unfolding.
+But in what is unfolding right now.
 
 ## What changes over time
 
@@ -47,15 +47,13 @@ And decisions begin to hold instead of unraveling.
 
 ## When coherence emerges
 
-At that point, something shifts.
-
 The change becomes easier to recognize.
 
 Not because it has been simplified.
 
 But because it has become consistent.
 
-A clearer signal begins to form.
+A clearer signal of what is actually happening begins to form.
 
 ## What becomes possible next
 

@@ -12,9 +12,9 @@ css_id: moves
 
 ![About the Moves](/images/moves.png)
 
-*Three Guiding Moves™* help a group pause, see clearly, and act together. Each can stand alone. Together, they build coherence—creating clarity, alignment, and intentional progress.  
+*Three Guiding Moves™* help a group pause, see clearly, and act together. Each works on its own. Together, they build coherence—creating clarity, alignment, and intentional progress.  
 
-*Circle3™ is not a linear process. Start where you are. Choose the move that fits your situation right now.*
+*Circle3™ is not a linear process or sequence. Start where you are. Choose the move that fits your situation right now.*
 
 ## Establish the Circle
 
@@ -22,7 +22,7 @@ css_id: moves
 
 Bring together the people actively responsible for driving the change.
 
-Not the whole system.
+Not the whole organization.
 
 The change leaders.
 
@@ -43,7 +43,7 @@ Visionaries step back and reframe.
 
 This move makes those tendencies visible.
 
-It helps the group see how differently the situation is being experienced—so the conversation integrates instead of fragments.
+It helps the group see how differently the situation is being experienced—so the conversation integrates instead of breaking apart.
 
 👉 [Learn more](/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
 
@@ -53,7 +53,7 @@ It helps the group see how differently the situation is being experienced—so t
 
 Turn shared understanding into decisions that reflect what the group actually sees.
 
-Not agreement.
+Not agreement for it's own sake.
 
 But commitments that hold.
 
