@@ -164,11 +164,17 @@ A Circle session—and any conversation—becomes a space to practice and reinfo
 
 Developing the ability to balance a conversation requires both reflection and exposure to complementary lenses and practices.
 
+### Sense Making Reflection
+
+Understand how different interpretations of a situation shape coordination, decision-making, and alignment—and where misalignment emerges when people are operating from different sense-making frames.
+
+👉 [Explore](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection_sense"}
+
 ### Energy Awareness Reflection
 
 Build awareness of how relational energy is showing up in your conversations—and how your interventions influence attention, tension, and participation.
 
-👉 [Explore](/reflection/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection"}
+👉 [Explore](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection_energy"}
 
 ### Two Sides Reflection
 
