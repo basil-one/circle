@@ -2,8 +2,8 @@
 layout: default
 title: Energy Awareness Reflection
 description: A simple reflective exercise for noticing how energy shows up in conversations and relationships.
-permalink: /reflection/
-css_id: reflection
+permalink: /reflection/energy/
+css_id: reflection-energy
 ---
 
 # Energy Awareness Reflection  
@@ -19,6 +19,8 @@ It helps you notice patterns in how their presence shifts, stabilizes, or varies
 You’ll rate how strongly each type of energy shows up on a scale from 1 (barely there) to 10 (very strong).
 
 ## Ways energy shows up
+
+The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Ginny Whitelaw](https://zenleader.global/resources/febi-assessment).
 
 A person may move through all of these depending on the situation, emotion, or conversation.
 
@@ -132,4 +134,4 @@ And invite the person to complete the same reflection from their side.
 
 If you’d like to go further with this work or explore additional dimensions, you’re welcome to connect.
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="reflection_to_connect"}
+👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="reflection_energy_to_connect"}
