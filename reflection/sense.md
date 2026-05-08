@@ -11,6 +11,8 @@ css_id: reflection-sense
 *A Reflective Exercise for Understanding How Reality Is Being Interpreted*  
 by **Michael Basil**
 
+![Sense Making Reflection](/images/reflection-sense.png)
+
 This exercise helps you notice how a person, group, or organization is interpreting what kind of situation they are in—and how that interpretation shifts across different conditions.
 
 In real-world change processes, difficulty often does not come from the situation itself, but from people operating in different sense-making domains at the same time.  

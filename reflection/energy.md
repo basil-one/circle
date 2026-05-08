@@ -10,7 +10,7 @@ css_id: reflection-energy
 
 *A Reflective Exercise for Understanding Energy in Conversation* by **Michael Basil**
 
-![Energy Awareness Reflection](/images/reflection.png)
+![Energy Awareness Reflection](/images/reflection-energy.png)
 
 This exercise supports a structured reflection of how another person shows up across your conversations over time and in different emotional contexts.
 
