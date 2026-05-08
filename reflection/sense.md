@@ -21,7 +21,7 @@ This reflection helps make those underlying interpretive differences visible.
 
 ## Sense-making domains
 
-The framing below is based on the [Cynefin framework developed by Dave Snowden](https://en.wikipedia.org/wiki/Cynefin_framework).
+The framing below is based on the [Cynefin framework developed by Dave Snowden](https://www.youtube.com/watch?v=N7oz366X0-8).
 
 Each domain reflects a different way of interpreting and responding to reality.
 
