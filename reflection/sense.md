@@ -66,6 +66,8 @@ Take a moment to settle your attention before beginning.
 
 Use a short mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.
 
+* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s)
+
 Let your attention shift from immediate thinking into memory.
 
 Engage the following prompts from that state of awareness.
