@@ -13,20 +13,19 @@ by **Michael Basil**
 
 ![Session Intention Reflection](/images/reflection-session.png)
 
-This reflection helps you prepare a Circle session by sensing what is becoming important in a social system and shaping the conditions for meaningful conversation around it.
+This reflection helps you prepare a Circle session by identifying what is becoming important in a group and shaping the conditions for a meaningful conversation around it.
 
-In living systems, movement rarely begins with certainty.
+In complex situations, people often enter the same conversation with different assumptions, priorities, concerns, and levels of readiness.
 
-More often, there are emerging tensions, partial signals, and different levels of readiness distributed across the group.
+Progress rarely begins with immediate agreement.
 
-A Circle session can help people:
-- notice what matters
-- explore meaning together
-- surface readiness and desire
-- deepen shared understanding
-- discover coherent next steps
+More often, it begins when people can better see:
+- what matters
+- where tensions exist
+- what others are noticing
+- and what the group may be ready to engage together
 
-This reflection helps you prepare for that process intentionally.
+A Circle session helps create the conditions for that kind of shared awareness.
 
 ## Grounding lenses
 
@@ -45,31 +44,31 @@ Use a simple mindfulness or grounding practice to slow down and become present.
 
 * Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s)
 
-Allow your attention to move from immediate problem-solving into broader awareness of the system and the people involved.
+Allow your attention to move from immediate problem-solving into broader awareness of the people, relationships, and dynamics involved.
 
-### 1. What is ready for attention?
+### 1. What is becoming important right now?
 
-What feels important, emerging, unresolved, or increasingly difficult to ignore?
+What feels increasingly important, unresolved, or difficult to ignore?
 
-Where do you sense genuine interest, energy, concern, or readiness to engage?
+Where do you sense genuine interest, concern, energy, or readiness to engage?
 
-### 2. How is the situation being interpreted and energized?
+### 2. How are people interpreting and responding to the situation?
 
-Using the [Sense Making Reflection](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"}, where are interpretations aligned or diverging?
+Using the [Sense Making Reflection](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"}, where are perspectives aligned or diverging?
 
 Using the [Energy Awareness Reflection](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"}, what energies are most present? What may be missing?
 
 How might these dynamics shape the conversation?
 
-### 3. What questions could open the conversation well?
+### 3. What questions could help open the conversation well?
 
-What question—or small set of questions—could help the group ground together while remaining open to discovery?
+What question—or small set of questions—could help people ground together while remaining open to discovery?
 
-Strong questions:
+Strong questions often:
 - invite curiosity rather than defensiveness
 - keep multiple perspectives visible
 - support shared attention
-- avoid forcing premature clarity
+- avoid forcing premature conclusions
 
 ### 4. How should people arrive into the conversation?
 
@@ -79,9 +78,9 @@ Consider:
 - the level of listening required
 - emotional or relational sensitivity
 - grounding or arrival practices
-- structures that can help tension become generative
+- structures that can help tension become useful rather than divisive
 
-### 5. What support or depth pathways may be needed?
+### 5. If people want to go deeper, what support should be available?
 
 If strong interest or readiness emerges, what additional support may help?
 
@@ -92,9 +91,9 @@ This might include:
 - reflection or integration practices
 - pathways for continued exploration
 
-### 6. How will the session land into next steps?
+### 6. How will the session move toward meaningful next steps?
 
-If coherence begins to emerge, how will it be carried forward?
+If the group begins developing greater clarity or alignment, how will that momentum be carried forward?
 
 What would help the session conclude in a way that supports both individual and collective next steps?
 
@@ -103,12 +102,12 @@ What would help the session conclude in a way that supports both individual and 
 As you look across what you’ve named, notice what picture is beginning to form.
 
 You may begin to see:
-- what is trying to emerge
-- where readiness exists
-- what conditions are needed for productive exploration
-- what kind of support may help coherence develop
+- what the group is ready to explore
+- where tensions or opportunities are concentrated
+- what conditions may help the conversation become productive
+- and what kinds of support may help shared understanding develop
 
-Rather than designing a perfectly controlled conversation, this reflection helps you prepare to host emergence with clarity, responsiveness, and care.
+Rather than trying to control the conversation, this reflection helps you prepare to guide it with greater clarity, responsiveness, and care.
 
 ## Sharing
 
@@ -118,9 +117,9 @@ Additional perspectives can help reveal:
 - blind spots
 - missing tensions
 - overlooked readiness
-- opportunities for stronger coherence
+- opportunities for stronger alignment
 
-This can help refine both the intention of the session and the conditions being created for the group.
+This can help strengthen both the intention of the session and the conditions being created for the group.
 
 ## Continue exploring
 
