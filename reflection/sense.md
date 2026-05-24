@@ -13,9 +13,9 @@ by **Michael Basil**
 
 ![Sense Making Reflection](/images/reflection-sense.png)
 
-This exercise helps you notice how a person, group, or organization is interpreting what kind of situation they are in—and how that interpretation shifts across different conditions.
+This exercise helps you notice how a person, group, or organization interprets what kind of situation they are in—and how that interpretation shifts across different conditions.
 
-In real-world change processes, difficulty often does not come from the situation itself, but from people operating in different sense-making domains at the same time.  
+In complex situations, difficulty often comes less from the situation itself and more from people operating in different sense-making domains at the same time.  
 
 This can lead to friction, misunderstanding, and frustration—even when intentions are aligned.
 
@@ -58,7 +58,7 @@ Approach: act → sense → respond.
 
 ### Confused (Disorder)  
 
-There is no shared clarity about what kind of situation this is. Multiple interpretations exist simultaneously without a dominant frame.
+There is no shared clarity about what kind of situation this is. Multiple interpretations exist at the same time without a shared frame.
 
 This often appears when sense-making has not yet stabilized.
 
@@ -138,7 +138,7 @@ As you look across your responses, this reflection is pointing toward a working 
 
 You may begin to notice that what feels like resistance, confusion, or misalignment is often not about intent or capability—but about people operating from different interpretations of what kind of situation they are in.
 
-When these differences are visible, coordination becomes easier to understand, even if it does not immediately resolve the difficulty.
+When these differences become visible, coordination often becomes easier, even if the difficulty itself remains.
 
 Take a moment to notice:
 
