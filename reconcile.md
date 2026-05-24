@@ -142,6 +142,20 @@ When the pattern succeeds:
   - Small Successes – Celebrate iterative progress to reinforce alignment and build credibility.
   - Big Jolt – Showcase alignment achievements visibly to create momentum and influence adoption.
 
+## Practical Resources
+
+As Circle work unfolds over time, there will be moments when a specific session benefits from a clearly articulated intention designed ahead of time.
+
+This helps shape how the conversation opens, what it focuses on, and how it closes.
+
+### Session Intention Reflection
+
+Use this exercise when preparing for a Circle session where you want to be more intentional about the purpose and framing of the conversation.
+
+It helps translate what is emerging in the work into a clear, grounded intention for that specific session.
+
+👉 [Explore](/reflection/session/){: data-ga-event="learn_more" data-ga-label="reconcile_to_reflection_session"}
+
 ## Explore in Your Context
 
 Interested in:
