@@ -12,9 +12,9 @@ css_id: reflection-energy
 
 ![Energy Awareness Reflection](/images/reflection-energy.png)
 
-This exercise supports a structured reflection of how another person shows up across your conversations over time and in different emotional contexts.
+This exercise helps you reflect on how another person tends to show up across your conversations over time and in different emotional contexts.
 
-It helps you notice patterns in how their presence shifts, stabilizes, or varies depending on what is present emotionally.
+It helps you notice patterns in how their presence shifts or stabilizes across different emotional conditions.
 
 You’ll rate how strongly each type of energy shows up on a scale from 1 (barely there) to 10 (very strong).
 
@@ -22,7 +22,7 @@ You’ll rate how strongly each type of energy shows up on a scale from 1 (barel
 
 The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Ginny Whitelaw](https://zenleader.global/resources/febi-assessment).
 
-A person may move through all of these depending on the situation, emotion, or conversation.
+A person may move through all of these depending on the situation or emotional context.
 
 ### Driver  
 
@@ -109,14 +109,14 @@ When anger is present across conversations, how strongly does each type of energ
 Looking across your responses for this person:
 
 - What patterns do you notice in how this person shows up across emotional contexts?  
-- Where does their energy shift most across emotional contexts?  
+- Where does their energy shift most strongly?  
 - What remains consistent over time?  
 
 ## Reflection
 
 This reflection represents your current perception of how this person shows up across conversations in different emotional states.
 
-This can support clearer awareness of what is actually happening between you in real time, relief from confusion or interpretations carried from past interactions, and new possibilities for how you understand and engage with this person going forward.
+This can support clearer awareness of what is happening between you, relief from interpretations carried from past interactions, and new possibilities for how you understand and engage with this person going forward.
 
 ## Sharing
 
