@@ -2,7 +2,7 @@
 layout: default
 title: Session Intention Reflection
 description: A structured reflective exercise for translating tension in a social system into a coherent opening for a Circle session.
-permalink: /reflection/session
+permalink: /reflection/session/
 css_id: reflection-session
 ---
 
