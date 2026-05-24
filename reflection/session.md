@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Session Intention Reflection
-description: A structured reflective exercise for translating tension in a social system into a coherent opening for a Circle session.
+description: A reflective exercise for preparing a Circle session by sensing what is becoming important and shaping conditions for meaningful conversation.
 permalink: /reflection/session/
 css_id: reflection-session
 ---
@@ -13,147 +13,114 @@ by **Michael Basil**
 
 ![Session Intention Reflection](/images/reflection-session.png)
 
-This exercise helps you notice the tensions present in a social system and translate them into a coherent opening for a Circle session.
+This reflection helps you prepare a Circle session by sensing what is becoming important in a social system and shaping the conditions for meaningful conversation around it.
 
-In real-world change processes, difficulty often does not come from lack of effort, but from unresolved tensions being held differently across people, roles, and perspectives.
+In living systems, movement rarely begins with certainty.
 
-These tensions shape how people enter a conversation, what they notice, and what they are able to hear.
+More often, there are emerging tensions, partial signals, and different levels of readiness distributed across the group.
 
-This reflection helps make those tensions visible and translates them into a clear conversational intent for the session.
+A Circle session can help people:
+- notice what matters
+- explore meaning together
+- surface readiness and desire
+- deepen shared understanding
+- discover coherent next steps
 
-## Session design lenses
+This reflection helps you prepare for that process intentionally.
 
-The framing below builds on two grounding reflections:
+## Grounding lenses
 
-- [Sense Making Reflection](/reflection/sense) → how people are interpreting the situation  
-- [Energy Awareness Reflection](/reflection/energy) → how people are showing up in relation to it  
+Before beginning, it can help to revisit two related reflections:
 
-Together, these lenses help you understand both interpretation and relational energy before shaping the session itself.
+- [Sense Making Reflection](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"} → how people may be interpreting the situation differently  
+- [Energy Awareness Reflection](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"} → how people may be showing up in relation to the situation  
+
+Together, these lenses help reveal how the conversation may need to be held.
 
 ## The exercise
 
 Take a moment to settle your attention before beginning.
 
-Use a short mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.
+Use a simple mindfulness or grounding practice to slow down and become present.
 
 * Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s)
 
-Let your attention shift from immediate thinking into memory.
+Allow your attention to move from immediate problem-solving into broader awareness of the system and the people involved.
 
-Engage the following prompts from that state of awareness.
+### 1. What is ready for attention?
 
-### 1. What tensions are present?
+What feels important, emerging, unresolved, or increasingly difficult to ignore?
 
-Bring the situation into awareness.
+Where do you sense genuine interest, energy, concern, or readiness to engage?
 
-This might include:
+### 2. How is the situation being interpreted and energized?
 
-- competing priorities or pressures  
-- misalignment across roles or perspectives  
-- uncertainty about direction or decisions  
-- fragmentation in coordination or understanding  
+Using the [Sense Making Reflection](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"}, where are interpretations aligned or diverging?
 
-What tensions are active in this system right now?
+Using the [Energy Awareness Reflection](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"}, what energies are most present? What may be missing?
 
-### 2. How are these tensions being interpreted?
+How might these dynamics shape the conversation?
 
-Use insight from the [Sense Making Reflection](/reflection/sense).
+### 3. What questions could open the conversation well?
 
-Where are interpretations aligned?  
-Where are they diverging?  
+What question—or small set of questions—could help the group ground together while remaining open to discovery?
 
-Where might different sense-making domains be shaping the same situation differently?
+Strong questions:
+- invite curiosity rather than defensiveness
+- keep multiple perspectives visible
+- support shared attention
+- avoid forcing premature clarity
 
-### 3. How are these tensions being energized?
+### 4. How should people arrive into the conversation?
 
-Use insight from the [Energy Awareness Reflection](/reflection/energy).
-
-- Driver — pushing for movement or resolution  
-- Organizer — seeking structure or clarity  
-- Collaborator — seeking connection and alignment  
-- Visionary — expanding possibility or reframing  
-
-What energies are dominant?  
-What energies are missing or under-expressed?
-
-### 4. What kind of space does this tension require?
-
-Given what is present, what kind of conversational field is needed?
-
-- stabilization and grounding  
-- exploration and meaning-making  
-- integration across perspectives  
-- clarification and prioritization  
-- convergence toward decisions  
-- emergence of new possibilities  
-- repair or reconnection  
-
-What would allow this system to become more coherent in conversation?
-
-### 5. What question opens this space?
-
-What question (or small set of questions) will allow this tension to be seen together?
-
-A strong question:
-
-- holds the tension without collapsing it  
-- allows multiple interpretations to remain visible  
-- supports shared attention rather than parallel thinking  
-- matches the level of clarity in the system  
-
-What question would help the group see together more clearly?
-
-### 6. How will people arrive?
-
-What level of presence is needed for this session?
+What conditions will help the conversation become productive rather than reactive?
 
 Consider:
-- depth of listening required (surface, reflective, generative)  
-- relational sensitivity in the room  
-- cognitive load of the topic  
-- arrival practice that will resonate
-- check-in exercise to sychronize the group
+- the level of listening required
+- emotional or relational sensitivity
+- grounding or arrival practices
+- structures that can help tension become generative
 
-### 7. What will indicate coherence is emerging?
+### 5. What support or depth pathways may be needed?
 
-As you consider the intention and framing for this session, what signals would suggest that the group is beginning to move toward shared understanding?
+If strong interest or readiness emerges, what additional support may help?
 
-These might include:
+This might include:
+- breakout conversations
+- facilitators or subject-matter support
+- smaller working groups
+- reflection or integration practices
+- pathways for continued exploration
 
-- people responding to the same underlying question rather than parallel interpretations  
-- reduction in fragmentation or competing narratives  
-- increased ability to build on each other’s thinking  
-- visible shifts from positional statements toward shared inquiry  
-- a sense that what matters in the situation is becoming more collectively visible  
+### 6. How will the session land into next steps?
 
-What would you expect to see or feel if the session is cohering in real time?
+If coherence begins to emerge, how will it be carried forward?
 
-What would suggest it is not?
+What would help the session conclude in a way that supports both individual and collective next steps?
 
 ## Reflection
 
-As you look across what you’ve named, this reflection is pointing toward a working hypothesis about how this session needs to be held.
+As you look across what you’ve named, notice what picture is beginning to form.
 
 You may begin to see:
-- what is trying to come into focus  
-- where tension is concentrated  
-- what must be made visible for coherence to emerge  
-- and what kind of attention the system is asking for  
+- what is trying to emerge
+- where readiness exists
+- what conditions are needed for productive exploration
+- what kind of support may help coherence develop
+
+Rather than designing a perfectly controlled conversation, this reflection helps you prepare to host emergence with clarity, responsiveness, and care.
 
 ## Sharing
 
-One perspective brings useful clarity.
-
-A second perspective adds contrast, and that contrast deepens understanding.
-
 Before the session, consider sharing your emerging framing with 1–2 trusted people.
 
-This helps to:
+Additional perspectives can help reveal:
+- blind spots
+- missing tensions
+- overlooked readiness
+- opportunities for stronger coherence
 
-- test the clarity of the tension being named  
-- surface blind spots or missing perspectives  
-- align on how the session is being introduced  
-- refine the nominal intent or opening framing  
+This can help refine both the intention of the session and the conditions being created for the group.
 
 ## Continue exploring
 
