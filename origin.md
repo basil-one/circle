@@ -194,7 +194,8 @@ These made what was already happening easier to see.
 
 As this continued, something else became impossible to ignore.
 
-Even when a circle was formed.  
+Even when a circle was formed.
+
 Even when intention was clear.
 
 People were not seeing the same thing.
@@ -269,6 +270,8 @@ But to create enough coherence for people to move through change together withou
 
 Especially when everything is moving fast.
 
-👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="origin_to_moves"}  
-👉 [Explore the lenses](/lenses/){: data-ga-event="learn_more" data-ga-label="origin_to_lenses"}  
+👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="origin_to_moves"} 
+
+👉 [Explore the lenses](/lenses/){: data-ga-event="learn_more" data-ga-label="origin_to_lenses"}
+
 👉 [Return to Circle3](/method/){: data-ga-event="learn_more" data-ga-label="origin_to_method"}
