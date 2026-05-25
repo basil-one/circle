@@ -28,7 +28,7 @@ The change leaders.
 
 This creates a shared space where attention can hold.
 
-👉 [Learn more](/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
+👉 [Learn more](/moves/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
 
 ## Balance the Conversation
 
@@ -45,7 +45,7 @@ This move makes those tendencies visible.
 
 It helps the group see how differently the situation is being experienced—so the conversation integrates instead of breaking apart.
 
-👉 [Learn more](/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
+👉 [Learn more](/moves/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
 
 ## Reconcile the Intention
 
@@ -57,4 +57,4 @@ Not agreement for it's own sake.
 
 But commitments that hold.
 
-👉 [Learn more](/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"}
+👉 [Learn more](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"}

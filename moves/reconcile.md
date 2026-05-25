@@ -2,7 +2,7 @@
 layout: default
 title: Reconcile the Intention
 description: Guide a group through iterative conversations anchored on a visible alignment artifact that captures shared intentions and principles.
-permalink: /reconcile/
+permalink: /moves/reconcile/
 css_id: reconcile
 ---
 
@@ -10,7 +10,7 @@ css_id: reconcile
 
 *A Pattern for Adaptive Change Leadership by* **Michael Basil**
 
-![Reconcile the Intention](/images/reconcile.png)
+![Reconcile the Intention](/images/move-reconcile.png)
 
 *For leaders, facilitators, or change agents when a group struggles to act cohesively due to ambiguous priorities, fragmented mental models, or misaligned intentions.*
 
@@ -134,8 +134,8 @@ When the pattern succeeds:
 
 ## Related Patterns
 
-- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for iterative review, discussion, and surfacing key tensions.
-- [Balance the Conversation](/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Balanced facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for iterative review, discussion, and surfacing key tensions.
+- [Balance the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Balanced facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
 - [Fearless Change Patterns](https://fearlesschangepatterns.com):
   - Evolving Vision – Periodically revisit vision and priorities to maintain alignment over time.
   - Concrete Action Plan – Define concrete next steps that anchor aligned intentions in observable outputs.

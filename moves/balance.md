@@ -2,7 +2,7 @@
 layout: default
 title: Balance the Conversation
 description: Guide attention, surface perspectives, and manage tension so insight flows and aligned action emerges.
-permalink: /balance/
+permalink: /moves/balance/
 css_id: balance
 ---
 
@@ -10,7 +10,7 @@ css_id: balance
 
 *A Pattern for Adaptive Change Leadership by* **Michael Basil**
 
-![Balance the Conversation](/images/balance.png)
+![Balance the Conversation](/images/move-balance.png)
 
 *For facilitators, team leads, or change agents when everyone wants progress—but energy and focus are stuck in fragmented conversations.*
 
@@ -140,10 +140,10 @@ A Circle session—and any conversation—becomes a space to practice and reinfo
 
 ## Related Patterns
 
-- [Establish the Circle](/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"}  
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"}  
   - Balanced conversations are critical to forming and sustaining the initial nucleus; without a small, recurring gathering, efforts to manage group energy have no stable home.
 
-- [Reconcile the Intention](/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"}  
+- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"}  
   - Balanced facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
 
 ### [Zen Leadership Patterns](https://zenleader.global)
