@@ -16,8 +16,6 @@ css_id: moves
 
 *Circle3™ is not a linear process or sequence. Start where you are. Choose the move that fits your situation right now.*
 
-*Each lens is engaged through reflection exercise over time.*
-
 ## Establish the Circle
 
 **When there is no stable nucleus of attention**

@@ -16,6 +16,8 @@ description: Three leadership lenses in the Circle3 pattern language that develo
 
 *Circle3™ is not a linear process or sequence. Start where you are. Choose the lens that fits what you are seeing right now.*
 
+*Each lens is engaged through reflection over time.*
+
 ## Sense Making Reflection
 
 **When people experience the same situation differently**
