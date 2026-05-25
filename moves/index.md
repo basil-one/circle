@@ -1,20 +1,22 @@
 ---
 layout: default
 title: Three Guiding Moves for Coherence
-description: A lightweight system for navigating continuous change through three guiding moves that build coherence, create clarity, align groups, and turn shared understanding into coordinated action.
+description: Three guiding moves in the Circle3 pattern language that help groups navigate continuous change by building coherence, creating clarity, and aligning collective action.
 permalink: /moves/
 css_id: moves
 ---
 
 # Three Guiding Moves for Coherence
 
-*A Lightweight System for Navigating Continuous Change by* **Michael Basil**
+*A Pattern Set within Circle3™ for Coordinating Action in Continuous Change by* **Michael Basil**
 
-![About the Moves](/images/moves.png)
+![Three Guiding Moves for Coherence](/images/moves.png)
 
-*Three Guiding Moves™* help a group pause, see clearly, and act together. Each works on its own. Together, they build coherence—creating clarity, alignment, and intentional progress.  
+*Three Guiding Moves™ help groups pause, make sense together, and act in alignment under changing conditions. Each works on its own. Together, they build coherence in action—creating clarity, alignment, and coordinated movement.*
 
 *Circle3™ is not a linear process or sequence. Start where you are. Choose the move that fits your situation right now.*
+
+*Each lens is engaged through reflection exercise over time.*
 
 ## Establish the Circle
 
@@ -28,7 +30,7 @@ The change leaders.
 
 This creates a shared space where attention can hold.
 
-👉 [Learn more](/moves/establish/){: data-ga-event="learn_more" data-ga-label="moves_to_establish"}
+👉 [Learn more](/moves/establish/){: data-ga-event="learn_more" data-ga-label="moves_index_to_establish"}
 
 ## Balance the Conversation
 
@@ -45,7 +47,7 @@ This move makes those tendencies visible.
 
 It helps the group see how differently the situation is being experienced—so the conversation integrates instead of breaking apart.
 
-👉 [Learn more](/moves/balance/){: data-ga-event="learn_more" data-ga-label="moves_to_balance"}
+👉 [Learn more](/moves/balance/){: data-ga-event="learn_more" data-ga-label="moves_index_to_balance"}
 
 ## Reconcile the Intention
 
@@ -57,4 +59,4 @@ Not agreement for it's own sake.
 
 But commitments that hold.
 
-👉 [Learn more](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_to_reconcile"}
+👉 [Learn more](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_index_to_reconcile"}

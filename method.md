@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 is a way of working with change when things are not yet taking root.
+description: Circle3 is a pattern language for working with change when things are not yet taking root, supporting coherence in complex, fast-moving environments.
 permalink: /method/
 css_id: method
 ---
@@ -10,7 +10,7 @@ css_id: method
 
 ![Circle3](/images/method.png)
 
-*Circle3™* is a way of working with change when things are not yet taking root.
+*Circle3™* is a pattern language for working with change when things are not yet taking root.
 
 Every change effort has a small group of people responsible for making it real in practice.
 
@@ -65,6 +65,6 @@ When this becomes visible:
 
 ## Unlocking the change
 
-There are three guiding moves that make this possible.
+There are three guiding moves in this pattern language that make this possible.
 
 👉 [Learn more](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
