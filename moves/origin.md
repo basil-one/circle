@@ -172,17 +172,25 @@ This changed how I understood change itself.
 
 ## Influences that shaped the work
 
-During this period, several practices helped make these patterns visible and workable:
+These practices did not create Circle3.
+
+They helped make it legible—offering language, structure, and reflection points for patterns that were already being lived.
 
 - [Aikido through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
-- [Institute of Zen Leadership](https://zenleader.global)  
 - [Cynefin framework (Dave Snowden)](https://www.youtube.com/watch?v=N7oz366X0-8)  
+- [Institute of Zen Leadership](https://zenleader.global)  
 - [Authentic Relating through AR Go Live](https://www.ar-go.live/)  
 - [Negotiation practice influenced by Chris Voss and Black Swan Group](https://www.blackswanltd.com/)  
 
-None of these created Circle3.
+## The emergence of perception: the lenses
 
-They gave language, structure, and reflection points for patterns that were already being lived.
+As this work evolved, it became clear that action alone was not enough.
+
+A second layer was needed: how people were interpreting what they were seeing while they were inside it.
+
+Different people could experience the same situation and yet inhabit completely different sense-making frames.
+
+These recurring differences in perception eventually stabilized into what became the **lenses of Circle3**.
 
 ## The third pattern: balancing the system
 
