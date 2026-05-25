@@ -59,3 +59,11 @@ The other enhances perception.
 👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
 
 👉 [Explore the lenses](/lenses/){: data-ga-event="learn_more" data-ga-label="method_to_lenses"}
+
+## Where this came from
+
+Circle3 did not begin as a formal framework.
+
+The moves and lenses emerged gradually through decades of work across organizations, communities, leadership, facilitation, conflict, personal hardship, and reflective practice.
+
+👉 [Read the origin story](/origin/){: data-ga-event="learn_more" data-ga-label="method_to_origin"}
