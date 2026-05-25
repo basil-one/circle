@@ -172,9 +172,7 @@ This changed how I understood change itself.
 
 ## Influences that shaped the work
 
-These practices did not create Circle3.
-
-They helped make it legible—offering language, structure, and reflection points for patterns that were already being lived.
+These practices clarified what was already forming.
 
 - [Aikido through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
 - [Cynefin framework (Dave Snowden)](https://www.youtube.com/watch?v=N7oz366X0-8)  
@@ -194,11 +192,13 @@ These recurring differences in perception eventually stabilized into what became
 
 ## The third pattern: balancing the system
 
-Another pattern eventually became unmistakable.
+And once that layer became visible, another pattern followed it.
 
 Not as technique.
 
-As necessity.
+Not as theory.
+
+But as necessity.
 
 ## Balance the Conversation
 
