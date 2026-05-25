@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 is a pattern language for working with change when things are not yet taking root, supporting coherence in complex, fast-moving environments.
+description: Circle3 is a pattern language for how change takes hold in complex, fast-moving environments.
 permalink: /method/
 css_id: method
 ---
@@ -10,61 +10,52 @@ css_id: method
 
 ![Circle3](/images/method.png)
 
-*Circle3™* is a pattern language for working with change when things are not yet taking root.
+*Circle3™ is a pattern language for how change takes hold.*
 
-Every change effort has a small group of people responsible for making it real in practice.
+Change begins in a small working center—formal or informal—where a few people are responsible for making it real in practice.
 
-Sometimes this group is formal.  
-Sometimes it is informal.
+That center always exists.
 
-But it is always present.
+## When things fragment
 
-This is the working center where change actually happens.
-
-## When alignment breaks
-
-When that center is not aligned in how it is interpreting what is happening, coordination starts to break down.
+When that center is not aligned in what it sees, everything else fragments.
 
 Priorities compete.  
 Messages multiply.  
-Attention fragments.
+Attention disperses.  
+Meaning breaks apart.
 
 ## How Circle3 works
 
-Circle3 works by grounding this group in the same live reality they are trying to move forward.
+Circle3 aligns attention to what is actually happening—not what is assumed.
 
-Not in theory.  
-Not in abstraction.  
-But in what is unfolding right now.
+Not theory.  
+Not abstraction.  
+Only what is unfolding.
 
-## What changes over time
+## What shifts
 
-As this grounding strengthens, something shifts.
+Shared perception emerges.  
+Language converges.  
+Decisions begin to hold.  
+Fewer things need to be explained.
 
-A shared perception begins to form—people start seeing the same thing.  
-A shared language develops—they begin describing it in similar ways.  
-And decisions begin to hold instead of unraveling.
+## What becomes possible
 
-## When coherence emerges
+- Others can recognize what is emerging more easily  
+- They can decide when and how to engage  
+- It becomes easier to support what is forming without breaking it apart  
 
-The change becomes easier to recognize.
+## The pattern sets
 
-Not because it has been simplified.
+Circle3 works through two connected pattern sets:
 
-But because it has become consistent.
+- **The Moves** — what people do together to create coherence in action  
+- **The Lenses** — how people see what is happening more clearly  
 
-A clearer signal of what is actually happening begins to form.
+One shapes action.  
+The other enhances perception.
 
-## What becomes possible next
+👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
 
-When this becomes visible:
-
-- others can recognize what is emerging more easily  
-- they can decide when and how to engage  
-- and it becomes easier to sponsor and reinforce the change in a way that strengthens what is forming, rather than fragmenting it  
-
-## Unlocking the change
-
-There are three guiding moves in this pattern language that make this possible.
-
-👉 [Learn more](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
+👉 [Explore the lenses](/lenses/){: data-ga-event="learn_more" data-ga-label="method_to_lenses"}

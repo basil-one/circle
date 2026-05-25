@@ -136,4 +136,4 @@ And invite the person to complete the same reflection from their side.
 
 If you’d like to go further with this work or explore additional dimensions, you’re welcome to connect.
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="reflection_energy_to_connect"}
+👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="lenses_energy_to_connect"}

@@ -168,13 +168,13 @@ Developing the ability to balance a conversation requires both reflection and ex
 
 Understand how different interpretations of a situation shape coordination, decision-making, and alignment—and where misalignment emerges when people are operating from different sense-making frames.
 
-👉 [Explore](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection_sense"}
+👉 [Explore](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="balance_to_lenses_sense"}
 
 ### Energy Awareness Reflection
 
 Build awareness of how relational energy is showing up in your conversations—and how your interventions influence attention, tension, and participation.
 
-👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="balance_to_reflection_energy"}
+👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="balance_to_lenses_energy"}
 
 ### Two Sides Reflection
 

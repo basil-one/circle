@@ -154,7 +154,7 @@ Use this exercise when preparing for a Circle session where you want to be more 
 
 It helps translate what is emerging in the work into a clear, grounded intention for that specific session.
 
-👉 [Explore](/lenses/session/){: data-ga-event="learn_more" data-ga-label="reconcile_to_reflection_session"}
+👉 [Explore](/lenses/session/){: data-ga-event="learn_more" data-ga-label="reconcile_to_lenses_session"}
 
 ## Explore in Your Context
 

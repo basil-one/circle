@@ -30,7 +30,7 @@ Complex — probe, adapt, and learn as they go.
 Chaotic — act first to stabilize disruption.  
 Confused — no shared frame is holding the situation together.
 
-👉 [Learn more](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_sense"}
+👉 [Learn more](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_sense"}
 
 ## Energy Awareness Reflection
 
@@ -43,7 +43,7 @@ Organizers try to stabilize.
 Collaborators try to reconnect.  
 Visionaries step back and reframe.  
 
-👉 [Learn more](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_energy"}
+👉 [Learn more](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_energy"}
 
 ## Session Intention Reflection
 
@@ -56,4 +56,4 @@ Tensions are starting to surface.
 Questions are beginning to form.  
 Support needs are becoming clearer.  
 
-👉 [Learn more](/lenses/session/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_session"}
+👉 [Learn more](/lenses/session/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_session"}

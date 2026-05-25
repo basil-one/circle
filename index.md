@@ -6,49 +6,47 @@ title: Circle3 | Make Change Clear and Aligned
 description: Circle3 helps leaders create coherence so change becomes clear, aligned, and easier to adopt—especially in complex, fast-moving environments like AI and transformation.
 ---
 
-# Frustrated by change that won’t take root?
+# Frustrated by change that won’t take hold?
 
 ![Feeling Overwhelmed by Constant Change?](/images/index.png)
 
 You’re driving something important—AI, new ways of working, infrastructure change.
 
-But it doesn’t land the way it should.
+But it doesn’t take hold.
 
-At times, everything feels like it’s moving at once.  
+Sometimes everything is moving, but nothing is landing.  
 Too many priorities. Constant shifting. No real traction.
 
-At other times, things slow down or stall.  
+Other times things slow down or stall.  
 Energy fades. Decisions don’t stick. Momentum disappears.
 
-Different symptoms. Same underlying experience:
+Different symptoms. Same experience:
 
-People are not operating from the same understanding of what is happening.
+People are not working from the same understanding of what is happening.
 
-And because of that, they respond differently.
-
-## How misalignment shows up
+## How it shows up
 
 Some push harder.  
-Some try to stabilize things.  
-Some try to bring people back together.  
-Some step back and rethink the direction entirely.
+Some try to stabilize.  
+Some try to reconnect.  
+Some step back to rethink.
 
 Each response makes sense on its own.
 
-But together, they create confusion.
+Together, they cancel each other out.
 
-## What’s actually happening
+## What’s actually going on
 
-What looks like overload, resistance, or slow adoption is often something simpler—and harder to see:
+What looks like overload, resistance, or slow adoption is often simpler:
 
-nothing is holding the situation together long enough for change to actually take root.
+Nothing is holding long enough for change to take root.
 
-Most change efforts try to fix this by scaling communication, alignment, or execution.
+Most systems try to solve this by adding more communication, more alignment, more process.
 
 But change doesn’t begin everywhere at once.
 
 ## It starts somewhere
 
-Circle3 creates that “somewhere it can actually start.”
+Circle3 creates a place where change can start to hold.
 
 👉 [Learn more](/method/){: data-ga-event="learn_more" data-ga-label="home_to_method"}

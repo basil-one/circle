@@ -168,4 +168,4 @@ And invite the other person, group, or team to complete the same reflection from
 
 If you’d like to go further with this work or explore additional dimensions, you’re welcome to connect.
 
-👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="reflection_sense_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="lenses_sense_to_connect"}

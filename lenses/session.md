@@ -31,8 +31,8 @@ A Circle session helps create the conditions for that kind of shared awareness.
 
 Before beginning, it can help to revisit two related reflections:
 
-- [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"} → how people may be interpreting the situation differently  
-- [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"} → how people may be showing up in relation to the situation  
+- [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_sense"} → how people may be interpreting the situation differently  
+- [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_energy"} → how people may be showing up in relation to the situation  
 
 Together, these lenses help reveal how the conversation may need to be held.
 
@@ -54,9 +54,9 @@ Where do you sense genuine interest, concern, energy, or readiness to engage?
 
 ### 2. How are people interpreting and responding to the situation?
 
-Using the [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"}, where are perspectives aligned or diverging?
+Using the [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_sense"}, where are perspectives aligned or diverging?
 
-Using the [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"}, what energies are most present? What may be missing?
+Using the [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_energy"}, what energies are most present? What may be missing?
 
 How might these dynamics shape the conversation?
 
@@ -125,4 +125,4 @@ This can help strengthen both the intention of the session and the conditions be
 
 If you’d like to go further with this work or explore additional dimensions, you’re welcome to connect.
 
-👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="reflection_session_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="lenses_session_to_connect"}
