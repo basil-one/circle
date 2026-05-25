@@ -2,15 +2,15 @@
 layout: default
 title: Energy Awareness Reflection
 description: A simple reflective exercise for noticing how energy shows up in conversations and relationships.
-permalink: /reflection/energy/
-css_id: reflection-energy
+permalink: /lenses/energy/
+css_id: lens-energy
 ---
 
 # Energy Awareness Reflection  
 
 *A Reflective Exercise for Understanding Energy in Conversation* by **Michael Basil**
 
-![Energy Awareness Reflection](/images/reflection-energy.png)
+![Energy Awareness Reflection](/images/lens-energy.png)
 
 This exercise helps you reflect on how another person tends to show up across your conversations over time and in different emotional contexts.
 

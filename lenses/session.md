@@ -2,8 +2,8 @@
 layout: default
 title: Session Intention Reflection
 description: A reflective exercise for preparing a Circle session by sensing what is becoming important and shaping conditions for meaningful conversation.
-permalink: /reflection/session/
-css_id: reflection-session
+permalink: /lenses/session/
+css_id: lens-session
 ---
 
 # Session Intention Reflection  
@@ -11,7 +11,7 @@ css_id: reflection-session
 *A Reflective Exercise for Preparing a Circle Session*  
 by **Michael Basil**
 
-![Session Intention Reflection](/images/reflection-session.png)
+![Session Intention Reflection](/images/lens-session.png)
 
 This reflection helps you prepare a Circle session by identifying what is becoming important in a group and shaping the conditions for a meaningful conversation around it.
 
@@ -31,8 +31,8 @@ A Circle session helps create the conditions for that kind of shared awareness.
 
 Before beginning, it can help to revisit two related reflections:
 
-- [Sense Making Reflection](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"} → how people may be interpreting the situation differently  
-- [Energy Awareness Reflection](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"} → how people may be showing up in relation to the situation  
+- [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"} → how people may be interpreting the situation differently  
+- [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"} → how people may be showing up in relation to the situation  
 
 Together, these lenses help reveal how the conversation may need to be held.
 
@@ -54,9 +54,9 @@ Where do you sense genuine interest, concern, energy, or readiness to engage?
 
 ### 2. How are people interpreting and responding to the situation?
 
-Using the [Sense Making Reflection](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"}, where are perspectives aligned or diverging?
+Using the [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_sense"}, where are perspectives aligned or diverging?
 
-Using the [Energy Awareness Reflection](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"}, what energies are most present? What may be missing?
+Using the [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="reflection_session_to_reflection_energy"}, what energies are most present? What may be missing?
 
 How might these dynamics shape the conversation?
 

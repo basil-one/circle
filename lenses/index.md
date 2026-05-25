@@ -1,7 +1,7 @@
 ---
 layout: default
-permalink: /reflection/
-css_id: reflection
+permalink: /lenses/
+css_id: lens
 title: Three Leadership Lenses for Coherence
 description: Three leadership lenses in the Circle3 pattern language that develop how you perceive interpretation, energy, and readiness in complex systems.
 ---
@@ -10,7 +10,7 @@ description: Three leadership lenses in the Circle3 pattern language that develo
 
 *A set of perception patterns within Circle3™ for enhancing how you see complex systems by* **Michael Basil**
 
-![Three Leadership Lenses for Coherence](/images/reflections.png)
+![Three Leadership Lenses for Coherence](/images/lenses.png)
 
 *Three Leadership Lenses™ help you pause, notice what is shaping a situation, and enhance how you see under complex conditions. Each works on its own. Together, they build coherence in perception—supporting grounded interpretation, attentional clarity, and more intentional response.*
 
@@ -30,7 +30,7 @@ Complex — probe, adapt, and learn as they go.
 Chaotic — act first to stabilize disruption.  
 Confused — no shared frame is holding the situation together.
 
-👉 [Learn more](/reflection/sense/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_sense"}
+👉 [Learn more](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_sense"}
 
 ## Energy Awareness Reflection
 
@@ -43,7 +43,7 @@ Organizers try to stabilize.
 Collaborators try to reconnect.  
 Visionaries step back and reframe.  
 
-👉 [Learn more](/reflection/energy/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_energy"}
+👉 [Learn more](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_energy"}
 
 ## Session Intention Reflection
 
@@ -56,4 +56,4 @@ Tensions are starting to surface.
 Questions are beginning to form.  
 Support needs are becoming clearer.  
 
-👉 [Learn more](/reflection/session/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_session"}
+👉 [Learn more](/lenses/session/){: data-ga-event="learn_more" data-ga-label="reflection_index_to_session"}

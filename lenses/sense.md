@@ -2,8 +2,8 @@
 layout: default
 title: Sense Making Reflection
 description: A structured reflective exercise for understanding how reality is being interpreted across Cynefin domains in individuals, groups, and organizations.
-permalink: /reflection/sense/
-css_id: reflection-sense
+permalink: /lenses/sense/
+css_id: lens-sense
 ---
 
 # Sense Making Reflection  
@@ -11,7 +11,7 @@ css_id: reflection-sense
 *A Reflective Exercise for Understanding How Reality Is Being Interpreted*  
 by **Michael Basil**
 
-![Sense Making Reflection](/images/reflection-sense.png)
+![Sense Making Reflection](/images/lens-sense.png)
 
 This exercise helps you notice how a person, group, or organization interprets what kind of situation they are in—and how that interpretation shifts across different conditions.
 
