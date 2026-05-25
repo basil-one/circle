@@ -12,143 +12,227 @@ css_id: origin
 
 Circle3 did not begin as a framework.
 
-It emerged gradually through repeated encounters with change, tension, fragmentation, and the challenge of helping people move through uncertainty together.
+It emerged through repeated encounters with change, tension, fragmentation, and the challenge of helping people move through uncertainty together.
 
-Long before the language existed, the patterns were already present.
+Long before the language existed, the patterns were already there—quietly recurring across very different contexts.
 
-## Early attention to behavior and response
+## Early attention to response
 
-As a child, I spent time in my mother’s parrot store helping care for and tame large macaws. Some were calm. Others were reactive, unpredictable, or difficult to approach.
+As a child, I spent time in my mother’s parrot store helping care for and tame large macaws.
 
-What stayed with me was not technique as much as attention.
+Some were calm. Some were not.
 
-The more forcefully you tried to direct a frightened or reactive animal, the more resistance you created.
+What stayed with me was not technique, but attention.
 
-Progress depended less on control and more on learning how to sit with agitation without escalating it.
+When you tried to force control, resistance increased.
 
-Over time, trust formed through consistency, attention, pacing, and presence.
+When you slowed down and stayed present, something shifted.
+
+Trust formed through consistency, pacing, and presence.
+
+Not control.
+
+Not pressure.
+
+Just attention that did not escalate the situation.
 
 ## The same patterns in human systems
 
-Years later, I would encounter similar dynamics in organizations.
+Years later, I encountered the same dynamics in organizations.
 
-Throughout my career—in startups, nonprofits, higher education, enterprise technology, community leadership, and personal life—I repeatedly found myself inside environments where people were struggling to move through change together.
+Startups. Nonprofits. Higher education. Enterprise systems. Community work. Personal life.
 
-Teams would fragment under pressure. Departments would stop communicating effectively. Stakeholders would hold conflicting interpretations of what was happening. Conversations would become reactive, performative, or stuck.
+People were trying to move change forward together.
 
-What was often described as resistance rarely felt like simple opposition.
+And it kept breaking in recognizable ways.
 
-More often, people were protecting something:
+Teams fragmented under pressure. Communication collapsed. Stakeholders held different versions of reality. Conversations became reactive, performative, or stuck.
+
+What looked like resistance rarely was.
+
+It was protection:
 
 - stability  
 - identity  
 - credibility  
 - safety  
 - belonging  
-- or a way of making sense of the situation  
+- meaning  
 
-Again and again, I found that people needed space to think out loud together before coordinated action could emerge.
+People needed space to think before they could move together.
 
-## The emergence of “circles”
+Space to make sense of what was happening before action could hold.
 
-Without realizing it at first, I kept responding in similar ways.
+## The first pattern: gathering attention
 
-I would gather small groups together regularly. We would slow down long enough to examine what was actually happening. Different perspectives would surface. Shared language would gradually emerge. Tension would become more workable.
+Without realizing it at first, I kept doing the same thing.
 
-Eventually these gatherings became recognizable enough that we started naming them directly:
+I would bring small groups together.
+
+We would slow the pace.
+
+We would look directly at what was happening, without trying to immediately fix it.
+
+Something would begin to surface.
+
+Different perspectives.
+
+Shared language.
+
+Tension that could finally be held without breaking the group.
+
+And then, at some point, the pattern became visible enough that it had a name.
 
 > “We need a circle.”
 
-Over time, the first move became increasingly clear:
+That moment became a marker.
+
+A shift from scattered attention to shared attention.
+
+From fragmentation to a center of coherence, however small.
+
+From that, the first move became clear:
 
 ## Establish the Circle
 
-A small, recurring center of shared attention could help coherence begin forming even inside highly fragmented systems.
+A small, recurring center of shared attention where coherence can begin forming inside fragmentation.
 
-## When circles were not enough
+## When attention was not enough
 
-As the work evolved, another pattern became visible: groups often struggled because they lacked a shared articulation of what they were actually trying to move toward together.
+As the work continued, another pattern appeared.
 
-People carried different assumptions, priorities, and interpretations beneath the surface. Even when collaboration appeared functional, alignment could quickly unravel under pressure.
+Even when people were gathered, something still broke.
 
-This led to a second recurring move:
+Groups often lacked a shared sense of what they were actually trying to do together.
+
+Assumptions diverged. Priorities drifted. Meaning split under pressure.
+
+Alignment existed in conversation, but not in lived interpretation.
+
+So a second move emerged:
 
 ## Reconcile the Intention
 
-Creating visible intentions, principles, charters, and shared language allowed groups to revisit meaning over time.
+Not agreement.
 
-But even this was incomplete.
+Alignment.
 
-## The limits of persistence
+A way of making intention visible, revisitable, and shared over time.
 
-Over time it became increasingly clear that groups—and the people within them—could become deeply imbalanced under sustained pressure.
+This included, over time, the use of concrete alignment artifacts such as:
 
-In my own life, periods of significant personal and professional hardship forced a much deeper reevaluation of what balance actually meant.
+- mission statements  
+- guiding principles  
+- working agreements  
+- team or program charters  
+- success metrics and definitions of progress  
+- shared language for what “good” looks like in practice  
 
-Until then, much of my instinct had been to push harder, solve faster, and continue carrying momentum forward through effort and persistence.
+Not as documents.
 
-Eventually I encountered the limits of that approach.
+But as anchors for ongoing conversation.
 
-The experience of becoming deeply unsettled created conditions where I could no longer treat balance as a conceptual leadership skill.
+## When pressure exceeded capacity
 
-It became something more embodied and necessary:
+Even this was not enough.
 
-- learning how to recognize fragmentation while it is happening  
-- regulating attention and energy more consciously  
-- reintegrating step by step rather than forcing premature resolution  
-- noticing when to slow down instead of pushing through  
+Over time, it became clear that groups—and individuals—can become internally fragmented under sustained pressure.
 
-This period fundamentally changed how I understood change itself.
+And at a certain point, this stopped being conceptual.
+
+It became personal.
+
+In my own life, periods of significant hardship forced a deeper reckoning with what balance actually means.
+
+Not as an idea.
+
+Not as a leadership concept.
+
+As a lived condition.
+
+The old instinct was simple:
+
+Push harder. Solve faster. Keep moving.
+
+That stopped working.
+
+Something had to change.
+
+Balance was no longer abstract.
+
+It became immediate:
+
+- noticing fragmentation while it is happening  
+- sensing when attention collapses  
+- recovering coherence step by step  
+- choosing when not to accelerate  
+- learning when effort is not the correct response  
+
+This changed how I understood change itself.
 
 ## Influences that shaped the work
 
-This phase deepened engagement with practices and communities that helped make these dynamics more visible and workable:
+During this period, several practices helped make these patterns visible and workable:
 
 - [Aikido through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
 - [Institute of Zen Leadership](https://zenleader.global)  
-- [Complexity and sense-making (Cynefin framework developed by Dave Snowden)](https://www.youtube.com/watch?v=N7oz366X0-8)  
-- [Authentic Relating practices through AR Go Live](https://www.ar-go.live/)  
+- [Cynefin framework (Dave Snowden)](https://www.youtube.com/watch?v=N7oz366X0-8)  
+- [Authentic Relating through AR Go Live](https://www.ar-go.live/)  
 - [Negotiation practice influenced by Chris Voss and Black Swan Group](https://www.blackswanltd.com/)  
 
-These did not create Circle3.
+None of these created Circle3.
 
-Rather, they provided language, practices, and lenses that helped explain recurring patterns I had already been encountering across many environments.
+They gave language, structure, and reflection points for patterns that were already being lived.
 
-## The emergence of the third move
+## The third pattern: balancing the system
 
-Gradually another pattern became visible:
+Another pattern eventually became unmistakable.
+
+Not as technique.
+
+As necessity.
 
 ## Balance the Conversation
 
-Not as a technique, but as a practice of working with tension, attention, emotion, perception, and energy inside living systems.
+Not directing the group.
 
-## The stabilization of a pattern language
+Not controlling outcomes.
 
-Over time, these recurring patterns stabilized into a more coherent structure:
+But working with attention, emotion, tension, and perception as a single field.
 
-- three guiding moves  
-- three leadership lenses  
-- and a growing set of reflective practices  
+Helping a group remain coherent while under pressure—without forcing artificial agreement.
 
-Together they became Circle3.
+## The pattern stabilizes
+
+Over time, these three movements became recognizable:
+
+- Establish the Circle  
+- Reconcile the Intention  
+- Balance the Conversation  
+
+Together, they formed a pattern language.
+
+Not designed.
+
+Recognized through repetition.
 
 ## Continuing evolution
 
-Circle3 is not presented as a complete or final system.
+Circle3 is not a finished system.
 
-It is an evolving pattern language shaped through lived experience, experimentation, reflection, success, failure, reintegration, and continued learning across many different contexts.
+It is an evolving pattern language shaped through lived experience, reflection, breakdown, recovery, and continued learning.
 
-One teaching that continues to shape this work comes from Ginny Whitelaw:
+One teaching that continues to inform this work comes from Ginny Whitelaw:
 
 > “Being a teacher is a commitment to being a public student.”
 
-That spirit remains central to Circle3.
+That spirit remains central.
 
 ## The intention
 
-The intention is not to eliminate tension, uncertainty, or complexity.
+The intention is not to remove tension or complexity.
 
-The intention is to help people create enough coherence that change can become visible, workable, and shared—especially in environments where fragmentation, pressure, and rapid transformation would otherwise pull people apart.
+It is to create enough coherence that change can be seen, shared, and moved with—especially in environments where fragmentation would otherwise take over.
 
 👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="origin_to_moves"}
 
