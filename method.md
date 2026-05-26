@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 is a pattern language for how change takes hold in complex, fast-moving environments.
+description: Circle3 is a pattern language for leading change in complex, fast-moving environments.
 permalink: /method/
 css_id: method
 ---
@@ -10,11 +10,11 @@ css_id: method
 
 ![Circle3](/images/method.png)
 
-*Circle3™ is a pattern language for how change takes hold.*
+*Circle3™ is a pattern language for leading change.*
 
 Change begins in a small working center—formal or informal—where a few people are responsible for making it real in practice.
 
-That center always exists.
+That center always exists in some form, even if it is not recognized.
 
 ## When things fragment
 
@@ -35,10 +35,10 @@ Only what is unfolding.
 
 ## What shifts
 
-Shared perception emerges.  
-Language converges.  
+Shared perception forms.  
+Language starts to converge.  
 Decisions begin to hold.  
-Fewer things need to be explained.
+Less needs to be re-explained.
 
 ## What becomes possible
 
