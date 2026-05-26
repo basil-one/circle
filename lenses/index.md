@@ -3,16 +3,16 @@ layout: default
 permalink: /lenses/
 css_id: lens
 title: Three Leadership Lenses for Coherence
-description: Three leadership lenses in the Circle3 pattern language that develop how you perceive interpretation, energy, and readiness in complex systems.
+description: Three leadership lenses in the Circle3 pattern language that shape how you perceive interpretation, energy, and readiness in complex systems.
 ---
 
 # Three Leadership Lenses for Coherence
 
-*A set of perception patterns within Circle3™ for enhancing how you see complex systems by* **Michael Basil**
+*A set of perception patterns within Circle3™ for noticing what is shaping a situation in complex systems by* **Michael Basil**
 
 ![Three Leadership Lenses for Coherence](/images/lenses.png)
 
-*Three Leadership Lenses™ help you pause, notice what is shaping a situation, and enhance how you see under complex conditions. Each works on its own. Together, they build coherence in perception—supporting grounded interpretation, attentional clarity, and more intentional response.*
+*Three Leadership Lenses™ help you pause, notice what is shaping a situation, and see more clearly under complex conditions. Each works on its own. Together, they build coherence in perception—supporting clearer interpretation, attentional clarity, and more intentional response.*
 
 *Circle3™ is not a linear process or sequence. Start where you are. Choose the lens that fits what you are seeing right now.*
 
@@ -28,7 +28,7 @@ Clear — apply known rules and best practices.
 Complicated — rely on analysis and expertise.  
 Complex — probe, adapt, and learn as they go.  
 Chaotic — act first to stabilize disruption.  
-Confused — no shared frame is holding the situation together.
+Confused — no shared frame is holding the situation.
 
 👉 [Learn more](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_sense"}
 

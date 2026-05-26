@@ -20,7 +20,7 @@ css_id: moves
 
 **When there is no stable nucleus of attention**
 
-Bring together the people actively responsible for driving the change.
+Bring together the people actively responsible for driving change.
 
 Not the whole organization.
 
@@ -43,7 +43,7 @@ Visionaries step back and reframe.
 
 This move makes those tendencies visible.
 
-It helps the group see how differently the situation is being experienced—so the conversation integrates instead of breaking apart.
+It helps the group see how differently the situation is being experienced—so the conversation can integrate instead of breaking apart.
 
 👉 [Learn more](/moves/balance/){: data-ga-event="learn_more" data-ga-label="moves_index_to_balance"}
 
@@ -53,7 +53,7 @@ It helps the group see how differently the situation is being experienced—so t
 
 Turn shared understanding into decisions that reflect what the group actually sees.
 
-Not agreement for it's own sake.
+Not agreement for its own sake.
 
 But commitments that hold.
 
