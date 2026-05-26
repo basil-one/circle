@@ -121,7 +121,7 @@ Meaning split quietly under pressure.
 
 Alignment existed in conversation.
 
-Not in reality.
+Not in lived reality.
 
 So a second pattern appeared.
 
@@ -131,7 +131,7 @@ Not agreement.
 
 Alignment.
 
-Making intention visible enough to return to it.
+Making intention visible enough to return to when things shifted.
 
 Over time this showed up as simple artifacts:
 
@@ -148,27 +148,31 @@ As anchors for remembering.
 
 ## When pressure exceeded capacity
 
-Even that wasn’t enough.
+And then something changed.
 
-People—and groups—can only hold so much pressure before they fragment internally.
+In my own life, periods of personal and professional hardship forced a deeper reevaluation of what balance actually meant.
 
-And at a certain point, this stopped being abstract.
+Until then, the instinct had been simple:
 
-It became personal.
+Push harder. Solve faster. Keep momentum.
 
-There were periods where the old approach stopped working.
+It worked—until it didn’t.
 
-Push harder. Solve faster. Keep going.
+Eventually, that approach stopped producing coherence.
 
-That logic broke.
+Things began to fragment in ways that effort alone could not resolve.
 
-Something else was required.
+Not because the problems were bigger.
 
-Not more effort.
+Because the response was no longer sufficient.
 
-More awareness.
+Balance was no longer something to think about.
 
-- noticing fragmentation as it happens  
+It became something to recognize in real time—while things were still breaking.
+
+Learning shifted from explanation to attention:
+
+- noticing fragmentation as it is happening  
 - sensing when attention collapses  
 - recovering coherence step by step  
 - knowing when not to accelerate  
@@ -176,19 +180,19 @@ More awareness.
 
 This changed the work.
 
-Not as a theory.
+Not as a concept.
 
-As a lived constraint.
+As a constraint.
 
 ## Influences that shaped what became visible
 
 These made what was already happening easier to see.
 
-- [Institute of Zen Leadership](https://zenleader.global)  
-- [Aikido through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
-- [Negotiation practice influenced by Chris Voss and Black Swan Group](https://www.blackswanltd.com/)  
-- [Cynefin framework (Dave Snowden)](https://www.youtube.com/watch?v=N7oz366X0-8)  
-- [Authentic Relating through AR Go Live](https://www.ar-go.live/)  
+- [Leadership practice by Ginny Whitelaw through Institute of Zen Leadership](https://zenleader.global)  
+- [Aikido practice through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
+- [Negotiation practice by Chris Voss through Black Swan Group](https://www.blackswanltd.com/)  
+- [Sense-making framework by Dave Snowden through Cynefin](https://www.youtube.com/watch?v=N7oz366X0-8)  
+- [Authentic Relating practice through AR Go Live](https://www.ar-go.live/)
 
 ## The emergence of perception: the lenses
 
@@ -210,7 +214,9 @@ Different meaning.
 
 Different reality, coexisting in the same room.
 
-And over time, that pattern became visible enough to name.
+And over time, that pattern became visible enough that it could no longer be treated as background.
+
+It had to be named.
 
 **the lenses of Circle3**
 
@@ -270,7 +276,7 @@ But to create enough coherence for people to move through change together withou
 
 Especially when everything is moving fast.
 
-👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="origin_to_moves"} 
+👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="origin_to_moves"}
 
 👉 [Explore the lenses](/lenses/){: data-ga-event="learn_more" data-ga-label="origin_to_lenses"}
 
