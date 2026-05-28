@@ -127,9 +127,7 @@ So a second pattern appeared.
 
 ## Reconcile the Intention
 
-Not agreement.
-
-Alignment.
+Alignment over agreement.
 
 Making intention visible enough to return to when things shifted.
 
@@ -235,6 +233,8 @@ Something had to be done with it.
 Not directing the group.
 
 Not forcing agreement.
+
+Stepping out of direction and control.
 
 Balance does not mean leveling differences or giving every perspective equal weight.
 
