@@ -236,7 +236,11 @@ Not directing the group.
 
 Not forcing agreement.
 
-But working with attention, emotion, tension, and perception as a single field.
+Balance does not mean leveling differences or giving every perspective equal weight.
+
+It means staying responsive to the conditions that allow coherence and shared insight to emerge as the conversation unfolds.
+
+Attention, emotion, tension, and perception as a single field.
 
 Keeping coherence possible while everything is still in motion.
 
@@ -260,11 +264,7 @@ Circle3 is not finished.
 
 It keeps forming through practice, breakdown, recovery, and return.
 
-One line that continues to resonate comes from Ginny Whitelaw:
-
-> “Being a teacher is a commitment to being a public student.”
-
-That’s still the posture.
+That’s still the stance.
 
 ## The intention
 
