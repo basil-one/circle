@@ -86,12 +86,13 @@ def simple_yaml_load(content: str) -> dict:
                 
                 while line_idx < len(lines):
                     next_line = lines[line_idx]
-                    if not next_line.strip():
-                        # Skip blank lines but remember we saw one
+                    next_indent = len(next_line) - len(next_line.lstrip())
+                    
+                    if next_line.strip() == '':
+                        # Preserve blank lines inside the block scalar.
+                        block_lines.append('')
                         line_idx += 1
                         continue
-                    
-                    next_indent = len(next_line) - len(next_line.lstrip())
                     
                     if block_indent is None:
                         block_indent = next_indent
@@ -289,23 +290,49 @@ class CirclePDFBuilder:
         return pattern_content
     
     def _markdown_to_latex(self, text: str) -> str:
-        """Convert markdown formatting to LaTeX."""
+        """Convert markdown formatting to LaTeX, using Pandoc for complex content."""
         text = text.strip()
         if not text:
             return ''
+        
+        # Check if content contains markdown lists - use Pandoc for proper rendering
+        if re.search(r'^\s*([-+*]|\d+\.)\s+', text, re.MULTILINE):
+            return self._pandoc_markdown_to_latex(text)
+        
+        # Simple formatting for non-list content
+        paragraphs = []
+        for para in re.split(r'\n\s*\n', text):
+            if not para.strip():
+                continue
+            normalized = ' '.join(line.strip() for line in para.splitlines() if line.strip())
+            paragraphs.append(normalized)
 
-        # Preserve paragraphs while normalizing line breaks within each paragraph.
-        paragraphs = [
-            ' '.join(line.strip() for line in para.splitlines() if line.strip())
-            for para in re.split(r'\n\s*\n', text)
-            if para.strip()
-        ]
         text = '\n\n'.join(paragraphs)
-
+        
         # Convert **bold** first, then normal italics.
         text = re.sub(r'\*\*([^*]+?)\*\*', r'\\textbf{\1}', text)
         text = re.sub(r'(?<!\*)\*([^*]+?)\*(?!\*)', r'\\textit{\1}', text)
         return text
+    
+    def _pandoc_markdown_to_latex(self, markdown_text: str) -> str:
+        """Use Pandoc to convert markdown (with lists) to LaTeX inline content."""
+        try:
+            result = subprocess.run(
+                ['pandoc', '-f', 'markdown', '-t', 'latex', '--no-highlight'],
+                input=markdown_text.encode('utf-8'),
+                capture_output=True,
+                timeout=10
+            )
+            if result.returncode != 0:
+                logger.warning(f"Pandoc conversion failed: {result.stderr.decode('utf-8')}")
+                return markdown_text
+            
+            latex_output = result.stdout.decode('utf-8').strip()
+            # Remove the trailing newline that Pandoc adds
+            return latex_output
+        except Exception as e:
+            logger.warning(f"Error using Pandoc for markdown conversion: {e}")
+            return markdown_text
     
     def _call_pandoc(self, markdown_content: str, output_path: Path) -> bool:
         """Call pandoc with custom template."""
