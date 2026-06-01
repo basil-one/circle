@@ -20,6 +20,7 @@ In complex situations, people often enter the same conversation with different a
 Progress rarely begins with immediate agreement.
 
 More often, it begins when people can better see:
+
 - what matters
 - where tensions exist
 - what others are noticing
@@ -31,8 +32,8 @@ A Circle session helps create the conditions for that kind of shared awareness.
 
 Before beginning, it can help to revisit two related reflections:
 
-- [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_sense"} → how people may be interpreting the situation differently  
-- [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_energy"} → how people may be showing up in relation to the situation  
+- [Sense Making Reflection](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_sense"} → how people may be interpreting the situation differently
+- [Energy Awareness Reflection](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="lenses_session_to_lenses_energy"} → how people may be showing up in relation to the situation
 
 Together, these lenses help reveal how the conversation may need to be held.
 
@@ -65,6 +66,7 @@ How might these dynamics shape the conversation?
 What question—or small set of questions—could help people ground together while remaining open to discovery?
 
 Strong questions often:
+
 - invite curiosity rather than defensiveness
 - keep multiple perspectives visible
 - support shared attention
@@ -75,6 +77,7 @@ Strong questions often:
 What conditions will help the conversation become productive rather than reactive?
 
 Consider:
+
 - the level of listening required
 - emotional or relational sensitivity
 - grounding or arrival practices
@@ -85,6 +88,7 @@ Consider:
 If strong interest or readiness emerges, what additional support may help?
 
 This might include:
+
 - breakout conversations
 - facilitators or subject-matter support
 - smaller working groups
@@ -102,6 +106,7 @@ What would help the session conclude in a way that supports both individual and 
 As you look across what you’ve named, notice what picture is beginning to form.
 
 You may begin to see:
+
 - what the group is ready to explore
 - where tensions or opportunities are concentrated
 - what conditions may help the conversation become productive
@@ -114,6 +119,7 @@ Rather than trying to control the conversation, this reflection helps you prepar
 Before the session, consider sharing your emerging framing with 1–2 trusted people.
 
 Additional perspectives can help reveal:
+
 - blind spots
 - missing tensions
 - overlooked readiness

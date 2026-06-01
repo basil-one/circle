@@ -42,11 +42,11 @@ Without intervention, ambiguity persists, decisions remain reactive, and opportu
 
 How do you help a group align when:
 
-- principles are unclear or inconsistently understood  
-- key voices are isolated or not sufficiently aware of each other 
-- cultural norms drift away from formal charters  
-- leadership focuses on outputs rather than fostering shared understanding  
-- the organization lacks mechanisms to revisit performance, success metrics, or impact regularly  
+- principles are unclear or inconsistently understood
+- key voices are isolated or not sufficiently aware of each other
+- cultural norms drift away from formal charters
+- leadership focuses on outputs rather than fostering shared understanding
+- the organization lacks mechanisms to revisit performance, success metrics, or impact regularly
 
 Conventional meetings or status updates rarely surface misalignment or build collective clarity. Without structured conversation, ambiguity persists, decisions remain reactive, and opportunities for coordinated impact are lost.
 
@@ -78,10 +78,10 @@ Artifacts should capture culture and intent, but remain flexible to reflect new 
 
 Create a structured, iterative process around a **visible alignment artifact**:
 
-- Identify or create the artifact (charter, principles, guiding document).  
-- Convene key participants, including social leaders and subject matter experts.  
-- Facilitate conversations that surface ambiguity, clarify principles, reconcile differences, and invite critique.  
-- Iterate until all key participants can **affirm the artifact**: “This is right, here’s why, and how it helps in my role.”  
+- Identify or create the artifact (charter, principles, guiding document).
+- Convene key participants, including social leaders and subject matter experts.
+- Facilitate conversations that surface ambiguity, clarify principles, reconcile differences, and invite critique.
+- Iterate until all key participants can **affirm the artifact**: “This is right, here’s why, and how it helps in my role.”
 - Publish or share the artifact with relevant audiences to guide interaction, decisions, and future alignment.
 
 The **conversation is the value**, not the artifact alone. Each iteration strengthens shared understanding, culture, and collective action.
@@ -90,46 +90,46 @@ The **conversation is the value**, not the artifact alone. Each iteration streng
 
 When the pattern succeeds:
 
-- Mental models are aligned; ambiguity is reduced.  
-- Participants share a common language for intent, priorities, and principles.  
-- Interactions with other teams or departments become smoother, more predictable, and effective.  
-- Leadership gains a clear reference point to guide decisions, set priorities, and support the group.  
-- Teams understand which metrics matter, track progress over time, and revisit performance to inform alignment.  
-- The artifact becomes a **living, iterative tool**—anchoring culture, decision-making, and ongoing alignment across the organization.  
+- Mental models are aligned; ambiguity is reduced.
+- Participants share a common language for intent, priorities, and principles.
+- Interactions with other teams or departments become smoother, more predictable, and effective.
+- Leadership gains a clear reference point to guide decisions, set priorities, and support the group.
+- Teams understand which metrics matter, track progress over time, and revisit performance to inform alignment.
+- The artifact becomes a **living, iterative tool**—anchoring culture, decision-making, and ongoing alignment across the organization.
 
 ## Key Characteristics
 
-- Focuses on **conversation over documentation**  
-- Uses a **visible artifact** as a touchstone for alignment  
-- Engages key participants iteratively, not just once  
-- Strengthens culture through repeated reflection and affirmation  
-- Provides clarity for external stakeholders and downstream systems  
+- Focuses on **conversation over documentation**
+- Uses a **visible artifact** as a touchstone for alignment
+- Engages key participants iteratively, not just once
+- Strengthens culture through repeated reflection and affirmation
+- Provides clarity for external stakeholders and downstream systems
 
 ## Failure Modes
 
 ### Premature Agreement
 
-*Description*: One meeting creates the illusion of alignment; key voices haven’t fully engaged.  
+*Description*: One meeting creates the illusion of alignment; key voices haven’t fully engaged.
 *Mitigation*: Iterate, revisit, and engage social leaders multiple times until affirmation.
 
 ### Artifact as Output Only
 
-*Description*: Document exists but conversations never occur; culture remains misaligned.  
+*Description*: Document exists but conversations never occur; culture remains misaligned.
 *Mitigation*: Center the artifact on discussion, not completion.
 
 ### Ignoring Cultural Ambiguity
 
-*Description*: Subtle misalignments remain unaddressed; principles drift from practice.  
+*Description*: Subtle misalignments remain unaddressed; principles drift from practice.
 *Mitigation*: Surface disagreements openly; revisit regularly.
 
 ### Lack of Visibility
 
-*Description*: Artifact remains internal; others interacting with the group remain unclear on intent.  
+*Description*: Artifact remains internal; others interacting with the group remain unclear on intent.
 *Mitigation*: Share with relevant audiences while balancing safety and scrutiny.
 
 ### Overformalization
 
-*Description*: Artifact becomes rigid, stifling reflection and adaptation.  
+*Description*: Artifact becomes rigid, stifling reflection and adaptation.
 *Mitigation*: Maintain iterative, conversational approach; allow principles to evolve.
 
 ## Related Patterns
@@ -160,8 +160,8 @@ It helps translate what is emerging in the work into a clear, grounded intention
 
 Interested in:
 
-- Introducing iterative alignment exercises  
-- Creating living artifacts for your team or department  
-- Strengthening cultural clarity and shared understanding  
+- Introducing iterative alignment exercises
+- Creating living artifacts for your team or department
+- Strengthening cultural clarity and shared understanding
 
 👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="reconcile_to_connect"}

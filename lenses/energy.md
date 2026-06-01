@@ -66,10 +66,10 @@ If you notice anything arising about this person, you might also pause and ask:
 
 When joy is present across conversations, how strongly does each type of energy show up?
 
-- Driver (1–10)  
-- Organizer (1–10)  
-- Collaborator (1–10)  
-- Visionary (1–10)  
+- Driver (1–10)
+- Organizer (1–10)
+- Collaborator (1–10)
+- Visionary (1–10)
 
 ### 3. Sadness
 
@@ -77,10 +77,10 @@ When joy is present across conversations, how strongly does each type of energy 
 
 When sadness is present across conversations, how strongly does each type of energy show up?
 
-- Driver (1–10)  
-- Organizer (1–10)  
-- Collaborator (1–10)  
-- Visionary (1–10)  
+- Driver (1–10)
+- Organizer (1–10)
+- Collaborator (1–10)
+- Visionary (1–10)
 
 ### 4. Fear
 
@@ -88,10 +88,10 @@ When sadness is present across conversations, how strongly does each type of ene
 
 When fear is present across conversations, how strongly does each type of energy show up?
 
-- Driver (1–10)  
-- Organizer (1–10)  
-- Collaborator (1–10)  
-- Visionary (1–10)  
+- Driver (1–10)
+- Organizer (1–10)
+- Collaborator (1–10)
+- Visionary (1–10)
 
 ### 5. Anger
 
@@ -99,18 +99,18 @@ When fear is present across conversations, how strongly does each type of energy
 
 When anger is present across conversations, how strongly does each type of energy show up?
 
-- Driver (1–10)  
-- Organizer (1–10)  
-- Collaborator (1–10)  
-- Visionary (1–10)  
+- Driver (1–10)
+- Organizer (1–10)
+- Collaborator (1–10)
+- Visionary (1–10)
 
 ### 6. What stands out?
 
 Looking across your responses for this person:
 
-- What patterns do you notice in how this person shows up across emotional contexts?  
-- Where does their energy shift most strongly?  
-- What remains consistent over time?  
+- What patterns do you notice in how this person shows up across emotional contexts?
+- Where does their energy shift most strongly?
+- What remains consistent over time?
 
 ## Reflection
 

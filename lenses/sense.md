@@ -51,8 +51,8 @@ The situation is unstable or highly disrupted. Immediate action is required to r
 
 This may show up as:
 
-- **Reactive Chaos** — stabilizing disruption quickly  
-- **Generative Chaos** — intentionally disrupting patterns to create new possibility  
+- **Reactive Chaos** — stabilizing disruption quickly
+- **Generative Chaos** — intentionally disrupting patterns to create new possibility
 
 Approach: act → sense → respond.
 
@@ -79,58 +79,58 @@ Engage the following prompts from that state of awareness.
 Bring the person, group, or organization clearly into mind.
 
 This might be:
-- an individual you are working with  
-- a team or leadership group  
-- a wider organization  
-- or yourself in a specific context  
+- an individual you are working with
+- a team or leadership group
+- a wider organization
+- or yourself in a specific context
 
 ### 2. Default sense-making
 
 When this person, group, or organization encounters situations in general, how do they tend to interpret what is happening?
 
-- Clear  
-- Complicated  
-- Complex  
-- Chaotic  
-- Confused  
+- Clear
+- Complicated
+- Complex
+- Chaotic
+- Confused
 
 ### 3. Under uncertainty or change
 
 When situations become unclear, shifting, or ambiguous, how does their interpretation tend to change?
 
-- Clear  
-- Complicated  
-- Complex  
-- Chaotic  
-- Confused  
+- Clear
+- Complicated
+- Complex
+- Chaotic
+- Confused
 
 ### 4. Under pressure or disruption
 
 When urgency, conflict, or instability increases, how does their interpretation tend to shift?
 
-- Clear  
-- Complicated  
-- Complex  
-- Chaotic  
-- Confused  
+- Clear
+- Complicated
+- Complex
+- Chaotic
+- Confused
 
 ### 5. Stability of sense-making
 
 Across situations, how consistent is their way of interpreting what is happening?
 
-- Stable — consistent framing across contexts  
-- Partial — some shifts depending on context  
-- Variable — frequent shifts in interpretation  
-- Fragmented — multiple frames competing without coherence  
+- Stable — consistent framing across contexts
+- Partial — some shifts depending on context
+- Variable — frequent shifts in interpretation
+- Fragmented — multiple frames competing without coherence
 
 ### 6. What stands out
 
 Looking across what you’ve noticed:
 
-- What is their dominant way of interpreting situations?  
-- Where does their interpretation stay stable?  
-- Where does it shift most strongly?  
-- Where might others be operating from a different sense-making frame in the same situation?  
+- What is their dominant way of interpreting situations?
+- Where does their interpretation stay stable?
+- Where does it shift most strongly?
+- Where might others be operating from a different sense-making frame in the same situation?
 
 ## Reflection
 
@@ -142,9 +142,9 @@ When these differences become visible, coordination often becomes easier, even i
 
 Take a moment to notice:
 
-- what feels coherent  
-- what feels inconsistent  
-- and where interpretation itself may be part of what is shaping the experience  
+- what feels coherent
+- what feels inconsistent
+- and where interpretation itself may be part of what is shaping the experience
 
 ## Sharing
 
@@ -154,9 +154,9 @@ A second perspective adds contrast, and that contrast deepens understanding.
 
 When reciprocal reflections are shared, you can begin to see:
 
-- where interpretations of the situation align  
-- where they diverge  
-- and where different Cynefin domains are operating in parallel  
+- where interpretations of the situation align
+- where they diverge
+- and where different Cynefin domains are operating in parallel
 
 If you choose to share it, you might begin simply with:
 
