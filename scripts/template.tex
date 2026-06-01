@@ -15,15 +15,15 @@
 \setmainfont{Noto Sans}
 \newfontfamily\headingfont{Noto Serif}
 \definecolor{headingcolor}{HTML}{1F3F3F}
-\definecolor{rulecolor}{HTML}{B2A68D}
+\definecolor{rulecolor}{HTML}{E6E1D7}
 \setcounter{secnumdepth}{0}
 
 % Heading styling and list treatment
 \titleformat{\section}[block]{\headingfont\LARGE\bfseries\color{headingcolor}}{}{0pt}{}
-\titleformat{\subsection}[block]{\headingfont\Large\bfseries\color{headingcolor}}{}{0pt}{}[\vspace{-0.3em}\color{rulecolor}\rule{0.3in}{0.5pt}]
+\titleformat{\subsection}[block]{\headingfont\Large\bfseries\color{headingcolor}}{}{0pt}{}[\kern-1.5em\color{rulecolor}\rule{0.42in}{0.5pt}]
 \titleformat{\subsubsection}[block]{\headingfont\large\bfseries\itshape\color{headingcolor}}{}{0pt}{}
 \titlespacing*{\section}{0pt}{22pt}{10pt}
-\titlespacing*{\subsection}{0pt}{16pt}{0pt}
+\titlespacing*{\subsection}{0pt}{16pt}{8pt}
 \titlespacing*{\subsubsection}{0pt}{12pt}{4pt}
 \setlist[itemize]{topsep=0em, itemsep=0.05em, parsep=0pt, partopsep=0pt, leftmargin=20pt}
 \setlist[itemize,2]{topsep=0em, itemsep=0.04em, parsep=0pt, partopsep=0pt, leftmargin=24pt, label=\(\circ\)}
@@ -47,7 +47,7 @@
 
 % Paragraph spacing - visible separation between paragraphs
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.92em}
+\setlength{\parskip}{0.87em}
 
 % Page setup
 \pagestyle{fancy}
