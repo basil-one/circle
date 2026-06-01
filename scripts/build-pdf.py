@@ -328,7 +328,15 @@ class CirclePDFBuilder:
                 return markdown_text
             
             latex_output = result.stdout.decode('utf-8').strip()
-            # Remove the trailing newline that Pandoc adds
+            
+            # In LaTeX minipages, use explicit line break before lists
+            # This preserves the blank line from the markdown without adding extra spacing
+            latex_output = re.sub(
+                r'([^\n])\n\n+\\begin\{(itemize|enumerate)\}',
+                r'\1\n\\\\\n\\begin{\2}',
+                latex_output
+            )
+            
             return latex_output
         except Exception as e:
             logger.warning(f"Error using Pandoc for markdown conversion: {e}")
