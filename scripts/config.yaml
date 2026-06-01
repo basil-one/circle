@@ -1,0 +1,54 @@
+output:
+  filename: circle-paper.pdf
+  directory: ./
+  
+metadata:
+  title: Circle3 - Establish the Circle
+  author: Michael Basil
+  date: June 2026
+
+# Single pattern paper configuration
+paper_type: single_pattern
+pattern_file: moves/establish.md
+
+# Framing page configuration
+framing:
+  title: Circle3
+  subtitle: A Pattern Language for Leading Change in Complex Environments
+  images:
+    - images/full/index.png
+    - images/full/method.png
+    - images/full/move-establish.png
+  abstract: |
+    Circle3 is a pattern language for leading change in complex environments. 
+    This paper introduces its signature move: **Establish the Circle**.
+    
+    When teams are fragmented and change initiatives stall, establishing a small, 
+    recurring working circle—a space where alignment can begin—is often the critical 
+    first step. This pattern shows how to create that foundation for coherent action.
+    
+    The pages that follow explore the problem, forces, solution, and resulting context 
+    of this foundational pattern. At the end, discover how Establish the Circle 
+    connects to the broader Circle3 language.
+
+# Learn More page configuration
+conclusion:
+  image: images/full/origin.png
+  main_text: |
+    Establish the Circle is the signature move of **Circle3**, a complete pattern 
+    language for leading change in complex environments.
+  
+  details: |
+    The full Circle3 language includes:
+    • **Three Guiding Moves** for coordinating action: Establish the Circle, 
+      Balance the Conversation, Reconcile the Intention
+    • **Three Leadership Lenses** for noticing what's happening: Sense Making, 
+      Energy Awareness, Session Continuity
+    • Complete origin story and practical guidance for applying these patterns 
+      in your context
+  
+  cta_text: "Explore the full pattern language:"
+  cta_url: https://circle.basil.one
+  cta_label: circle.basil.one
+
+# Don't need explicit pages list anymore - using pattern_file instead

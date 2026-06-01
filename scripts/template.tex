@@ -1,0 +1,154 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+% Font setup
+\usepackage{fontspec}
+\setmainfont{Noto Sans}
+
+% Hyperlink colors - ensure all links are blue
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue,
+  filecolor=blue,
+  menucolor=blue,
+  runcolor=blue,
+  allcolors=blue
+}
+
+% Define tightlist for pandoc
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Paragraph spacing - visible separation between paragraphs
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+
+% Reduce spacing before/after headings with more breathing room
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{14pt plus 2pt minus 1pt}{8pt plus 1pt minus 1pt}
+\titlespacing*{\subsection}{0pt}{12pt plus 1pt minus 1pt}{6pt plus 1pt minus 1pt}
+\titlespacing*{\subsubsection}{0pt}{10pt plus 1pt minus 1pt}{5pt plus 1pt minus 1pt}
+
+% Consistent, tighter list spacing
+\setlist[itemize]{topsep=6pt, itemsep=4pt, parsep=0pt, leftmargin=20pt}
+\setlist[enumerate]{topsep=6pt, itemsep=4pt, parsep=0pt, leftmargin=20pt}
+
+% Page setup
+\pagestyle{fancy}
+\fancyhf{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+% ============================================================================
+% COVER PAGE: Title + Image 1 + Subtitle + Image 2
+% ============================================================================
+\thispagestyle{empty}
+\vspace*{0.1in}
+
+\begin{center}
+
+{\Huge \textbf{$framing_title$}}
+
+\vspace{0.3in}
+
+% First image - large and centered
+\includegraphics[width=3.8in]{$framing_image_1$}
+
+\vspace{0.35in}
+
+{\small \textit{$framing_subtitle$}}
+
+\vspace{0.35in}
+
+% Second image - large and centered
+\includegraphics[width=3.8in]{$framing_image_2$}
+
+\end{center}
+
+\vspace*{\fill}
+
+\newpage
+
+% ============================================================================
+% ABSTRACT PAGE: Third Image + Abstract Heading + Abstract Text
+% ============================================================================
+\thispagestyle{empty}
+\vspace*{0.15in}
+
+\begin{center}
+
+\includegraphics[width=2.8in]{$framing_image_3$}
+
+\end{center}
+
+\vspace{0.35in}
+
+\section*{Abstract}
+
+$framing_abstract$
+
+\vspace*{\fill}
+
+\newpage
+
+% ============================================================================
+% MAIN CONTENT - Pattern Body
+% ============================================================================
+\normalsize
+\setstretch{1.0}
+
+$body$
+
+\newpage
+
+% ============================================================================
+% LEARN MORE PAGE
+% ============================================================================
+\thispagestyle{empty}
+\vspace*{0.15in}
+
+\begin{center}
+
+{\Large \textbf{Learn More}}
+
+\vspace{0.3in}
+
+\includegraphics[width=2.8in]{$conclusion_image$}
+
+\vspace{0.4in}
+
+\begin{minipage}[t]{5.5in}
+\setstretch{1.1}
+\normalsize
+
+$conclusion_main$
+
+\vspace{0.3in}
+
+$conclusion_details$
+
+\vspace{0.3in}
+
+\textbf{$conclusion_cta$}
+
+\vspace{0.12in}
+
+\url{$conclusion_url$}
+
+\end{minipage}
+
+\end{center}
+
+\end{document}

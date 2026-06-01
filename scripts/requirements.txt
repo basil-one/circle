@@ -1,0 +1,10 @@
+# Python dependencies for Circle3 PDF Publication Pipeline
+# Note: This project uses zero external Python dependencies for maximum portability!
+# The YAML parsing is handled by an embedded minimal parser.
+
+# System dependencies (install via package manager):
+# - Pandoc: brew install pandoc (macOS) or apt-get install pandoc (Linux)
+# - Python 3.7+
+
+# If you want to use PyYAML instead of the embedded parser, uncomment:
+# PyYAML>=6.0
