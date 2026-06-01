@@ -12,3 +12,5 @@ vendor/
 # Build script artifacts
 scripts/debug-intermediate.md
 scripts/BUILD-SUMMARY.md
+scripts/output.*
+scripts/__pycache__/

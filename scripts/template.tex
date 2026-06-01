@@ -7,11 +7,27 @@
 \usepackage{fancyhdr}
 \usepackage{setspace}
 \usepackage{enumitem}
+\usepackage{titlesec}
 \usepackage{parskip}
 
 % Font setup
 \usepackage{fontspec}
 \setmainfont{Noto Sans}
+\newfontfamily\headingfont{Noto Serif}
+\definecolor{headingcolor}{HTML}{1F3F3F}
+\definecolor{rulecolor}{HTML}{E6E1D7}
+\setcounter{secnumdepth}{0}
+
+% Heading styling and list treatment
+\titleformat{\section}[block]{\headingfont\LARGE\bfseries\color{headingcolor}}{}{0pt}{}
+\titleformat{\subsection}[block]{\headingfont\Large\bfseries\color{headingcolor}}{}{0pt}{\vspace{0.1em}}[\vspace{0.2em}\color{rulecolor}\rule{\linewidth}{0.5pt}\vspace{0.2em}]
+\titleformat{\subsubsection}[block]{\headingfont\large\itshape\color{headingcolor}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{22pt}{10pt}
+\titlespacing*{\subsection}{0pt}{18pt}{10pt}
+\titlespacing*{\subsubsection}{0pt}{12pt}{6pt}
+\setlist[itemize]{topsep=4pt, itemsep=2pt, parsep=0pt, partopsep=0pt, leftmargin=20pt}
+\setlist[itemize,2]{topsep=3pt, itemsep=1.5pt, parsep=0pt, partopsep=0pt, leftmargin=24pt, label=\(\circ\)}
+\setlist[enumerate]{topsep=4pt, itemsep=2pt, parsep=0pt, partopsep=0pt, leftmargin=20pt}
 
 % Hyperlink colors - ensure all links are blue
 \hypersetup{
@@ -33,16 +49,6 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.8em}
 
-% Reduce spacing before/after headings with more breathing room
-\usepackage{titlesec}
-\titlespacing*{\section}{0pt}{14pt plus 2pt minus 1pt}{8pt plus 1pt minus 1pt}
-\titlespacing*{\subsection}{0pt}{12pt plus 1pt minus 1pt}{6pt plus 1pt minus 1pt}
-\titlespacing*{\subsubsection}{0pt}{10pt plus 1pt minus 1pt}{5pt plus 1pt minus 1pt}
-
-% Consistent, tighter list spacing
-\setlist[itemize]{topsep=6pt, itemsep=4pt, parsep=0pt, leftmargin=20pt}
-\setlist[enumerate]{topsep=6pt, itemsep=4pt, parsep=0pt, leftmargin=20pt}
-
 % Page setup
 \pagestyle{fancy}
 \fancyhf{}
@@ -63,17 +69,17 @@
 
 \vspace{0.3in}
 
-% First image - large and centered
-\includegraphics[width=3.8in]{$framing_image_1$}
+% First image - larger and centered
+\includegraphics[width=4.6in]{$framing_image_1$}
 
 \vspace{0.35in}
 
-{\small \textit{$framing_subtitle$}}
+{\Large \textit{$framing_subtitle$}}
 
 \vspace{0.35in}
 
-% Second image - large and centered
-\includegraphics[width=3.8in]{$framing_image_2$}
+% Second image - larger and centered
+\includegraphics[width=4.6in]{$framing_image_2$}
 
 \end{center}
 
@@ -88,16 +94,23 @@
 \vspace*{0.15in}
 
 \begin{center}
+{\Large \textbf{Abstract}}
+\end{center}
 
-\includegraphics[width=2.8in]{$framing_image_3$}
+\vspace{0.25in}
 
+\begin{center}
+\includegraphics[width=4.6in]{$framing_image_3$}
 \end{center}
 
 \vspace{0.35in}
 
-\section*{Abstract}
-
+\begingroup
+\large
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0pt}
 $framing_abstract$
+\endgroup
 
 \vspace*{\fill}
 
@@ -125,7 +138,7 @@ $body$
 
 \vspace{0.3in}
 
-\includegraphics[width=2.8in]{$conclusion_image$}
+\includegraphics[width=4.6in]{$conclusion_image$}
 
 \vspace{0.4in}
 
@@ -141,11 +154,11 @@ $conclusion_details$
 
 \vspace{0.3in}
 
-\textbf{$conclusion_cta$}
+{\large \textbf{$conclusion_cta$}}
 
 \vspace{0.12in}
 
-\url{$conclusion_url$}
+{\large\sffamily\textbf{\href{$conclusion_url$}{$conclusion_label$}}}
 
 \end{minipage}
 

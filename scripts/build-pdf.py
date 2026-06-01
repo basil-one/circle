@@ -13,6 +13,7 @@ Uses custom LaTeX template for professional formatting.
 import os
 import sys
 import re
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict, Tuple
@@ -176,6 +177,18 @@ class CirclePDFBuilder:
         except Exception as e:
             logger.error(f"Error loading config: {e}")
             sys.exit(1)
+
+    def _check_dependencies(self) -> bool:
+        """Check required external system dependencies."""
+        if shutil.which('pandoc') is None:
+            logger.error("Pandoc is not installed. Install with: brew install pandoc (macOS) or apt install pandoc (Linux)")
+            return False
+
+        pdf_engine = 'xelatex'
+        if shutil.which(pdf_engine) is None:
+            logger.warning(f"PDF engine '{pdf_engine}' is not installed. Pandoc may still run, but PDF generation can fail.")
+
+        return True
     
     def _parse_frontmatter(self, content: str) -> Tuple[Dict, str]:
         """Parse YAML frontmatter from markdown."""
@@ -201,6 +214,19 @@ class CirclePDFBuilder:
         content = re.sub(r'\s*\{:\s*[^}]*\}\s*\n?', '', content)
         content = re.sub(r'\s*\{:\s*[^}]*\}', '', content)
         return content
+
+    def _normalize_relative_links(self, content: str) -> str:
+        """Convert relative site links into absolute URLs using root_url."""
+        root_url = self.config.get('root_url', '').rstrip('/')
+        if not root_url:
+            return content
+
+        def replace_link(match):
+            text = match.group(1)
+            path = match.group(2)
+            return f'[{text}]({root_url}{path})'
+
+        return re.sub(r'\[([^\]]+)\]\((/[^)]+)\)', replace_link, content)
     
     def _clean_pattern_content(self, content: str) -> str:
         """
@@ -209,6 +235,7 @@ class CirclePDFBuilder:
         - Remove image reference
         - Remove "Explore in Your Context" section and everything after
         - Remove Jekyll syntax
+        - Normalize relative links against the configured root URL
         """
         # Remove "A Pattern for..." line with markdown formatting
         # Pattern: *A Pattern for Adaptive Change Leadership by* **Michael Basil**
@@ -223,6 +250,9 @@ class CirclePDFBuilder:
         
         # Clean up Jekyll syntax
         content = self._filter_jekyll_syntax(content)
+
+        # Normalize any relative links to absolute URLs
+        content = self._normalize_relative_links(content)
         
         # Remove extra blank lines (more than 2 in a row)
         content = re.sub(r'\n\n\n+', '\n\n', content)
@@ -260,17 +290,21 @@ class CirclePDFBuilder:
     
     def _markdown_to_latex(self, text: str) -> str:
         """Convert markdown formatting to LaTeX."""
-        # First normalize whitespace - remove leading/trailing spaces from lines
-        lines = text.strip().split('\n')
-        lines = [line.strip() for line in lines if line.strip()]
-        
-        # Convert to single text with proper paragraph breaks
-        text = '\n\n'.join(lines)
-        
-        # Convert **bold** to \textbf{bold}
-        text = re.sub(r'\*\*([^*]+)\*\*', r'\\textbf{\1}', text)
-        # Convert *italic* to \textit{italic}  
-        text = re.sub(r'\*([^*]+)\*', r'\\textit{\1}', text)
+        text = text.strip()
+        if not text:
+            return ''
+
+        # Preserve paragraphs while normalizing line breaks within each paragraph.
+        paragraphs = [
+            ' '.join(line.strip() for line in para.splitlines() if line.strip())
+            for para in re.split(r'\n\s*\n', text)
+            if para.strip()
+        ]
+        text = '\n\n'.join(paragraphs)
+
+        # Convert **bold** first, then normal italics.
+        text = re.sub(r'\*\*([^*]+?)\*\*', r'\\textbf{\1}', text)
+        text = re.sub(r'(?<!\*)\*([^*]+?)\*(?!\*)', r'\\textit{\1}', text)
         return text
     
     def _call_pandoc(self, markdown_content: str, output_path: Path) -> bool:
@@ -361,6 +395,10 @@ class CirclePDFBuilder:
         
         # Step 2: Build markdown for pandoc
         logger.info("Step 2: Preparing content...")
+        if not self._check_dependencies():
+            logger.error("Build terminated due to missing external dependency.")
+            return False
+
         markdown_content = self._build_markdown_for_pandoc(pattern_content)
         
         # Optionally save intermediate markdown for inspection
