@@ -29,35 +29,30 @@ framing:
   abstract_label: Abstract
   toc_label: Table of Contents
   abstract: |
-    Circle3™ is a pattern language for leading change in complex environments. 
-    This paper introduces its signature move: **Establish the Circle**.
-    
-    When teams are fragmented and change initiatives stall, establishing a small, 
-    recurring working circle—a space where alignment can begin—is often the critical 
-    first step. This pattern shows how to create that foundation for coherent action.
-    
-    The pages that follow explore the problem, forces, solution, and resulting context 
-    of this foundational pattern. At the end, discover how Establish the Circle 
-    connects to the broader Circle3 language.
+    Change initiatives often stall because people are not working from the same understanding of what is happening.
+    Priorities compete, conversations fragment, and decisions don’t hold long enough to become practice.
+
+    Circle3™ is a compact pattern language for restoring coherence in complex environments.
+    This paper presents three interlocking moves—**Establish the Circle**, **Balance the Conversation**, and **Reconcile the Intention**—
+    that help a group form shared perception, work tension productively, and translate emerging clarity into commitments.
+
+    The moves can be started in any order, but they are designed to function as a set.
 
 conclusion:
-  title: Learn More
-  anchor: learn-more
+  title: Origin and Ongoing Evolution
+  anchor: origin
   image: images/full/origin.png
+
   main_text: |
-    Establish the Circle is the signature move of **Circle3**, a complete pattern 
-    language for leading change in complex environments.
-  
+    Circle3 did not begin as a framework.
+    These moves emerged from repeated experience in real change efforts—especially where pressure fragmented attention,
+    meaning, and coordination—and coherence had to be rebuilt from lived conditions.
+
   details: |
-    The full Circle3™ language includes:  
+    The Origin Story connects the patterns in this paper to the situations that produced them, and to the broader Circle3 language:
     
-    - **Three Guiding Moves** for coordinating action: Establish the Circle, 
-      Balance the Conversation, Reconcile the Intention
-    - **Three Leadership Lenses** for noticing what's happening: Sense Making, 
-      Energy Awareness, Session Continuity
-    - Complete origin story and practical guidance for applying these patterns 
-      in your context
-  
-  cta_text: "Explore the origin story:"
-  cta_url: https://circle.basil.one/origin
-  cta_label: https://circle.basil.one/origin
+    Three Guiding Moves™, Three Leadership Lenses™ (Sense Making, Energy Awareness, Session Intention), and ongoing evolution through practice.
+
+  cta_text: "Read the Origin Story:"
+  cta_url: https://circle.basil.one/origin/
+  cta_label: circle.basil.one/origin
