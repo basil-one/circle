@@ -88,22 +88,22 @@
 \newpage
 
 % ============================================================================
-% ABSTRACT PAGE: Third Image + Abstract Heading + Abstract Text
+% PAGE 2: Image + Abstract + Short TOC
 % ============================================================================
 \thispagestyle{empty}
 \vspace*{0.15in}
 
 \begin{center}
-{\Large \textbf{Abstract}}
+\includegraphics[width=0.9\textwidth]{$framing_image_3$}
 \end{center}
 
 \vspace{0.25in}
 
 \begin{center}
-\includegraphics[width=0.9\textwidth]{$framing_image_3$}
+{\Large \textbf{Abstract}}
 \end{center}
 
-\vspace{0.35in}
+\vspace{0.2in}
 
 \begingroup
 \large
@@ -112,6 +112,18 @@
 \setlength{\parindent}{0pt}
 $framing_abstract$
 \endgroup
+
+$if(short_toc)$
+\vspace{0.25in}
+
+\begin{center}
+{\Large \textbf{Table of Contents}}
+\end{center}
+
+\vspace{0.1in}
+
+$short_toc$
+$endif$
 
 \vspace*{\fill}
 
@@ -132,6 +144,7 @@ $body$
 % LEARN MORE PAGE
 % ============================================================================
 \thispagestyle{empty}
+\hypertarget{learn-more}{}\phantomsection\label{learn-more}
 \vspace*{0.15in}
 
 \begin{center}

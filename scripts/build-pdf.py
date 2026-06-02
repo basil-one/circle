@@ -422,8 +422,67 @@ class CirclePDFBuilder:
         # Final fallback
         return [{'file': 'moves/establish.md'}]
 
-    def _latex_full_width_image_page(self, image_path: str, *, prepend_page_break: bool) -> str:
-        """A full-page image (centered), emitted as a Pandoc raw LaTeX block."""
+    def _slugify(self, text: str) -> str:
+        """Create a stable anchor slug for LaTeX hypertargets."""
+        text = (text or '').strip().lower()
+        text = re.sub(r'[^a-z0-9]+', '-', text)
+        text = re.sub(r'-{2,}', '-', text)
+        return text.strip('-') or 'pattern'
+
+    def _escape_latex_text(self, text: str) -> str:
+        """Escape a small set of LaTeX special characters for TOC labels."""
+        if not text:
+            return ''
+
+        # Keep this intentionally small; pattern titles in this repo are usually plain.
+        replacements = {
+            '\\': r'\textbackslash{}',
+            '&': r'\&',
+            '%': r'\%',
+            '$': r'\$',
+            '#': r'\#',
+            '_': r'\_',
+            '{': r'\{',
+            '}': r'\}',
+        }
+        return ''.join(replacements.get(ch, ch) for ch in str(text))
+
+    def _infer_pattern_title(self, pattern_file: str, frontmatter: Dict[str, Any], body: str) -> str:
+        title = str(frontmatter.get('title') or '').strip()
+        if title:
+            return title
+
+        # Fall back to the first markdown heading in the body.
+        for line in body.splitlines():
+            m = re.match(r'^#{1,6}\s+(.*)$', line.strip())
+            if m:
+                return m.group(1).strip()
+
+        return pattern_file
+
+    def _latex_hypertarget_block(self, anchor: str, *, prepend_page_break: bool) -> str:
+        lines: List[str] = []
+        if prepend_page_break:
+            lines.append(r"\newpage")
+
+        # Anchor for hyperlinks + label for page number lookups.
+        lines.append(rf"\hypertarget{{{anchor}}}{{}}")
+        lines.append(r"\phantomsection")
+        lines.append(rf"\label{{{anchor}}}")
+        return "```{=latex}\n" + "\n".join(lines) + "\n```"
+
+    def _latex_full_width_image_page(
+        self,
+        image_path: str,
+        *,
+        anchor: str | None = None,
+        prepend_page_break: bool,
+    ) -> str:
+        """A full-page image (centered), emitted as a Pandoc raw LaTeX block.
+
+        If `anchor` is provided, we emit a \hypertarget so the short TOC can
+        link directly to this intro image page.
+        """
         if not image_path:
             return ''
 
@@ -432,9 +491,15 @@ class CirclePDFBuilder:
             lines.append(r"\newpage")
 
         # Match the template's approach on other image-only pages.
+        lines.append(r"\thispagestyle{empty}")
+        if anchor:
+            # Anchor for hyperlinks + label for page number lookups.
+            lines.append(rf"\hypertarget{{{anchor}}}{{}}")
+            lines.append(r"\phantomsection")
+            lines.append(rf"\label{{{anchor}}}")
+
         lines.extend(
             [
-                r"\thispagestyle{empty}",
                 r"\vspace*{\fill}",
                 r"\begin{center}",
                 rf"\includegraphics[width=\textwidth]{{{image_path}}}",
@@ -446,23 +511,79 @@ class CirclePDFBuilder:
 
         return "```{=latex}\n" + "\n".join(lines) + "\n```"
 
-    def _build_markdown_for_pandoc(self, patterns: List[Dict[str, str]]) -> str:
-        """Build the combined patterns section for pandoc (in markdown + raw latex blocks)."""
+    def _build_short_toc_latex(self, toc_items: List[Tuple[str, str]]) -> str:
+        """Build a very short, flat TOC (patterns + Learn More).
+
+        This is inserted on page 2 (image → abstract → TOC).
+        """
+        if not toc_items:
+            return ''
+
+        lines: List[str] = [
+            r"\begingroup",
+            r"\large",
+            r"\setlength{\tabcolsep}{0pt}",
+            r"\renewcommand{\arraystretch}{1.15}",
+            r"\begin{center}",
+            r"\begin{tabular}{@{}l@{\hspace{2.5em}}r@{}}",
+        ]
+
+        for label, anchor in toc_items:
+            safe_label = self._escape_latex_text(label)
+            lines.append(rf"\hyperlink{{{anchor}}}{{{safe_label}}} & \pageref{{{anchor}}}\\")
+
+        lines.extend(
+            [
+                r"\end{tabular}",
+                r"\end{center}",
+                r"\endgroup",
+            ]
+        )
+        return "\n".join(lines)
+
+    def _build_markdown_for_pandoc(self, patterns: List[Dict[str, str]]) -> Tuple[str, List[Tuple[str, str]]]:
+        """Build the combined patterns section for pandoc.
+
+        Returns:
+          (markdown_body, toc_items)
+
+        toc_items is a list of (label, anchor) pairs linking to each pattern's
+        intro-image page, plus the final Learn More page.
+        """
         chunks: List[str] = []
+        toc_items: List[Tuple[str, str]] = []
 
         for idx, pattern in enumerate(patterns):
             pattern_file = pattern['file']
             intro_image = pattern.get('intro_image', '').strip()
 
-            if intro_image:
-                chunks.append(self._latex_full_width_image_page(intro_image, prepend_page_break=(idx > 0)))
-
             frontmatter, body = self._read_and_clean_pattern(pattern_file)
-            logger.info(f"Loaded pattern: {frontmatter.get('title', body.splitlines()[0] if body else pattern_file)}")
+            title = self._infer_pattern_title(pattern_file, frontmatter, body)
+            anchor = f"pattern-{self._slugify(title)}"
+
+            logger.info(f"Loaded pattern: {title}")
+            toc_items.append((title, anchor))
+
+            if intro_image:
+                chunks.append(
+                    self._latex_full_width_image_page(
+                        intro_image,
+                        anchor=anchor,
+                        prepend_page_break=(idx > 0),
+                    )
+                )
+            else:
+                # If there is no intro image page, still ensure the TOC link has
+                # a stable target at the start of the pattern.
+                chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=(idx > 0)))
 
             chunks.append(body)
 
-        return "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
+        # Add Learn More as the final entry.
+        toc_items.append(("Learn More", "learn-more"))
+
+        markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
+        return markdown_body, toc_items
     
     def _markdown_to_latex(self, text: str) -> str:
         """Convert markdown formatting to LaTeX, using Pandoc for complex content."""
@@ -517,7 +638,7 @@ class CirclePDFBuilder:
             logger.warning(f"Error using Pandoc for markdown conversion: {e}")
             return markdown_text
     
-    def _call_pandoc(self, markdown_content: str, output_path: Path) -> bool:
+    def _call_pandoc(self, markdown_content: str, output_path: Path, *, short_toc: str = '') -> bool:
         """Call pandoc with custom template."""
         try:
             # Get template path
@@ -557,6 +678,7 @@ class CirclePDFBuilder:
                 '-V', 'framing_image_1=' + (framing.get('images', [])[0] if len(framing.get('images', [])) > 0 else ''),
                 '-V', 'framing_image_2=' + (framing.get('images', [])[1] if len(framing.get('images', [])) > 1 else ''),
                 '-V', 'framing_image_3=' + (framing.get('images', [])[2] if len(framing.get('images', [])) > 2 else ''),
+                '-V', 'short_toc=' + (short_toc or ''),
                 '-V', 'conclusion_image=' + conclusion.get('image', ''),
                 '-V', 'conclusion_main=' + conclusion_main,
                 '-V', 'conclusion_details=' + conclusion_details,
@@ -609,7 +731,8 @@ class CirclePDFBuilder:
             logger.error("Build terminated due to missing external dependency.")
             return False
 
-        markdown_content = self._build_markdown_for_pandoc(patterns)
+        markdown_content, toc_items = self._build_markdown_for_pandoc(patterns)
+        short_toc = self._build_short_toc_latex(toc_items)
 
         # Optionally save intermediate markdown for inspection
         debug_md_path = self.config_path.parent / 'debug-intermediate.md'
@@ -628,7 +751,7 @@ class CirclePDFBuilder:
         
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        success = self._call_pandoc(markdown_content, output_path)
+        success = self._call_pandoc(markdown_content, output_path, short_toc=short_toc)
         
         if success:
             file_size = output_path.stat().st_size / (1024 * 1024)
