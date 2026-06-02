@@ -26,6 +26,8 @@ framing:
     - images/full/index.png
     - images/full/method.png
     - images/full/moves.png
+  abstract_label: Abstract
+  toc_label: Table of Contents
   abstract: |
     Circle3™ is a pattern language for leading change in complex environments. 
     This paper introduces its signature move: **Establish the Circle**.
@@ -39,6 +41,8 @@ framing:
     connects to the broader Circle3 language.
 
 conclusion:
+  title: Learn More
+  anchor: learn-more
   image: images/full/origin.png
   main_text: |
     Establish the Circle is the signature move of **Circle3**, a complete pattern 

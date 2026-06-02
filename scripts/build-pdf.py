@@ -8,7 +8,7 @@ Generates a publication-ready PDF with the existing Circle3 styling:
 - Patterns section (data-driven, multiple patterns)
   - A full-page, full-width "move" image before each pattern
   - Cleaned pattern markdown content
-- Learn More conclusion (template-driven)
+- Conclusion (template-driven)
 
 The framing + conclusion sections remain fully template-driven; this script only
 builds the *body* content that pandoc injects into the LaTeX template.
@@ -256,15 +256,65 @@ class CirclePDFBuilder:
             logger.error(f"Error loading config: {e}")
             sys.exit(1)
 
+    def _get_pdf_engine(self) -> str:
+        """Return the configured PDF engine (default: xelatex)."""
+        output_cfg = self.config.get('output', {})
+        if not isinstance(output_cfg, dict):
+            output_cfg = {}
+
+        engine = (
+            str(self.config.get('pdf_engine') or '')
+            or str(output_cfg.get('pdf_engine') or '')
+            or 'xelatex'
+        )
+        return engine
+
+    def _require_config_str(self, section: str, key: str) -> str:
+        cfg = self.config.get(section, {})
+        if not isinstance(cfg, dict):
+            raise ValueError(f"Config section '{section}' must be a mapping/object")
+
+        value = cfg.get(key)
+        value = '' if value is None else str(value).strip()
+        if not value:
+            raise ValueError(f"Missing required config value: {section}.{key}")
+        return value
+
+    def _get_framing_labels(self) -> Tuple[str, str]:
+        abstract_label = self._require_config_str('framing', 'abstract_label')
+        toc_label = self._require_config_str('framing', 'toc_label')
+        return abstract_label, toc_label
+
+    def _latex_id(self, raw: str, *, default: str) -> str:
+        """Return a LaTeX-safe id for \hypertarget/\label."""
+        raw = (raw or '').strip()
+        if raw and re.match(r'^[A-Za-z0-9][A-Za-z0-9:-]*$', raw):
+            return raw
+
+        slug = self._slugify(raw or default)
+        if re.match(r'^\d', slug):
+            slug = 'sec-' + slug
+        return slug or default
+
+    def _get_conclusion_meta(self) -> Tuple[str, str]:
+        title = self._require_config_str('conclusion', 'title')
+        raw_anchor = self._require_config_str('conclusion', 'anchor')
+        anchor = self._latex_id(raw_anchor, default='conclusion')
+        return title, anchor
+
     def _check_dependencies(self) -> bool:
         """Check required external system dependencies."""
         if shutil.which('pandoc') is None:
             logger.error("Pandoc is not installed. Install with: brew install pandoc (macOS) or apt install pandoc (Linux)")
             return False
 
-        pdf_engine = 'xelatex'
+        pdf_engine = self._get_pdf_engine()
         if shutil.which(pdf_engine) is None:
-            logger.warning(f"PDF engine '{pdf_engine}' is not installed. Pandoc may still run, but PDF generation can fail.")
+            logger.error(
+                f"PDF engine '{pdf_engine}' is not installed. Install a TeX distribution "
+                "(e.g. texlive-xetex) or configure a different pdf_engine."
+            )
+            return False
 
         return True
     
@@ -512,7 +562,7 @@ class CirclePDFBuilder:
         return "```{=latex}\n" + "\n".join(lines) + "\n```"
 
     def _build_short_toc_latex(self, toc_items: List[Tuple[str, str]]) -> str:
-        """Build a very short, flat TOC (patterns + Learn More).
+        """Build a very short, flat TOC (patterns + conclusion).
 
         This is inserted on page 2 (image → abstract → TOC).
         """
@@ -548,10 +598,11 @@ class CirclePDFBuilder:
           (markdown_body, toc_items)
 
         toc_items is a list of (label, anchor) pairs linking to each pattern's
-        intro-image page, plus the final Learn More page.
+        intro-image page, plus the final conclusion page.
         """
         chunks: List[str] = []
         toc_items: List[Tuple[str, str]] = []
+        used_anchors: set[str] = set()
 
         for idx, pattern in enumerate(patterns):
             pattern_file = pattern['file']
@@ -559,7 +610,14 @@ class CirclePDFBuilder:
 
             frontmatter, body = self._read_and_clean_pattern(pattern_file)
             title = self._infer_pattern_title(pattern_file, frontmatter, body)
-            anchor = f"pattern-{self._slugify(title)}"
+
+            base_anchor = f"pattern-{self._slugify(title)}"
+            anchor = base_anchor
+            suffix = 2
+            while anchor in used_anchors:
+                anchor = f"{base_anchor}-{suffix}"
+                suffix += 1
+            used_anchors.add(anchor)
 
             logger.info(f"Loaded pattern: {title}")
             toc_items.append((title, anchor))
@@ -579,8 +637,14 @@ class CirclePDFBuilder:
 
             chunks.append(body)
 
-        # Add Learn More as the final entry.
-        toc_items.append(("Learn More", "learn-more"))
+        # Add the conclusion as the final entry.
+        conclusion_title, conclusion_anchor = self._get_conclusion_meta()
+        if conclusion_anchor in used_anchors:
+            logger.warning(
+                "Conclusion anchor '%s' conflicts with a pattern anchor; consider setting conclusion.anchor in config.",
+                conclusion_anchor,
+            )
+        toc_items.append((conclusion_title, conclusion_anchor))
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
         return markdown_body, toc_items
@@ -656,35 +720,44 @@ class CirclePDFBuilder:
             
             # Extract framing and conclusion config
             framing = self.config.get('framing', {})
+            framing = framing if isinstance(framing, dict) else {}
             conclusion = self.config.get('conclusion', {})
+            conclusion = conclusion if isinstance(conclusion, dict) else {}
+
+            framing_abstract_label, framing_toc_label = self._get_framing_labels()
+            conclusion_title, conclusion_anchor = self._get_conclusion_meta()
             
             # Convert markdown formatting to LaTeX in config values
-            framing_abstract = self._markdown_to_latex(framing.get('abstract', ''))
-            conclusion_main = self._markdown_to_latex(conclusion.get('main_text', ''))
-            conclusion_details = self._markdown_to_latex(conclusion.get('details', ''))
+            framing_abstract = self._markdown_to_latex(str(framing.get('abstract', '') or ''))
+            conclusion_main = self._markdown_to_latex(str(conclusion.get('main_text', '') or ''))
+            conclusion_details = self._markdown_to_latex(str(conclusion.get('details', '') or ''))
             
             args = [
                 'pandoc',
                 '--from', 'markdown',
                 '--to', 'pdf',
                 '--template', str(template_path),
-                '--pdf-engine', 'xelatex',
-                '-V', 'title=' + title,
-                '-V', 'author=' + author,
-                '-V', 'date=' + date,
-                '-V', 'framing_title=' + framing.get('title', 'Document'),
-                '-V', 'framing_subtitle=' + framing.get('subtitle', ''),
+                '--pdf-engine', self._get_pdf_engine(),
+                '-V', 'title=' + str(title),
+                '-V', 'author=' + str(author),
+                '-V', 'date=' + str(date),
+                '-V', 'framing_title=' + str(framing.get('title', 'Document')),
+                '-V', 'framing_subtitle=' + str(framing.get('subtitle', '')),
+                '-V', 'framing_abstract_label=' + framing_abstract_label,
+                '-V', 'framing_toc_label=' + framing_toc_label,
                 '-V', 'framing_abstract=' + framing_abstract,
                 '-V', 'framing_image_1=' + (framing.get('images', [])[0] if len(framing.get('images', [])) > 0 else ''),
                 '-V', 'framing_image_2=' + (framing.get('images', [])[1] if len(framing.get('images', [])) > 1 else ''),
                 '-V', 'framing_image_3=' + (framing.get('images', [])[2] if len(framing.get('images', [])) > 2 else ''),
                 '-V', 'short_toc=' + (short_toc or ''),
-                '-V', 'conclusion_image=' + conclusion.get('image', ''),
+                '-V', 'conclusion_title=' + conclusion_title,
+                '-V', 'conclusion_anchor=' + conclusion_anchor,
+                '-V', 'conclusion_image=' + str(conclusion.get('image', '')),
                 '-V', 'conclusion_main=' + conclusion_main,
                 '-V', 'conclusion_details=' + conclusion_details,
-                '-V', 'conclusion_cta=' + conclusion.get('cta_text', ''),
-                '-V', 'conclusion_url=' + conclusion.get('cta_url', ''),
-                '-V', 'conclusion_label=' + conclusion.get('cta_label', ''),
+                '-V', 'conclusion_cta=' + str(conclusion.get('cta_text', '')),
+                '-V', 'conclusion_url=' + str(conclusion.get('cta_url', '')),
+                '-V', 'conclusion_label=' + str(conclusion.get('cta_label', '')),
                 '--output', str(output_path),
             ]
             
@@ -731,8 +804,12 @@ class CirclePDFBuilder:
             logger.error("Build terminated due to missing external dependency.")
             return False
 
-        markdown_content, toc_items = self._build_markdown_for_pandoc(patterns)
-        short_toc = self._build_short_toc_latex(toc_items)
+        try:
+            markdown_content, toc_items = self._build_markdown_for_pandoc(patterns)
+            short_toc = self._build_short_toc_latex(toc_items)
+        except ValueError as e:
+            logger.error("Configuration error: %s", e)
+            return False
 
         # Optionally save intermediate markdown for inspection
         debug_md_path = self.config_path.parent / 'debug-intermediate.md'
@@ -745,8 +822,12 @@ class CirclePDFBuilder:
         
         # Step 3: Generate PDF
         logger.info("Step 3: Generating PDF with custom template...")
-        output_filename = self.config['output']['filename']
-        output_dir = self.config['output'].get('directory', './')
+        output_cfg = self.config.get('output', {})
+        if not isinstance(output_cfg, dict):
+            output_cfg = {}
+
+        output_filename = str(output_cfg.get('filename') or 'circle-paper.pdf')
+        output_dir = str(output_cfg.get('directory') or './')
         output_path = Path(output_dir) / output_filename
         
         output_path.parent.mkdir(parents=True, exist_ok=True)

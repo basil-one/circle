@@ -25,7 +25,7 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 - **`scripts/template.tex`** — Custom LaTeX template
   - Uses config variables for all text content (framing abstract, conclusion text, CTAs)
   - Uses config variables for all image paths
-  - 3-page structure: Framing → Content → Learn More
+  - 3-page structure: Framing → Content → Conclusion (title/anchor configured in `config.yaml`)
   - Optimized spacing and typography for readability
 
 - **`scripts/config.yaml`** — Configuration
@@ -76,11 +76,15 @@ framing:
     - images/full/index.png
     - images/full/method.png
     - images/full/move-establish.png
-  abstract: |                       # Framing page abstract text
+  abstract_label: Abstract           # Required
+  toc_label: Table of Contents       # Required
+  abstract: |                        # Framing page abstract text
     Circle3 is a pattern language...
 
 conclusion:
-  image: images/full/origin.png     # Learn More page image (3.0in width)
+  title: Learn More                 # Required page title (used in TOC + page heading)
+  anchor: learn-more                # Required (used for internal PDF links)
+  image: images/full/origin.png     # Conclusion page image (3.0in width)
   main_text: |                      # Main paragraph
     Establish the Circle is the signature move...
   details: |                        # Details section
@@ -123,7 +127,8 @@ The build script automatically:
 - Professional typography with optimized spacing
 - Tight list formatting for readability
 
-### Last Page: Learn More
+### Last Page: Conclusion
+- **Title**: From `conclusion.title`
 - **Image**: Single large image (3.0in, centered) from `conclusion.image`
 - **Main text**: From `conclusion.main_text`
 - **Details list**: From `conclusion.details`
@@ -154,7 +159,7 @@ Edit `scripts/template.tex`:
 % Framing page cascade images
 \includegraphics[width=2.8in]{...}  # Change 2.8in to desired width
 
-% Learn More page image
+% Conclusion page image
 \includegraphics[width=3.0in]{...}  # Change 3.0in to desired width
 ```
 
