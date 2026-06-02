@@ -1,165 +1,234 @@
 #!/usr/bin/env python3
 """
-Circle3 Single Pattern PDF Builder
+Circle3 PDF Builder (Multi-Pattern)
 
-Generates a focused, publication-ready PDF for a single pattern:
-- Framing page with 3 images and abstract
-- Pattern content (cleaned)
-- Learn More conclusion page
+Generates a publication-ready PDF with the existing Circle3 styling:
+- Cover (template-driven)
+- Abstract (template-driven)
+- Patterns section (data-driven, multiple patterns)
+  - A full-page, full-width "move" image before each pattern
+  - Cleaned pattern markdown content
+- Learn More conclusion (template-driven)
 
-Uses custom LaTeX template for professional formatting.
+The framing + conclusion sections remain fully template-driven; this script only
+builds the *body* content that pandoc injects into the LaTeX template.
 """
 
-import os
 import sys
 import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Any, Dict, List, Tuple, Union
 import logging
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
+def _parse_scalar(value: str) -> str:
+    value = value.strip()
+    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+        return value[1:-1]
+    return value
+
+
 def simple_yaml_load(content: str) -> dict:
-    """Simple YAML parser for basic config - handles block scalars."""
-    result = {}
-    current_level = {-1: result}
-    current_list_key = {-1: None}
-    
-    lines = content.split('\n')
-    line_idx = 0
-    
-    while line_idx < len(lines):
-        line = lines[line_idx]
-        
-        if not line.strip() or line.strip().startswith('#'):
-            line_idx += 1
+    """A tiny YAML subset parser.
+
+    Supported:
+    - dicts via indentation ("key: value" and "key:" for nested)
+    - lists via "- item"
+    - lists of dict items via "- key: value" with subsequent indented keys
+    - block scalars with "|" / ">" (content captured as a single string)
+
+    This is intentionally limited, but sufficient for the Circle3 PDF configs.
+    """
+
+    lines = content.splitlines()
+
+    root: Dict[str, Any] = {}
+    # stack entries: (indent, container)
+    stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]] = [(-1, root)]
+
+    def current_container() -> Union[Dict[str, Any], List[Any]]:
+        return stack[-1][1]
+
+    def pop_to_indent(target_indent: int) -> None:
+        # Pop until the current container's indent is *less than or equal to* the
+        # current line. (We only pop when indentation decreases.)
+        while stack and stack[-1][0] > target_indent:
+            stack.pop()
+
+    def peek_next_content_line(start_idx: int) -> Tuple[int, str, int]:
+        """Return (idx, stripped_line, indent) for the next non-empty, non-comment line."""
+        i = start_idx
+        while i < len(lines):
+            raw = lines[i]
+            stripped = raw.strip()
+            if stripped and not stripped.startswith('#'):
+                return i, stripped, (len(raw) - len(raw.lstrip()))
+            i += 1
+        return -1, '', -1
+
+    i = 0
+    while i < len(lines):
+        raw = lines[i]
+        line = raw.strip()
+
+        if not line or line.startswith('#'):
+            i += 1
             continue
-        
-        indent = len(line) - len(line.lstrip())
-        content_line = line.strip()
-        
-        # Clean up levels for this indent
-        keys_to_remove = [k for k in current_level if k >= indent and k != -1]
-        for k in keys_to_remove:
-            del current_level[k]
-            if k in current_list_key:
-                del current_list_key[k]
-        
-        parent_indent = max([k for k in current_level if k < indent] + [-1])
-        current_dict = current_level[parent_indent]
-        
-        # Handle list items
-        if content_line.startswith('- '):
-            list_key = current_list_key.get(parent_indent)
-            if list_key and list_key in current_dict:
-                if not isinstance(current_dict[list_key], list):
-                    current_dict[list_key] = []
-                item = content_line[2:].strip()
-                if (item.startswith('"') and item.endswith('"')) or (item.startswith("'") and item.endswith("'")):
-                    item = item[1:-1]
-                current_dict[list_key].append(item)
-            line_idx += 1
+
+        indent = len(raw) - len(raw.lstrip())
+        pop_to_indent(indent)
+        container = current_container()
+
+        # ------------------------------------------------------------------
+        # List item
+        # ------------------------------------------------------------------
+        if line.startswith('- '):
+            if not isinstance(container, list):
+                raise ValueError(f"YAML parse error (line {i+1}): list item without list context")
+
+            item_text = line[2:].strip()
+
+            # List item that starts a dict inline: "- key: value"
+            if ':' in item_text:
+                key, value = item_text.split(':', 1)
+                key = key.strip()
+                value = value.strip()
+
+                item_dict: Dict[str, Any] = {}
+                container.append(item_dict)
+
+                # block scalars inside list items are not needed for this repo right now
+                if value in ('|', '|-', '|+', '>', '>-', '>+'):
+                    # Collect block scalar content
+                    block_lines: List[str] = []
+                    block_indent: int | None = None
+                    i += 1
+                    while i < len(lines):
+                        nxt_raw = lines[i]
+                        nxt_line = nxt_raw.strip('\n')
+                        nxt_stripped = nxt_line.strip()
+                        nxt_indent = len(nxt_raw) - len(nxt_raw.lstrip())
+
+                        if nxt_stripped == '':
+                            block_lines.append('')
+                            i += 1
+                            continue
+
+                        if block_indent is None:
+                            block_indent = nxt_indent
+
+                        if nxt_indent < (block_indent or 0):
+                            break
+
+                        block_lines.append(nxt_raw[block_indent:])
+                        i += 1
+
+                    while block_lines and not block_lines[-1].strip():
+                        block_lines.pop()
+
+                    item_dict[key] = '\n'.join(block_lines)
+                    # don't i += 1 here; loop continues with current i
+                    stack.append((indent + 2, item_dict))
+                    continue
+
+                item_dict[key] = _parse_scalar(value)
+                # Subsequent indented lines belong to this dict item
+                stack.append((indent + 2, item_dict))
+                i += 1
+                continue
+
+            # Simple scalar list item
+            container.append(_parse_scalar(item_text))
+            i += 1
             continue
-        
-        # Handle key: value pairs
-        if ':' in content_line:
-            key, value = content_line.split(':', 1)
-            key = key.strip()
-            value = value.strip()
-            
-            # Check if this is a block scalar
-            is_block_scalar = value in ('|', '|-', '|+', '>', '>-', '>+')
-            
-            if is_block_scalar:
-                # Collect block scalar content
-                block_lines = []
-                block_indent = None
-                line_idx += 1
                 
-                while line_idx < len(lines):
-                    next_line = lines[line_idx]
-                    next_indent = len(next_line) - len(next_line.lstrip())
-                    
-                    if next_line.strip() == '':
-                        # Preserve blank lines inside the block scalar.
-                        block_lines.append('')
-                        line_idx += 1
-                        continue
-                    
-                    if block_indent is None:
-                        block_indent = next_indent
-                    
-                    if next_indent < block_indent:
-                        # End of block
-                        break
-                    
-                    # Add content with indent removed
-                    if next_indent >= block_indent:
-                        block_lines.append(next_line[block_indent:])
-                    else:
-                        block_lines.append(next_line)
-                    
-                    line_idx += 1
-                
-                # Remove trailing empty lines
-                while block_lines and not block_lines[-1].strip():
-                    block_lines.pop()
-                
-                current_dict[key] = '\n'.join(block_lines)
-                # Note: line_idx is already at the next line, don't increment
-                
-            elif not value:
-                # Look ahead to see if this is a list or nested dict
-                is_list = False
-                for future_idx in range(line_idx + 1, min(line_idx + 20, len(lines))):
-                    future_line = lines[future_idx]
-                    if not future_line.strip() or future_line.strip().startswith('#'):
-                        continue
-                    future_indent = len(future_line) - len(future_line.lstrip())
-                    if future_indent > indent:
-                        if future_line.strip().startswith('- '):
-                            is_list = True
-                        break
-                
-                if is_list:
-                    current_dict[key] = []
-                    current_list_key[indent] = key
-                    current_level[indent] = current_dict
-                else:
-                    new_dict = {}
-                    current_dict[key] = new_dict
-                    current_level[indent] = new_dict
-                
-                line_idx += 1
-                
+        # ------------------------------------------------------------------
+        # Dict entry
+        # ------------------------------------------------------------------
+        if ':' not in line:
+            raise ValueError(f"YAML parse error (line {i+1}): expected 'key: value' -> {line}")
+
+        if not isinstance(container, dict):
+            raise ValueError(f"YAML parse error (line {i+1}): mapping entry inside list without dict item")
+
+        key, value = line.split(':', 1)
+        key = key.strip()
+        value = value.strip()
+
+        # Block scalar
+        if value in ('|', '|-', '|+', '>', '>-', '>+'):
+            block_lines: List[str] = []
+            block_indent: int | None = None
+            i += 1
+
+            while i < len(lines):
+                nxt_raw = lines[i]
+                nxt_stripped = nxt_raw.strip()
+                nxt_indent = len(nxt_raw) - len(nxt_raw.lstrip())
+
+                if nxt_stripped == '':
+                    block_lines.append('')
+                    i += 1
+                    continue
+
+                if block_indent is None:
+                    block_indent = nxt_indent
+
+                if nxt_indent < (block_indent or 0):
+                    break
+
+                block_lines.append(nxt_raw[block_indent:])
+                i += 1
+
+            while block_lines and not block_lines[-1].strip():
+                block_lines.pop()
+
+            container[key] = '\n'.join(block_lines)
+            continue
+
+        # Nested container
+        if value == '':
+            next_idx, next_line, next_indent = peek_next_content_line(i + 1)
+            if next_idx != -1 and next_indent > indent and next_line.startswith('- '):
+                new_list: List[Any] = []
+                container[key] = new_list
+                stack.append((indent + 2, new_list))
             else:
-                # Simple value
-                if value.startswith('"') and value.endswith('"'):
-                    current_dict[key] = value[1:-1]
-                elif value.startswith("'") and value.endswith("'"):
-                    current_dict[key] = value[1:-1]
-                else:
-                    current_dict[key] = value
-                
-                line_idx += 1
+                new_dict: Dict[str, Any] = {}
+                container[key] = new_dict
+                stack.append((indent + 2, new_dict))
+
+            i += 1
+            continue
+
+        # Simple scalar
+        container[key] = _parse_scalar(value)
+        i += 1
+
+    return root
+
+
+def deep_merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    """Deep-merge override into base (override wins)."""
+    merged: Dict[str, Any] = dict(base)
+    for k, v in override.items():
+        if k in merged and isinstance(merged[k], dict) and isinstance(v, dict):
+            merged[k] = deep_merge_dicts(merged[k], v)
         else:
-            line_idx += 1
-    
-    return result
+            merged[k] = v
+    return merged
 
 
 class CirclePDFBuilder:
-    """Build focused single-pattern PDF for Circle3."""
-    
-    def __init__(self, config_path: str, workspace_root: str = None):
+    """Build Circle3 multi-pattern PDF."""
+
+    def __init__(self, config_path: str, workspace_root: str | None = None):
         self.config_path = Path(config_path)
         self.root_dir = Path(workspace_root) if workspace_root else self.config_path.parent.parent
         
@@ -168,11 +237,19 @@ class CirclePDFBuilder:
         self.config = self._load_config()
     
     def _load_config(self) -> dict:
-        """Load configuration from YAML file."""
+        """Load configuration (optionally layering on top of a base config)."""
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             config = simple_yaml_load(content)
+
+            base_config_rel = config.get('base_config')
+            if base_config_rel:
+                base_path = (self.config_path.parent / str(base_config_rel)).resolve()
+                with open(base_path, 'r', encoding='utf-8') as f:
+                    base = simple_yaml_load(f.read())
+                config = deep_merge_dicts(base, config)
+
             logger.info("Configuration loaded successfully")
             return config
         except Exception as e:
@@ -211,9 +288,16 @@ class CirclePDFBuilder:
             return {}, content
     
     def _filter_jekyll_syntax(self, content: str) -> str:
-        """Remove Jekyll-specific syntax."""
-        content = re.sub(r'\s*\{:\s*[^}]*\}\s*\n?', '', content)
+        """Remove Jekyll/kramdown-specific syntax.
+
+        Important: do *not* delete the line break following an inline kramdown
+        attribute ("{: ...}") block; doing so can concatenate a link line with the
+        next heading (e.g. "](...)### Heading").
+        """
+        # Remove inline attribute lists like: {: data-ga-event="..." }
         content = re.sub(r'\s*\{:\s*[^}]*\}', '', content)
+        # Trim trailing whitespace that can be left behind after attribute removal.
+        content = re.sub(r'[ \t]+$', '', content, flags=re.MULTILINE)
         return content
 
     def _normalize_relative_links(self, content: str) -> str:
@@ -245,24 +329,33 @@ class CirclePDFBuilder:
         # Remove image line: ![text](/path/to/image.png)
         content = re.sub(r'!\[[^\]]*\]\([^)]*\.png\)\s*\n\n', '', content)
         
-        # Remove "Explore in Your Context" section and everything after (case-insensitive)
-        explore_pattern = r'\n##\s+Explore\s+in\s+[Yy]our\s+Context.*'
-        content = re.sub(explore_pattern, '', content, flags=re.DOTALL)
+        # Remove "Explore in your context" section and everything after
+        # (handles variations like "Your" vs "your" and "Context" vs "context").
+        explore_pattern = r'\n##\s+Explore\s+in\s+your\s+context.*'
+        content = re.sub(explore_pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
         
         # Clean up Jekyll syntax
         content = self._filter_jekyll_syntax(content)
 
         # Normalize any relative links to absolute URLs
         content = self._normalize_relative_links(content)
+
+        # Defensive fix: if a link line got concatenated with a following heading
+        # (e.g. "](url)### Heading"), re-insert paragraph breaks.
+        content = re.sub(r'\)(?=#{2,6}\s)', ')\n\n', content)
+
+        # Replace unicode "pointing" emoji with a plain markdown bullet so it renders cleanly.
+        # (This intentionally turns those lines into list items.)
+        content = re.sub(r'(?m)^👉\s*', '- ', content)
+        content = content.replace('👉', '-')
         
         # Remove extra blank lines (more than 2 in a row)
         content = re.sub(r'\n\n\n+', '\n\n', content)
         
         return content.strip()
     
-    def _read_pattern_file(self) -> Tuple[Dict, str]:
-        """Read and clean the pattern file."""
-        pattern_file = self.config.get('pattern_file', 'moves/establish.md')
+    def _read_and_clean_pattern(self, pattern_file: str) -> Tuple[Dict[str, Any], str]:
+        """Read a pattern markdown file, parse frontmatter, and clean the body."""
         full_path = self.root_dir / pattern_file
         
         if not full_path.exists():
@@ -275,19 +368,101 @@ class CirclePDFBuilder:
             
             frontmatter, body = self._parse_frontmatter(content)
             body = self._clean_pattern_content(body)
-            
             return frontmatter, body
         except Exception as e:
-            logger.error(f"Error reading pattern file: {e}")
+            logger.error(f"Error reading pattern file '{pattern_file}': {e}")
             sys.exit(1)
-    
-    def _build_markdown_for_pandoc(self, pattern_content: str) -> str:
+
+    def _get_patterns(self) -> List[Dict[str, str]]:
+        """Return ordered patterns configuration.
+
+        Preferred config shape:
+
+        patterns:
+          - file: moves/establish.md
+            intro_image: images/full/move-establish.png
+          - file: moves/balance.md
+            intro_image: images/full/move-balance.png
+          - file: moves/reconcile.md
+            intro_image: images/full/move-reconcile.png
+
+        Backwards-compatibility:
+        - If patterns is missing, fall back to `pattern_file`.
         """
-        Build the markdown content for pandoc.
-        Pandoc will use the LaTeX template which handles the framing and learn more pages.
-        """
-        # Just return the pattern content - the template handles framing and conclusion
-        return pattern_content
+
+        raw_patterns = self.config.get('patterns')
+        patterns: List[Dict[str, str]] = []
+
+        if isinstance(raw_patterns, list) and raw_patterns:
+            for item in raw_patterns:
+                if isinstance(item, str):
+                    patterns.append({'file': item})
+                elif isinstance(item, dict):
+                    # ensure we only carry string-ish values
+                    pattern: Dict[str, str] = {}
+                    for k, v in item.items():
+                        if v is None:
+                            continue
+                        pattern[str(k)] = str(v)
+                    patterns.append(pattern)
+                else:
+                    raise ValueError(f"Unsupported patterns item: {item}")
+
+        if patterns:
+            for p in patterns:
+                if 'file' not in p:
+                    raise ValueError(f"Each patterns item must include 'file'. Got: {p}")
+            return patterns
+
+        pattern_file = self.config.get('pattern_file')
+        if pattern_file:
+            intro_image = self.config.get('pattern_intro_image', '')
+            return [{'file': str(pattern_file), 'intro_image': str(intro_image)}]
+
+        # Final fallback
+        return [{'file': 'moves/establish.md'}]
+
+    def _latex_full_width_image_page(self, image_path: str, *, prepend_page_break: bool) -> str:
+        """A full-page image (centered), emitted as a Pandoc raw LaTeX block."""
+        if not image_path:
+            return ''
+
+        lines: List[str] = []
+        if prepend_page_break:
+            lines.append(r"\newpage")
+
+        # Match the template's approach on other image-only pages.
+        lines.extend(
+            [
+                r"\thispagestyle{empty}",
+                r"\vspace*{\fill}",
+                r"\begin{center}",
+                rf"\includegraphics[width=\textwidth]{{{image_path}}}",
+                r"\end{center}",
+                r"\vspace*{\fill}",
+                r"\newpage",
+            ]
+        )
+
+        return "```{=latex}\n" + "\n".join(lines) + "\n```"
+
+    def _build_markdown_for_pandoc(self, patterns: List[Dict[str, str]]) -> str:
+        """Build the combined patterns section for pandoc (in markdown + raw latex blocks)."""
+        chunks: List[str] = []
+
+        for idx, pattern in enumerate(patterns):
+            pattern_file = pattern['file']
+            intro_image = pattern.get('intro_image', '').strip()
+
+            if intro_image:
+                chunks.append(self._latex_full_width_image_page(intro_image, prepend_page_break=(idx > 0)))
+
+            frontmatter, body = self._read_and_clean_pattern(pattern_file)
+            logger.info(f"Loaded pattern: {frontmatter.get('title', body.splitlines()[0] if body else pattern_file)}")
+
+            chunks.append(body)
+
+        return "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
     
     def _markdown_to_latex(self, text: str) -> str:
         """Convert markdown formatting to LaTeX, using Pandoc for complex content."""
@@ -402,7 +577,8 @@ class CirclePDFBuilder:
             result = subprocess.run(
                 args,
                 input=markdown_content.encode('utf-8'),
-                capture_output=True
+                capture_output=True,
+                cwd=str(self.root_dir),
             )
             
             if result.returncode != 0:
@@ -421,21 +597,20 @@ class CirclePDFBuilder:
     
     def build(self) -> bool:
         """Execute the PDF building pipeline."""
-        logger.info("Starting single-pattern PDF build pipeline")
-        
-        # Step 1: Read and clean pattern
-        logger.info("Step 1: Reading pattern content...")
-        frontmatter, pattern_content = self._read_pattern_file()
-        logger.info(f"Pattern title: {frontmatter.get('title', 'Unknown')}")
-        
-        # Step 2: Build markdown for pandoc
+        logger.info("Starting Circle3 multi-pattern PDF build pipeline")
+
+        # Step 1: Collect patterns
+        patterns = self._get_patterns()
+        logger.info(f"Patterns: {len(patterns)}")
+
+        # Step 2: Prepare content
         logger.info("Step 2: Preparing content...")
         if not self._check_dependencies():
             logger.error("Build terminated due to missing external dependency.")
             return False
 
-        markdown_content = self._build_markdown_for_pandoc(pattern_content)
-        
+        markdown_content = self._build_markdown_for_pandoc(patterns)
+
         # Optionally save intermediate markdown for inspection
         debug_md_path = self.config_path.parent / 'debug-intermediate.md'
         try:
@@ -465,16 +640,23 @@ class CirclePDFBuilder:
         return success
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     script_dir = Path(__file__).parent
-    config_path = script_dir / 'config.yaml'
     workspace_root = script_dir.parent
-    
-    builder = CirclePDFBuilder(config_path, workspace_root)
+
+    # Allow an explicit config path: python3 scripts/build-pdf.py scripts/config.yaml
+    if len(sys.argv) > 1:
+        config_path = Path(sys.argv[1])
+        if not config_path.is_absolute():
+            config_path = (Path.cwd() / config_path).resolve()
+    else:
+        config_path = script_dir / 'config.yaml'
+
+    builder = CirclePDFBuilder(str(config_path), str(workspace_root))
     success = builder.build()
-    
-    sys.exit(0 if success else 1)
+
+    raise SystemExit(0 if success else 1)
 
 
 if __name__ == '__main__':

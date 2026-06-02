@@ -1,6 +1,6 @@
-# Circle3 Single-Pattern PDF Publication Pipeline
+# Circle3 PDF Publication Pipeline (Multi-Pattern)
 
-A fully configurable, pattern-agnostic PDF publication pipeline for creating focused, conference-ready single-pattern papers.
+A configurable PDF publication pipeline for creating a single, conference-ready PDF containing multiple Circle3 patterns (with the same existing framing + conclusion styling).
 
 ## Quick Start
 
@@ -16,10 +16,11 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 ### Files
 
 - **`scripts/build-pdf.py`** — Build orchestrator
-  - Loads pattern file (configurable)
-  - Cleans content dynamically (removes subtitle, images, trailing sections)
+  - Loads a **patterns list** from config (data-driven)
+  - Inserts a full-page move image before each pattern
+  - Cleans pattern content dynamically (removes subtitle, images, trailing sections)
   - Filters Jekyll syntax
-  - Passes cleaned content + config to pandoc
+  - Passes combined markdown + config to pandoc
 
 - **`scripts/template.tex`** — Custom LaTeX template
   - Uses config variables for all text content (framing abstract, conclusion text, CTAs)
@@ -27,19 +28,19 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
   - 3-page structure: Framing → Content → Learn More
   - Optimized spacing and typography for readability
 
-- **`scripts/config.yaml`** — Complete configuration
-  - No hardcoded strings in template or script
-  - All content, images, metadata configurable
-  - Designed to work for any Circle3 pattern
+- **`scripts/config.yaml`** — Configuration
+  - Framing + conclusion content
+  - Metadata + output settings
+  - Data-driven `patterns:` list (multi-pattern)
 
 ### Content Pipeline
 
 ```
-config.yaml (text, images, metadata)
+config.yaml
            ↓
       build-pdf.py
            ↓
-      establish.md → [Clean: remove subtitle, images, explore section, Jekyll syntax]
+      establish.md / balance.md / reconcile.md → [Clean: remove subtitle, images, explore section, Jekyll syntax]
            ↓
       template.tex [Use config variables to populate all content]
            ↓
@@ -50,7 +51,7 @@ config.yaml (text, images, metadata)
 
 ## Configuration Structure
 
-Edit `scripts/config.yaml` to customize:
+Edit `scripts/config.yaml` to customize (notably the `patterns:` list):
 
 ```yaml
 output:
@@ -62,7 +63,13 @@ metadata:
   author: Michael Basil                     # PDF author
   date: June 2026                           # Publication date
 
-pattern_file: moves/establish.md  # Pattern markdown file to process
+patterns:                         # Patterns (in order)
+  - file: moves/establish.md
+    intro_image: images/full/move-establish.png
+  - file: moves/balance.md
+    intro_image: images/full/move-balance.png
+  - file: moves/reconcile.md
+    intro_image: images/full/move-reconcile.png
 
 framing:
   images:                           # 3 images for cascade layout (2.8in width)
@@ -85,25 +92,11 @@ conclusion:
 
 ## Using with Other Patterns
 
-To create a PDF for a different Circle3 pattern (e.g., Balance the Conversation):
+Edit `scripts/config.yaml` and update the `patterns:` list (order, files, and per-pattern intro images). Then rebuild:
 
-1. **Update config.yaml:**
-   ```yaml
-   pattern_file: moves/balance.md
-   metadata:
-     title: Circle3 - Balance the Conversation
-   framing:
-     images:
-       - images/full/index.png
-       - images/full/method.png
-       - images/full/move-balance.png
-   # Update abstract, conclusion text, etc.
-   ```
-
-2. **Rebuild:**
-   ```bash
-   python3 scripts/build-pdf.py
-   ```
+```bash
+python3 scripts/build-pdf.py
+```
 
 ## Content Cleaning
 
