@@ -719,6 +719,23 @@ class CirclePDFBuilder:
         }
         return ''.join(replacements.get(ch, ch) for ch in str(text))
 
+    def _replace_unicode_arrows(self, text: str) -> str:
+        """Replace Unicode arrows with LaTeX-rendered arrows.
+
+        This avoids "missing glyph" issues when the selected text font doesn't
+        include symbols like U+2192 (→).
+        """
+        if not text:
+            return '' if text is None else text
+
+        replacements = {
+            # Use Pandoc/LaTeX math so we don't depend on the text font having U+2192.
+            '→': r'$\rightarrow$',
+        }
+        for src, dst in replacements.items():
+            text = str(text).replace(src, dst)
+        return text
+
     def _infer_pattern_title(self, pattern_file: str, frontmatter: Dict[str, Any], body: str) -> str:
         title = str(frontmatter.get('title') or '').strip()
         if title:
@@ -1076,6 +1093,11 @@ class CirclePDFBuilder:
             framing_abstract = self._markdown_to_latex(str(framing.get('abstract', '') or ''))
             conclusion_main = self._markdown_to_latex(str(conclusion.get('main_text', '') or ''))
             conclusion_details = self._markdown_to_latex(str(conclusion.get('details', '') or ''))
+
+            # Replace Unicode arrows (e.g. →) with LaTeX-rendered arrows.
+            framing_abstract = self._replace_unicode_arrows(framing_abstract)
+            conclusion_main = self._replace_unicode_arrows(conclusion_main)
+            conclusion_details = self._replace_unicode_arrows(conclusion_details)
             
             args = [
                 'pandoc',
@@ -1157,7 +1179,9 @@ class CirclePDFBuilder:
 
         try:
             markdown_content, toc_items = self._build_markdown_for_pandoc(pattern_sections)
+            markdown_content = self._replace_unicode_arrows(markdown_content)
             short_toc = self._build_short_toc_latex(toc_items)
+            short_toc = self._replace_unicode_arrows(short_toc)
         except ValueError as e:
             logger.error("Configuration error: %s", e)
             return False
