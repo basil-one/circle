@@ -803,7 +803,7 @@ class CirclePDFBuilder:
     def _build_short_toc_latex(self, toc_items: List[Dict[str, str]]) -> str:
         """Build a very short TOC (sections + patterns + conclusion).
 
-        This is inserted on page 2 (abstract → TOC).
+        This is inserted on the dedicated TOC page (after the abstract).
 
         toc_items entries:
           - kind: section | pattern | conclusion
@@ -1092,12 +1092,10 @@ class CirclePDFBuilder:
             # Convert markdown formatting to LaTeX in config values
             framing_abstract = self._markdown_to_latex(str(framing.get('abstract', '') or ''))
             conclusion_main = self._markdown_to_latex(str(conclusion.get('main_text', '') or ''))
-            conclusion_details = self._markdown_to_latex(str(conclusion.get('details', '') or ''))
 
             # Replace Unicode arrows (e.g. →) with LaTeX-rendered arrows.
             framing_abstract = self._replace_unicode_arrows(framing_abstract)
             conclusion_main = self._replace_unicode_arrows(conclusion_main)
-            conclusion_details = self._replace_unicode_arrows(conclusion_details)
             
             args = [
                 'pandoc',
@@ -1121,7 +1119,6 @@ class CirclePDFBuilder:
                 '-V', 'conclusion_anchor=' + conclusion_anchor,
                 '-V', 'conclusion_image=' + str(conclusion.get('image', '')),
                 '-V', 'conclusion_main=' + conclusion_main,
-                '-V', 'conclusion_details=' + conclusion_details,
                 '-V', 'conclusion_cta=' + str(conclusion.get('cta_text', '')),
                 '-V', 'conclusion_url=' + str(conclusion.get('cta_url', '')),
                 '-V', 'conclusion_label=' + str(conclusion.get('cta_label', '')),

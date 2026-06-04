@@ -27,7 +27,7 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 - **`scripts/template.tex`** — Custom LaTeX template
   - Uses config variables for all text content (framing abstract, conclusion text, CTAs)
   - Uses config variables for all image paths
-  - 3-page structure: Framing → Content → Conclusion (title/anchor configured in `config.yaml`)
+  - Page structure: Cover → Abstract → TOC → Content → Conclusion (title/anchor configured in `config.yaml`)
   - Optimized spacing and typography for readability
 
 - **`scripts/config.yaml`** — Configuration
@@ -104,8 +104,6 @@ conclusion:
   image: images/full/origin.png     # Conclusion page image (3.0in width)
   main_text: |                      # Main paragraph
     Establish the Circle is the signature move...
-  details: |                        # Details section
-    The full Circle3 language includes...
   cta_text: "Explore the full pattern language:"
   cta_url: https://circle.basil.one
   cta_label: circle.basil.one
@@ -138,11 +136,13 @@ The build script automatically:
 - **Visual**: 2-image cover layout (from `framing.images[0..1]`)
 - Introduces the pattern and context
 
-### Page 2: Abstract + TOC
-- **Abstract**: Pulls from `framing.abstract` in config
-- **TOC**: Includes section headers + indented patterns
+### Page 2: Abstract
+- Pulls from `framing.abstract` in config
 
-### Page 3+: Pattern Content
+### Page 3: TOC
+- Includes section headers + indented patterns
+
+### Page 4+: Pattern Content
 - Pattern title + "For leaders, facilitators..." context
 - Standard sections: Summary, Story, Context, Problem, Forces, Solution, etc.
 - Professional typography with optimized spacing
@@ -152,7 +152,6 @@ The build script automatically:
 - **Title**: From `conclusion.title`
 - **Image**: Single large image (3.0in, centered) from `conclusion.image`
 - **Main text**: From `conclusion.main_text`
-- **Details list**: From `conclusion.details`
 - **CTA**: Call-to-action with hyperlinked URL
 
 ## Customization

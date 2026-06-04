@@ -41,14 +41,11 @@ framing:
   abstract_label: Abstract
   toc_label: Table of Contents
   abstract: |
-    Change initiatives often stall because people are not working from the same understanding of what is happening.
-    Priorities compete, conversations fragment, and decisions don’t hold long enough to become practice.
+    In complex, change-saturated environments, initiatives often stall not because people don’t care—but because they are operating from different interpretations of what is happening. Priorities compete, conversations fragment, and decisions don’t hold long enough to become practice.
 
-    Circle3™ is a compact pattern language for restoring coherence in complex environments.
-    This paper presents three interlocking moves—**Establish the Circle**, **Balance the Conversation**, and **Reconcile the Intention**—
-    that help a group form shared perception, work tension productively, and translate emerging clarity into commitments.
+    Circle3™ is a compact pattern language for restoring coherence under these conditions. It offers three interlocking moves—**Establish the Circle**, **Balance the Conversation**, and **Reconcile the Intention**—that help a group form shared perception, work tension productively, and translate emerging clarity into commitments that stick.
 
-    The moves can be started in any order, but they are designed to function as a set.
+    This paper presents the moves alongside three Leadership Lenses (sense-making, energy awareness, and session intention) that sharpen how leaders and facilitators notice what is shaping a situation. The patterns can be used independently and started in any order, but they are designed to function as a mutually reinforcing set.
 
 conclusion:
   title: Origin and Ongoing Evolution
@@ -57,15 +54,11 @@ conclusion:
 
   main_text: |
     Circle3 did not begin as a framework.
-    These moves emerged from repeated experience in real change efforts—especially where pressure fragmented attention,
-    meaning, and coordination—and coherence had to be rebuilt from lived conditions.
+    
+    These moves emerged from repeated experience in real change efforts—especially where pressure fragmented attention, meaning, and coordination—and coherence had to be rebuilt from lived conditions.
+    
+    If you want the deeper context—where these patterns came from, what shaped them, and how they continue to evolve—read the Origin Story.
 
-  details: |
-    The Origin Story connects the patterns in this paper to the situations that produced them, and to the broader Circle3 language:
-
-    - Three Guiding Moves™
-    - Three Leadership Lenses™
-    - Ongoing evolution through practice
   cta_text: "Read the Origin Story:"
   cta_url: https://circle.basil.one/origin/
   cta_label: https://circle.basil.one/origin
