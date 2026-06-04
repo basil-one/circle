@@ -21,6 +21,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
+from urllib.parse import urlparse
 import logging
 
 # Configure logging
@@ -363,6 +364,114 @@ class CirclePDFBuilder:
             return f'[{text}]({root_url}{path})'
 
         return re.sub(r'\[([^\]]+)\]\((/[^)]+)\)', replace_link, content)
+
+    def _normalize_site_path(self, raw_url: str) -> str | None:
+        """Normalize a site URL/path to a canonical permalink like '/moves/establish/'.
+
+        Supports:
+        - /moves/establish/          (site-relative)
+        - moves/establish/          (relative)
+        - https://<root_url>/...    (only when it matches configured root_url)
+
+        Returns None for:
+        - external URLs
+        - non-page assets (png, pdf, etc.)
+        """
+        if raw_url is None:
+            return None
+
+        url = str(raw_url).strip()
+        if not url:
+            return None
+
+        # Strip markdown autolink brackets: <https://...>
+        if url.startswith('<') and url.endswith('>'):
+            url = url[1:-1].strip()
+
+        parsed = urlparse(url)
+
+        # Non-http(s) schemes are never in-doc navigations.
+        if parsed.scheme and parsed.scheme not in ('http', 'https'):
+            return None
+
+        root_url = str(self.config.get('root_url') or '').rstrip('/')
+
+        if parsed.scheme in ('http', 'https'):
+            if root_url and url.startswith(root_url + '/'):
+                path = '/' + url[len(root_url) + 1 :]
+            else:
+                return None
+        else:
+            path = parsed.path or ''
+            if not path:
+                return None
+            if not path.startswith('/'):
+                path = '/' + path
+
+        # Ignore obvious assets (except html).
+        trimmed = path.rstrip('/')
+        ext_match = re.search(r'\.([A-Za-z0-9]{1,8})$', trimmed)
+        if ext_match and ext_match.group(1).lower() != 'html':
+            return None
+
+        # Normalize html-ish endings to permalinks.
+        if trimmed.endswith('/index.html'):
+            path = trimmed[: -len('/index.html')]
+        elif trimmed.endswith('index.html'):
+            path = trimmed[: -len('index.html')]
+        elif trimmed.endswith('.html'):
+            path = trimmed[: -len('.html')]
+
+        path = path.rstrip('/') + '/'
+        return path
+
+    def _infer_section_permalink(self, section: Dict[str, Any]) -> str | None:
+        """Best-effort mapping for section-index links (e.g. '/moves/')."""
+        for key in ('permalink', 'path', 'url', 'site_path', 'site_url'):
+            raw = section.get(key)
+            norm = self._normalize_site_path(str(raw)) if raw else None
+            if norm:
+                return norm
+
+        section_title = str(section.get('title') or '').strip().lower()
+        section_toc_label = str(section.get('toc_label') or section.get('label') or '').strip().lower()
+        candidate = section_toc_label or section_title
+
+        if candidate == 'moves':
+            return '/moves/'
+        if candidate == 'lenses':
+            return '/lenses/'
+
+        return None
+
+    def _rewrite_pdf_internal_links(self, content: str, permalink_to_anchor: Dict[str, str]) -> str:
+        """Rewrite site links that target included pages into in-PDF anchor links."""
+        if not content.strip() or not permalink_to_anchor:
+            return content
+
+        # Negative lookbehind avoids rewriting images: ![alt](...)
+        link_pattern = re.compile(r'(?<!!)\[([^\]]+)\]\(([^)]+)\)')
+
+        def replace_link(match: re.Match) -> str:
+            label = match.group(1)
+            raw_target = match.group(2).strip()
+
+            # Handle optional markdown title: (url "title")
+            if not raw_target:
+                return match.group(0)
+
+            target_url = raw_target.split()[0]
+            normalized = self._normalize_site_path(target_url)
+            if not normalized:
+                return match.group(0)
+
+            anchor = permalink_to_anchor.get(normalized)
+            if not anchor:
+                return match.group(0)
+
+            return f'[{label}](#{anchor})'
+
+        return link_pattern.sub(replace_link, content)
     
     def _clean_pattern_content(self, content: str) -> str:
         """
@@ -729,19 +838,17 @@ class CirclePDFBuilder:
     ) -> Tuple[str, List[Dict[str, str]]]:
         """Build the combined pattern-sections body for pandoc.
 
-        Returns:
-          (markdown_body, toc_items)
-
-        toc_items is a list of dicts (section entries, pattern entries, conclusion).
-        Each entry links to a stable in-document anchor.
+        Key behavior:
+        - Links to included pages (moves/lenses) are rewritten as in-PDF links.
+        - Links to other site pages remain external (root_url + /path).
         """
-        chunks: List[str] = []
+
         toc_items: List[Dict[str, str]] = []
         used_anchors: set[str] = set()
+        permalink_to_anchor: Dict[str, str] = {}
 
-        # True when we need a `\newpage` before the next full-page image (or next pattern).
-        # After pattern bodies, we set this True because bodies do not reliably end with a page break.
-        page_break_needed = False
+        # First pass: plan sections/patterns and build a permalink -> anchor map.
+        planned_sections: List[Dict[str, Any]] = []
 
         for section_idx, section in enumerate(pattern_sections):
             if not isinstance(section, dict):
@@ -768,7 +875,6 @@ class CirclePDFBuilder:
             if section_title:
                 logger.info(f"Loaded pattern section: {section_title} ({len(patterns)} patterns)")
 
-            # Section TOC entry links to the section intro image page (if present) or a hypertarget.
             section_anchor_base = f"section-{self._slugify(section_toc_label or section_title or str(section_idx + 1))}"
             section_anchor = section_anchor_base
             suffix = 2
@@ -780,20 +886,11 @@ class CirclePDFBuilder:
             if section_toc_label:
                 toc_items.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
 
-            if section_intro_image:
-                chunks.append(
-                    self._latex_full_width_image_page(
-                        section_intro_image,
-                        anchor=section_anchor,
-                        prepend_page_break=page_break_needed,
-                    )
-                )
-                # The section intro page ends with \newpage, so we are now at the top of a page.
-                page_break_needed = False
-            else:
-                chunks.append(self._latex_hypertarget_block(section_anchor, prepend_page_break=page_break_needed))
-                page_break_needed = False
+            section_permalink = self._infer_section_permalink(section)
+            if section_permalink:
+                permalink_to_anchor[section_permalink] = section_anchor
 
+            planned_patterns: List[Dict[str, Any]] = []
             for pattern in patterns:
                 if not isinstance(pattern, dict) or 'file' not in pattern:
                     raise ValueError(f"Each pattern must be a mapping with a 'file' key. Got: {pattern}")
@@ -815,25 +912,29 @@ class CirclePDFBuilder:
                 logger.info(f"Loaded pattern: {title}")
                 toc_items.append({'kind': 'pattern', 'label': title, 'anchor': anchor})
 
-                if intro_image:
-                    chunks.append(
-                        self._latex_full_width_image_page(
-                            intro_image,
-                            anchor=anchor,
-                            prepend_page_break=page_break_needed,
-                        )
-                    )
-                    # The image page ends with \newpage, so we are now at the top of a page.
-                    page_break_needed = False
-                else:
-                    # If there is no intro image page, still ensure the TOC link has
-                    # a stable target at the start of the pattern.
-                    chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed))
-                    page_break_needed = False
+                pattern_permalink = self._normalize_site_path(str(frontmatter.get('permalink') or ''))
+                if pattern_permalink:
+                    permalink_to_anchor[pattern_permalink] = anchor
 
-                chunks.append(body)
-                # After the body, we want the next pattern/section intro to start on a new page.
-                page_break_needed = True
+                planned_patterns.append(
+                    {
+                        'file': pattern_file,
+                        'title': title,
+                        'anchor': anchor,
+                        'intro_image': intro_image,
+                        'body': body,
+                    }
+                )
+
+            planned_sections.append(
+                {
+                    'title': section_title,
+                    'toc_label': section_toc_label,
+                    'anchor': section_anchor,
+                    'intro_image': section_intro_image,
+                    'patterns': planned_patterns,
+                }
+            )
 
         # Add the conclusion as the final entry.
         conclusion_title, conclusion_anchor = self._get_conclusion_meta()
@@ -843,6 +944,52 @@ class CirclePDFBuilder:
                 conclusion_anchor,
             )
         toc_items.append({'kind': 'conclusion', 'label': conclusion_title, 'anchor': conclusion_anchor})
+
+        # Second pass: emit markdown/latex blocks, rewriting internal links now that we know all anchors.
+        chunks: List[str] = []
+
+        # True when we need a `\newpage` before the next full-page image (or next pattern).
+        # After pattern bodies, we set this True because bodies do not reliably end with a page break.
+        page_break_needed = False
+
+        for section in planned_sections:
+            section_anchor = str(section['anchor'])
+            section_intro_image = str(section.get('intro_image') or '').strip()
+
+            if section_intro_image:
+                chunks.append(
+                    self._latex_full_width_image_page(
+                        section_intro_image,
+                        anchor=section_anchor,
+                        prepend_page_break=page_break_needed,
+                    )
+                )
+                page_break_needed = False
+            else:
+                chunks.append(self._latex_hypertarget_block(section_anchor, prepend_page_break=page_break_needed))
+                page_break_needed = False
+
+            for pattern in section.get('patterns', []):
+                anchor = str(pattern['anchor'])
+                intro_image = str(pattern.get('intro_image') or '').strip()
+
+                if intro_image:
+                    chunks.append(
+                        self._latex_full_width_image_page(
+                            intro_image,
+                            anchor=anchor,
+                            prepend_page_break=page_break_needed,
+                        )
+                    )
+                    page_break_needed = False
+                else:
+                    chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed))
+                    page_break_needed = False
+
+                body = str(pattern.get('body') or '')
+                body = self._rewrite_pdf_internal_links(body, permalink_to_anchor)
+                chunks.append(body)
+                page_break_needed = True
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
         return markdown_body, toc_items
