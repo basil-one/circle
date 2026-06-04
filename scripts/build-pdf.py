@@ -5,8 +5,9 @@ Circle3 PDF Builder (Multi-Pattern)
 Generates a publication-ready PDF with the existing Circle3 styling:
 - Cover (template-driven)
 - Abstract (template-driven)
-- Patterns section (data-driven, multiple patterns)
-  - A full-page, full-width "move" image before each pattern
+- Pattern sections (data-driven)
+  - Optional full-page "section intro" image per section (e.g. moves.png, lenses.png)
+  - A full-page, full-width image before each pattern (as today)
   - Cleaned pattern markdown content
 - Conclusion (template-driven)
 
@@ -372,9 +373,25 @@ class CirclePDFBuilder:
         - Remove Jekyll syntax
         - Normalize relative links against the configured root URL
         """
-        # Remove "A Pattern for..." line with markdown formatting
-        # Pattern: *A Pattern for Adaptive Change Leadership by* **Michael Basil**
-        content = re.sub(r'\n\*A\s+Pattern\s+for[^*]*\*\s*\*\*[^*]*\*\*\n\n', '\n', content)
+        # Remove common "subtitle" blocks that appear right under the H1.
+        # Moves use: *A Pattern for ... by* **Michael Basil**
+        content = re.sub(
+            r'\n\*A\s+Pattern\s+for[^\n]*\*\s*\*\*[^*]*\*\*\s*\n\n',
+            '\n',
+            content,
+        )
+
+        # Lenses use either:
+        #   *A Reflective Exercise for ...*
+        #   by **Michael Basil**
+        # ...or the one-line variant:
+        #   *A Reflective Exercise for ...* by **Michael Basil**
+        content = re.sub(
+            r'\n\*A\s+Reflective\s+Exercise[^\n]*\*\s*(?:\n\s*|\s+)by\s+\*\*[^*]*\*\*\s*\n\n',
+            '\n',
+            content,
+            flags=re.IGNORECASE,
+        )
         
         # Remove image line: ![text](/path/to/image.png)
         content = re.sub(r'!\[[^\]]*\]\([^)]*\.png\)\s*\n\n', '', content)
@@ -383,6 +400,10 @@ class CirclePDFBuilder:
         # (handles variations like "Your" vs "your" and "Context" vs "context").
         explore_pattern = r'\n##\s+Explore\s+in\s+your\s+context.*'
         content = re.sub(explore_pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
+
+        # Remove "Continue exploring" section (used in lenses) and everything after.
+        continue_pattern = r'\n##\s+Continue\s+exploring.*'
+        content = re.sub(continue_pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
         
         # Clean up Jekyll syntax
         content = self._filter_jekyll_syntax(content)
@@ -424,9 +445,9 @@ class CirclePDFBuilder:
             sys.exit(1)
 
     def _get_patterns(self) -> List[Dict[str, str]]:
-        """Return ordered patterns configuration.
+        """Return ordered *flat* patterns configuration (legacy).
 
-        Preferred config shape:
+        Preferred (legacy) config shape:
 
         patterns:
           - file: moves/establish.md
@@ -438,6 +459,9 @@ class CirclePDFBuilder:
 
         Backwards-compatibility:
         - If patterns is missing, fall back to `pattern_file`.
+
+        Note:
+          New configs should prefer `pattern_sections:`. See `_get_pattern_sections()`.
         """
 
         raw_patterns = self.config.get('patterns')
@@ -471,6 +495,95 @@ class CirclePDFBuilder:
 
         # Final fallback
         return [{'file': 'moves/establish.md'}]
+
+    def _get_pattern_sections(self) -> List[Dict[str, Any]]:
+        """Return ordered pattern-sections configuration.
+
+        Preferred config shape:
+
+        pattern_sections:
+          - title: Moves
+            intro_image: images/full/moves.png      # optional
+            patterns:
+              - file: moves/establish.md
+                intro_image: images/full/move-establish.png
+              - file: moves/balance.md
+                intro_image: images/full/move-balance.png
+              - file: moves/reconcile.md
+                intro_image: images/full/move-reconcile.png
+
+          - title: Lenses
+            intro_image: images/full/lenses.png     # optional
+            patterns:
+              - file: lenses/sense.md
+                intro_image: images/full/lens-sense.png
+              - file: lenses/energy.md
+                intro_image: images/full/lens-energy.png
+              - file: lenses/session.md
+                intro_image: images/full/lens-session.png
+
+        Also supports:
+        - `section_image` as an alias for `intro_image` (for section intros).
+
+        Backwards-compatibility:
+        - If `pattern_sections` is missing, fall back to the legacy flat `patterns:` list.
+        - If `patterns` is missing, fall back to `pattern_file`/`pattern_intro_image`.
+        """
+
+        raw_sections = self.config.get('pattern_sections')
+        sections: List[Dict[str, Any]] = []
+
+        if isinstance(raw_sections, list) and raw_sections:
+            for idx, item in enumerate(raw_sections):
+                if not isinstance(item, dict):
+                    raise ValueError(
+                        f"Unsupported pattern_sections item at index {idx}: expected mapping/object, got {type(item)}"
+                    )
+
+                # Copy top-level section keys (stringify), then coerce patterns.
+                section: Dict[str, Any] = {}
+                for k, v in item.items():
+                    if v is None:
+                        continue
+                    section[str(k)] = v
+
+                raw_patterns = section.get('patterns')
+                if not isinstance(raw_patterns, list) or not raw_patterns:
+                    raise ValueError(
+                        "Each pattern_sections item must include a non-empty 'patterns' list. "
+                        f"Got: {item}"
+                    )
+
+                patterns: List[Dict[str, str]] = []
+                for p_idx, p in enumerate(raw_patterns):
+                    if isinstance(p, str):
+                        patterns.append({'file': p})
+                    elif isinstance(p, dict):
+                        pattern: Dict[str, str] = {}
+                        for pk, pv in p.items():
+                            if pv is None:
+                                continue
+                            pattern[str(pk)] = str(pv)
+                        patterns.append(pattern)
+                    else:
+                        raise ValueError(
+                            f"Unsupported patterns item in pattern_sections[{idx}] at index {p_idx}: {p}"
+                        )
+
+                for p in patterns:
+                    if 'file' not in p:
+                        raise ValueError(
+                            "Each patterns item must include 'file'. "
+                            f"Got: {p} (in pattern_sections[{idx}])"
+                        )
+
+                section['patterns'] = patterns
+                sections.append(section)
+
+            return sections
+
+        # Fallback: wrap the legacy flat patterns list into a single unnamed section.
+        return [{'title': '', 'patterns': self._get_patterns()}]
 
     def _slugify(self, text: str) -> str:
         """Create a stable anchor slug for LaTeX hypertargets."""
@@ -561,10 +674,15 @@ class CirclePDFBuilder:
 
         return "```{=latex}\n" + "\n".join(lines) + "\n```"
 
-    def _build_short_toc_latex(self, toc_items: List[Tuple[str, str]]) -> str:
-        """Build a very short, flat TOC (patterns + conclusion).
+    def _build_short_toc_latex(self, toc_items: List[Dict[str, str]]) -> str:
+        """Build a very short TOC (sections + patterns + conclusion).
 
-        This is inserted on page 2 (image → abstract → TOC).
+        This is inserted on page 2 (abstract → TOC).
+
+        toc_items entries:
+          - kind: section | pattern | conclusion
+          - label: display label
+          - anchor: latex anchor id
         """
         if not toc_items:
             return ''
@@ -578,9 +696,23 @@ class CirclePDFBuilder:
             r"\begin{tabular}{@{}l@{\hspace{2.5em}}r@{}}",
         ]
 
-        for label, anchor in toc_items:
+        for item in toc_items:
+            label = str(item.get('label') or '').strip()
+            anchor = str(item.get('anchor') or '').strip()
+            kind = str(item.get('kind') or 'pattern').strip().lower()
+            if not label or not anchor:
+                continue
+
             safe_label = self._escape_latex_text(label)
-            lines.append(rf"\hyperlink{{{anchor}}}{{{safe_label}}} & \pageref{{{anchor}}}\\")
+
+            if kind == 'section':
+                rendered_label = rf"\textbf{{{safe_label}}}"
+            elif kind == 'pattern':
+                rendered_label = rf"\hspace{{1em}}{safe_label}"
+            else:
+                rendered_label = safe_label
+
+            lines.append(rf"\hyperlink{{{anchor}}}{{{rendered_label}}} & \pageref{{{anchor}}}\\")
 
         lines.extend(
             [
@@ -591,51 +723,117 @@ class CirclePDFBuilder:
         )
         return "\n".join(lines)
 
-    def _build_markdown_for_pandoc(self, patterns: List[Dict[str, str]]) -> Tuple[str, List[Tuple[str, str]]]:
-        """Build the combined patterns section for pandoc.
+    def _build_markdown_for_pandoc(
+        self,
+        pattern_sections: List[Dict[str, Any]],
+    ) -> Tuple[str, List[Dict[str, str]]]:
+        """Build the combined pattern-sections body for pandoc.
 
         Returns:
           (markdown_body, toc_items)
 
-        toc_items is a list of (label, anchor) pairs linking to each pattern's
-        intro-image page, plus the final conclusion page.
+        toc_items is a list of dicts (section entries, pattern entries, conclusion).
+        Each entry links to a stable in-document anchor.
         """
         chunks: List[str] = []
-        toc_items: List[Tuple[str, str]] = []
+        toc_items: List[Dict[str, str]] = []
         used_anchors: set[str] = set()
 
-        for idx, pattern in enumerate(patterns):
-            pattern_file = pattern['file']
-            intro_image = pattern.get('intro_image', '').strip()
+        # True when we need a `\newpage` before the next full-page image (or next pattern).
+        # After pattern bodies, we set this True because bodies do not reliably end with a page break.
+        page_break_needed = False
 
-            frontmatter, body = self._read_and_clean_pattern(pattern_file)
-            title = self._infer_pattern_title(pattern_file, frontmatter, body)
+        for section_idx, section in enumerate(pattern_sections):
+            if not isinstance(section, dict):
+                raise ValueError(
+                    f"Unsupported pattern section at index {section_idx}: expected mapping/object, got {type(section)}"
+                )
 
-            base_anchor = f"pattern-{self._slugify(title)}"
-            anchor = base_anchor
+            section_title = str(section.get('title') or '').strip()
+            section_toc_label = str(section.get('toc_label') or section.get('label') or section_title).strip()
+            section_intro_image = str(
+                section.get('intro_image')
+                or section.get('section_image')
+                or section.get('section_intro_image')
+                or ''
+            ).strip()
+
+            patterns = section.get('patterns', [])
+            if not isinstance(patterns, list) or not patterns:
+                raise ValueError(
+                    "Each pattern section must include a non-empty 'patterns' list. "
+                    f"Got: {section}"
+                )
+
+            if section_title:
+                logger.info(f"Loaded pattern section: {section_title} ({len(patterns)} patterns)")
+
+            # Section TOC entry links to the section intro image page (if present) or a hypertarget.
+            section_anchor_base = f"section-{self._slugify(section_toc_label or section_title or str(section_idx + 1))}"
+            section_anchor = section_anchor_base
             suffix = 2
-            while anchor in used_anchors:
-                anchor = f"{base_anchor}-{suffix}"
+            while section_anchor in used_anchors:
+                section_anchor = f"{section_anchor_base}-{suffix}"
                 suffix += 1
-            used_anchors.add(anchor)
+            used_anchors.add(section_anchor)
 
-            logger.info(f"Loaded pattern: {title}")
-            toc_items.append((title, anchor))
+            if section_toc_label:
+                toc_items.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
 
-            if intro_image:
+            if section_intro_image:
                 chunks.append(
                     self._latex_full_width_image_page(
-                        intro_image,
-                        anchor=anchor,
-                        prepend_page_break=(idx > 0),
+                        section_intro_image,
+                        anchor=section_anchor,
+                        prepend_page_break=page_break_needed,
                     )
                 )
+                # The section intro page ends with \newpage, so we are now at the top of a page.
+                page_break_needed = False
             else:
-                # If there is no intro image page, still ensure the TOC link has
-                # a stable target at the start of the pattern.
-                chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=(idx > 0)))
+                chunks.append(self._latex_hypertarget_block(section_anchor, prepend_page_break=page_break_needed))
+                page_break_needed = False
 
-            chunks.append(body)
+            for pattern in patterns:
+                if not isinstance(pattern, dict) or 'file' not in pattern:
+                    raise ValueError(f"Each pattern must be a mapping with a 'file' key. Got: {pattern}")
+
+                pattern_file = str(pattern['file'])
+                intro_image = str(pattern.get('intro_image', '') or '').strip()
+
+                frontmatter, body = self._read_and_clean_pattern(pattern_file)
+                title = self._infer_pattern_title(pattern_file, frontmatter, body)
+
+                base_anchor = f"pattern-{self._slugify(title)}"
+                anchor = base_anchor
+                suffix = 2
+                while anchor in used_anchors:
+                    anchor = f"{base_anchor}-{suffix}"
+                    suffix += 1
+                used_anchors.add(anchor)
+
+                logger.info(f"Loaded pattern: {title}")
+                toc_items.append({'kind': 'pattern', 'label': title, 'anchor': anchor})
+
+                if intro_image:
+                    chunks.append(
+                        self._latex_full_width_image_page(
+                            intro_image,
+                            anchor=anchor,
+                            prepend_page_break=page_break_needed,
+                        )
+                    )
+                    # The image page ends with \newpage, so we are now at the top of a page.
+                    page_break_needed = False
+                else:
+                    # If there is no intro image page, still ensure the TOC link has
+                    # a stable target at the start of the pattern.
+                    chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed))
+                    page_break_needed = False
+
+                chunks.append(body)
+                # After the body, we want the next pattern/section intro to start on a new page.
+                page_break_needed = True
 
         # Add the conclusion as the final entry.
         conclusion_title, conclusion_anchor = self._get_conclusion_meta()
@@ -644,7 +842,7 @@ class CirclePDFBuilder:
                 "Conclusion anchor '%s' conflicts with a pattern anchor; consider setting conclusion.anchor in config.",
                 conclusion_anchor,
             )
-        toc_items.append((conclusion_title, conclusion_anchor))
+        toc_items.append({'kind': 'conclusion', 'label': conclusion_title, 'anchor': conclusion_anchor})
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
         return markdown_body, toc_items
@@ -794,9 +992,15 @@ class CirclePDFBuilder:
         """Execute the PDF building pipeline."""
         logger.info("Starting Circle3 multi-pattern PDF build pipeline")
 
-        # Step 1: Collect patterns
-        patterns = self._get_patterns()
-        logger.info(f"Patterns: {len(patterns)}")
+        # Step 1: Collect patterns (optionally grouped into sections)
+        pattern_sections = self._get_pattern_sections()
+        total_patterns = sum(
+            len(s.get('patterns', []))
+            for s in pattern_sections
+            if isinstance(s, dict) and isinstance(s.get('patterns', []), list)
+        )
+        logger.info(f"Pattern sections: {len(pattern_sections)}")
+        logger.info(f"Patterns: {total_patterns}")
 
         # Step 2: Prepare content
         logger.info("Step 2: Preparing content...")
@@ -805,7 +1009,7 @@ class CirclePDFBuilder:
             return False
 
         try:
-            markdown_content, toc_items = self._build_markdown_for_pandoc(patterns)
+            markdown_content, toc_items = self._build_markdown_for_pandoc(pattern_sections)
             short_toc = self._build_short_toc_latex(toc_items)
         except ValueError as e:
             logger.error("Configuration error: %s", e)

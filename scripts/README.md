@@ -16,8 +16,10 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 ### Files
 
 - **`scripts/build-pdf.py`** — Build orchestrator
-  - Loads a **patterns list** from config (data-driven)
-  - Inserts a full-page move image before each pattern
+  - Loads **pattern sections** from config (data-driven)
+  - Optionally inserts a full-page section intro image (e.g. moves.png, lenses.png)
+  - Adds section entries to the short TOC (e.g. "Three Guiding Moves")
+  - Inserts a full-page intro image before each pattern
   - Cleans pattern content dynamically (removes subtitle, images, trailing sections)
   - Filters Jekyll syntax
   - Passes combined markdown + config to pandoc
@@ -31,7 +33,8 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 - **`scripts/config.yaml`** — Configuration
   - Framing + conclusion content
   - Metadata + output settings
-  - Data-driven `patterns:` list (multi-pattern)
+  - Data-driven `pattern_sections:` list (multi-section)
+  - Backwards-compatible support for legacy `patterns:`
 
 ### Content Pipeline
 
@@ -51,7 +54,7 @@ config.yaml
 
 ## Configuration Structure
 
-Edit `scripts/config.yaml` to customize (notably the `patterns:` list):
+Edit `scripts/config.yaml` to customize (notably the `pattern_sections:` list):
 
 ```yaml
 output:
@@ -63,19 +66,33 @@ metadata:
   author: Michael Basil                     # PDF author
   date: June 2026                           # Publication date
 
-patterns:                         # Patterns (in order)
-  - file: moves/establish.md
-    intro_image: images/full/move-establish.png
-  - file: moves/balance.md
-    intro_image: images/full/move-balance.png
-  - file: moves/reconcile.md
-    intro_image: images/full/move-reconcile.png
+pattern_sections:
+  - title: Moves
+    label: Three Guiding Moves
+    intro_image: images/full/moves.png
+    patterns:
+      - file: moves/establish.md
+        intro_image: images/full/move-establish.png
+      - file: moves/balance.md
+        intro_image: images/full/move-balance.png
+      - file: moves/reconcile.md
+        intro_image: images/full/move-reconcile.png
+
+  - title: Lenses
+    label: Three Leadership Lenses
+    intro_image: images/full/lenses.png
+    patterns:
+      - file: lenses/sense.md
+        intro_image: images/full/lens-sense.png
+      - file: lenses/energy.md
+        intro_image: images/full/lens-energy.png
+      - file: lenses/session.md
+        intro_image: images/full/lens-session.png
 
 framing:
-  images:                           # 3 images for cascade layout (2.8in width)
+  images:                           # 2 images for cover cascade layout (4.6in width)
     - images/full/index.png
     - images/full/method.png
-    - images/full/move-establish.png
   abstract_label: Abstract           # Required
   toc_label: Table of Contents       # Required
   abstract: |                        # Framing page abstract text
@@ -96,7 +113,7 @@ conclusion:
 
 ## Using with Other Patterns
 
-Edit `scripts/config.yaml` and update the `patterns:` list (order, files, and per-pattern intro images). Then rebuild:
+Edit `scripts/config.yaml` and update `pattern_sections:` (order, files, and images). Then rebuild:
 
 ```bash
 python3 scripts/build-pdf.py
@@ -105,7 +122,8 @@ python3 scripts/build-pdf.py
 ## Content Cleaning
 
 The build script automatically:
-- ✓ Removes the "A Pattern for Adaptive Change Leadership by..." subtitle
+- ✓ Removes the Moves subtitle ("A Pattern for … by …")
+- ✓ Removes the Lenses subtitle/byline ("A Reflective Exercise …" / "by …")
 - ✓ Removes pattern image references
 - ✓ Removes the entire "Explore in Your Context" section
 - ✓ Filters Jekyll kramdown attributes (`{: data-ga-event="..." }`)
@@ -117,11 +135,14 @@ The build script automatically:
 
 ### Page 1: Framing Page
 - **Title**: "Circle3" + "A Pattern Language for..."
-- **Visual**: 3-image cascade (2.8in × 2.8in each, staggered horizontally)
-- **Abstract**: Pulls from `framing.abstract` in config
+- **Visual**: 2-image cover layout (from `framing.images[0..1]`)
 - Introduces the pattern and context
 
-### Page 2+: Pattern Content
+### Page 2: Abstract + TOC
+- **Abstract**: Pulls from `framing.abstract` in config
+- **TOC**: Includes section headers + indented patterns
+
+### Page 3+: Pattern Content
 - Pattern title + "For leaders, facilitators..." context
 - Standard sections: Summary, Story, Context, Problem, Forces, Solution, etc.
 - Professional typography with optimized spacing

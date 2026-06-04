@@ -9,15 +9,28 @@ metadata:
 
 root_url: https://circle.basil.one
 
-patterns:
-  - file: moves/establish.md
-    intro_image: images/full/move-establish.png
+pattern_sections:
+  - title: Moves
+    label: Three Guiding Moves
+    intro_image: images/full/moves.png
+    patterns:
+      - file: moves/establish.md
+        intro_image: images/full/move-establish.png
+      - file: moves/balance.md
+        intro_image: images/full/move-balance.png
+      - file: moves/reconcile.md
+        intro_image: images/full/move-reconcile.png
 
-  - file: moves/balance.md
-    intro_image: images/full/move-balance.png
-
-  - file: moves/reconcile.md
-    intro_image: images/full/move-reconcile.png
+  - title: Lenses
+    label: Three Leadership Lenses
+    intro_image: images/full/lenses.png
+    patterns:
+      - file: lenses/sense.md
+        intro_image: images/full/lens-sense.png
+      - file: lenses/energy.md
+        intro_image: images/full/lens-energy.png
+      - file: lenses/session.md
+        intro_image: images/full/lens-session.png
 
 framing:
   title: Circle3
@@ -25,7 +38,6 @@ framing:
   images:
     - images/full/index.png
     - images/full/method.png
-    - images/full/moves.png
   abstract_label: Abstract
   toc_label: Table of Contents
   abstract: |
@@ -56,4 +68,4 @@ conclusion:
     - Ongoing evolution through practice
   cta_text: "Read the Origin Story:"
   cta_url: https://circle.basil.one/origin/
-  cta_label: circle.basil.one/origin
+  cta_label: https://circle.basil.one/origin
