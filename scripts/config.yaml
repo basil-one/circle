@@ -6,8 +6,25 @@ metadata:
   title: Circle3 - Make Change Clear and Aligned
   author: Michael Basil
   date: June 2026
+  email: michael@basil.one
+  url: https://circle.basil.one
 
 root_url: https://circle.basil.one
+
+framing:
+  title: Circle3
+  subtitle: A Pattern Language for Leading Change in Complex Environments
+  images:
+    - images/full/index.png
+    - images/full/method.png
+  toc_label: Table of Contents
+  abstract_label: Abstract
+  abstract: |
+    In complex, change-saturated environments, initiatives often stall not because people don’t care, but because they are operating from different interpretations of what is happening. Priorities compete, conversations fragment, and decisions do not hold long enough to become practice.
+
+    Circle3™ is a compact pattern language for restoring coherence under these conditions. It offers Three Guiding Moves™—Establish the Circle, Balance the Conversation, and Reconcile the Intention—that help groups form shared perception, work tension productively, and translate emerging clarity into commitments that stick.
+
+    This paper presents the Three Guiding Moves™ alongside Three Leadership Lenses™ (sense-making, energy awareness, and session intention) that support facilitation and sense-making in the same environments.
 
 paper:
   introduction_label: Introduction
@@ -24,7 +41,7 @@ paper:
 
     Circle3 is aimed at leaders, facilitators, and change agents working across teams and roles—especially when a change effort is widely discussed but shared understanding and durable commitments are not forming.
 
-    Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is narrower: create enough coherence that decisions and commitments hold beyond a single meeting.
+    Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is more precise: create enough coherence that decisions and commitments hold beyond a single meeting.
 
     ### How to read and use the language
 
@@ -43,6 +60,34 @@ paper:
     1. Pattern quality: are the Forces credible, and do the solutions read as repeatable patterns grounded in use?
     2. Language design: do the three Moves form a coherent minimum language with clear relationships and sequencing?
     3. Fit and presentation: do the Lenses belong in this submission, and is the paper framed clearly for a PLoP/PLoPCon workshop?
+
+  back_matter_label: References
+  back_matter_anchor: references
+  include_back_matter_in_toc: true
+  back_matter: |
+    # References
+
+    - Snowden, D. “Cynefin Framework.” (video)
+      - <https://www.youtube.com/watch?v=N7oz366X0-8>
+    - Whitelaw, G. Focus Energy Balance Indicator (FEBI®).
+      - <https://zenleader.global/resources/febi-assessment>
+    - Zen Leadership (patterns and community).
+      - <https://zenleader.global>
+    - Rising, L., and Manns, M. Fearless Change (pattern language).
+      - <https://fearlesschangepatterns.com>
+    - Lieberman, M. D., et al. “Putting Feelings into Words: Affect Labeling Disrupts Amygdala Activity.” Psychological Science, 2007.
+      - PubMed: <https://pubmed.ncbi.nlm.nih.gov/17576282/>
+
+    # Acknowledgements
+
+    - Drafting and editing: This paper was drafted and edited with assistance from AI-based tools. The author reviewed and finalized the text.
+    - Images: Images were created using AI-based image tools and curated/edited by the author for this paper.
+    - Practice influences: Ginny Whitelaw and the Zen Leadership community were a practical influence on the energy lens and facilitation stance.
+      - <https://zenleader.global>
+    - Negotiation influences: Chris Voss’ work was a practical influence.
+      - <https://www.youtube.com/watch?v=guZa7mQV1l0>
+    - Coaching influences: Doug Knoll’s work on difficult conversations was a practical influence.
+      - <https://www.youtube.com/watch?v=rL_m78zdXMQ>
 
 pattern_sections:
   - title: Moves
@@ -66,21 +111,6 @@ pattern_sections:
         intro_image: images/full/lens-energy.png
       - file: lenses/session.md
         intro_image: images/full/lens-session.png
-
-framing:
-  title: Circle3
-  subtitle: A Pattern Language for Leading Change in Complex Environments
-  images:
-    - images/full/index.png
-    - images/full/method.png
-  abstract_label: Abstract
-  toc_label: Table of Contents
-  abstract: |
-    In complex, change-saturated environments, initiatives often stall not because people don’t care, but because they are operating from different interpretations of what is happening. Priorities compete, conversations fragment, and decisions do not hold long enough to become practice.
-
-    **Circle3™** is a compact pattern language for restoring coherence under these conditions. It offers three interlocking Moves—**Establish the Circle**, **Balance the Conversation**, and **Reconcile the Intention**—that help groups form shared perception, work tension productively, and translate emerging clarity into commitments that stick.
-
-    This paper presents the three Moves alongside three Leadership Lenses (sense-making, energy awareness, and session intention) that support facilitation and sense-making in the same environments.
 
 conclusion:
   title: Origin and Ongoing Evolution

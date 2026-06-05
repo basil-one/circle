@@ -335,6 +335,20 @@ class CirclePDFBuilder:
 
         return intro_markdown, intro_label, intro_anchor, include_in_toc
 
+    def _get_paper_back_matter(self) -> Tuple[str, str, str, bool]:
+        """Return (back_matter_markdown, back_matter_label, back_matter_anchor, include_in_toc)."""
+        paper = self.config.get('paper', {})
+        paper = paper if isinstance(paper, dict) else {}
+
+        back_matter_markdown = str(paper.get('back_matter') or '').strip()
+        back_matter_label = str(paper.get('back_matter_label') or 'References').strip()
+        raw_anchor = str(paper.get('back_matter_anchor') or 'references').strip()
+        back_matter_anchor = self._latex_id(raw_anchor, default='references')
+
+        include_in_toc = self._parse_bool(paper.get('include_back_matter_in_toc'), default=False)
+
+        return back_matter_markdown, back_matter_label, back_matter_anchor, include_in_toc
+
     def _check_dependencies(self) -> bool:
         """Check required external system dependencies."""
         if shutil.which('pandoc') is None:
@@ -866,6 +880,10 @@ class CirclePDFBuilder:
                 rendered_label = rf"\textbf{{{safe_label}}}"
             elif kind == 'pattern':
                 rendered_label = rf"\hspace{{1em}}{safe_label}"
+            elif kind == 'conclusion':
+                rendered_label = rf"\textbf{{{safe_label}}}"
+            elif kind == 'backmatter':
+                rendered_label = safe_label
             else:
                 rendered_label = safe_label
 
@@ -888,6 +906,10 @@ class CirclePDFBuilder:
         intro_label: str = 'Introduction',
         intro_anchor: str = 'introduction',
         include_intro_in_toc: bool = True,
+        back_matter_markdown: str = '',
+        back_matter_label: str = 'References',
+        back_matter_anchor: str = 'references',
+        include_back_matter_in_toc: bool = False,
     ) -> Tuple[str, List[Dict[str, str]]]:
         """Build the combined paper body for pandoc.
 
@@ -904,6 +926,10 @@ class CirclePDFBuilder:
         intro_markdown = textwrap.dedent(intro_markdown or '').strip()
         intro_label = (intro_label or 'Introduction').strip()
         intro_anchor = (intro_anchor or 'introduction').strip()
+
+        back_matter_markdown = textwrap.dedent(back_matter_markdown or '').strip()
+        back_matter_label = (back_matter_label or 'References').strip()
+        back_matter_anchor = (back_matter_anchor or 'references').strip()
 
         if intro_markdown:
             # Ensure the intro anchor cannot collide with later section/pattern anchors.
@@ -1006,6 +1032,19 @@ class CirclePDFBuilder:
                 }
             )
 
+        # Optionally add back matter (e.g., References/Acknowledgements) as the last body section.
+        if back_matter_markdown:
+            back_anchor_base = back_matter_anchor
+            suffix = 2
+            while back_matter_anchor in used_anchors:
+                back_matter_anchor = f"{back_anchor_base}-{suffix}"
+                suffix += 1
+            used_anchors.add(back_matter_anchor)
+
+            if include_back_matter_in_toc and back_matter_label:
+                # Back matter should appear in the TOC but not be emphasized like the main content sections.
+                toc_items.append({'kind': 'backmatter', 'label': back_matter_label, 'anchor': back_matter_anchor})
+
         # Add the conclusion as the final entry.
         conclusion_title, conclusion_anchor = self._get_conclusion_meta()
         if conclusion_anchor in used_anchors:
@@ -1071,6 +1110,16 @@ class CirclePDFBuilder:
                 body = self._rewrite_pdf_internal_links(body, permalink_to_anchor)
                 chunks.append(body)
                 page_break_needed = True
+
+        if back_matter_markdown:
+            back_clean = self._filter_jekyll_syntax(back_matter_markdown)
+            back_clean = self._normalize_relative_links(back_clean)
+            back_clean = self._rewrite_pdf_internal_links(back_clean, permalink_to_anchor)
+
+            # Always start back matter on a fresh page.
+            chunks.append(self._latex_hypertarget_block(back_matter_anchor, prepend_page_break=True))
+            chunks.append(back_clean)
+            page_break_needed = True
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
         return markdown_body, toc_items
@@ -1140,9 +1189,12 @@ class CirclePDFBuilder:
             
             # Prepare pandoc arguments
             metadata = self.config.get('metadata', {})
+            metadata = metadata if isinstance(metadata, dict) else {}
             title = metadata.get('title', 'Document')
             author = metadata.get('author', 'Author')
             date = metadata.get('date', '')
+            email = metadata.get('email', '')
+            url = metadata.get('url', '')
             
             # Extract framing and conclusion config
             framing = self.config.get('framing', {})
@@ -1170,6 +1222,8 @@ class CirclePDFBuilder:
                 '-V', 'title=' + str(title),
                 '-V', 'author=' + str(author),
                 '-V', 'date=' + str(date),
+                '-V', 'email=' + str(email),
+                '-V', 'url=' + str(url),
                 '-V', 'framing_title=' + str(framing.get('title', 'Document')),
                 '-V', 'framing_subtitle=' + str(framing.get('subtitle', '')),
                 '-V', 'framing_abstract_label=' + framing_abstract_label,
@@ -1240,12 +1294,20 @@ class CirclePDFBuilder:
 
         try:
             intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_paper_intro()
+            back_matter_markdown, back_matter_label, back_matter_anchor, include_back_matter_in_toc = (
+                self._get_paper_back_matter()
+            )
+
             markdown_content, toc_items = self._build_markdown_for_pandoc(
                 pattern_sections,
                 intro_markdown=intro_markdown,
                 intro_label=intro_label,
                 intro_anchor=intro_anchor,
                 include_intro_in_toc=include_intro_in_toc,
+                back_matter_markdown=back_matter_markdown,
+                back_matter_label=back_matter_label,
+                back_matter_anchor=back_matter_anchor,
+                include_back_matter_in_toc=include_back_matter_in_toc,
             )
             markdown_content = self._replace_unicode_arrows(markdown_content)
             short_toc = self._build_short_toc_latex(toc_items)

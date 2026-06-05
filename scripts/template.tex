@@ -81,6 +81,13 @@
 % Second image - larger and centered
 \includegraphics[width=4.6in]{$framing_image_2$}
 
+$if(author)$
+\vspace{0.22in}
+{\large $author$}\\
+$if(email)$\href{mailto:$email$}{$email$}\\$endif$
+$if(url)$\href{$url$}{$url$}\\$endif$
+$endif$
+
 \end{center}
 
 \vspace*{\fill}

@@ -17,6 +17,7 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 
 - **`scripts/build-pdf.py`** — Build orchestrator
   - Optionally prepends a paper-level **Introduction** from config (`paper.introduction`)
+  - Optionally appends paper-level **Back Matter** from config (`paper.back_matter`) (e.g., References, Acknowledgements)
   - Loads **pattern sections** from config (data-driven)
   - Optionally inserts a full-page section intro image (e.g. moves.png, lenses.png)
   - Adds section entries to the short TOC (e.g. "Three Guiding Moves")
@@ -67,6 +68,8 @@ metadata:
   title: Circle3 - Establish the Circle    # PDF title
   author: Michael Basil                     # PDF author
   date: June 2026                           # Publication date
+  email: michael@basil.one                  # Optional (rendered on cover)
+  url: https://circle.basil.one             # Optional (rendered on cover)
 
 pattern_sections:
   - title: Moves
@@ -108,6 +111,16 @@ paper:
     ## Introduction
     This submission presents Circle3, a compact pattern language...
 
+  back_matter_label: References
+  back_matter_anchor: references
+  include_back_matter_in_toc: true
+  back_matter: |
+    # References
+    - ...
+
+    # Acknowledgements
+    - ...
+
 conclusion:
   title: Learn More                 # Required page title (used in TOC + page heading)
   anchor: learn-more                # Required (used for internal PDF links)
@@ -143,6 +156,7 @@ The build script automatically:
 
 ### Page 1: Framing Page
 - **Title**: "Circle3" + "A Pattern Language for..."
+- **Author contact** (optional): `metadata.email`, `metadata.url`
 - **Visual**: 2-image cover layout (from `framing.images[0..1]`)
 - Introduces the pattern and context
 
