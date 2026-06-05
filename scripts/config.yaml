@@ -1,13 +1,48 @@
 output:
   filename: circle-paper.pdf
   directory: ./
-  
+
 metadata:
-  title: Circle3 - Establish the Circle
+  title: Circle3 - Make Change Clear and Aligned
   author: Michael Basil
   date: June 2026
 
 root_url: https://circle.basil.one
+
+paper:
+  introduction_label: Introduction
+  introduction_anchor: introduction
+  include_introduction_in_toc: true
+  introduction: |
+    ## Introduction
+
+    This paper is a workshop submission to PLoP/PLoPCon. It presents Circle3™, a compact pattern language for leading change when progress is constrained less by effort or expertise and more by fragmented interpretation, scattered attention, and misaligned intention.
+
+    The paper includes Three Guiding Moves™ (patterns) and Three Leadership Lenses™ (reflective exercises). The Moves describe repeatable configurations that help groups make change clearer and more aligned; the Lenses support facilitation by sharpening what leaders notice in real time.
+
+    ### Audience and boundaries
+
+    Circle3 is aimed at leaders, facilitators, and change agents working across teams and roles—especially when a change effort is widely discussed but shared understanding and durable commitments are not forming.
+
+    Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is narrower: create enough coherence that decisions and commitments hold beyond a single meeting.
+
+    ### How to read and use the language
+
+    A typical progression is:
+
+    1. Establish the Circle — form a recurring nucleus where coherence can develop
+    2. Balance the Conversation — keep conversation generative under tension and time pressure
+    3. Reconcile the Intention — anchor alignment through an artifact and iterative conversation
+
+    The Lenses are optional supports that can be used before sessions (preparation) and between sessions (diagnosis of drift).
+
+    ### Feedback requested at the writers’ workshop
+
+    Feedback is requested on:
+
+    1. Pattern quality: are the Forces credible, and do the solutions read as repeatable patterns grounded in use?
+    2. Language design: do the three Moves form a coherent minimum language with clear relationships and sequencing?
+    3. Fit and presentation: do the Lenses belong in this submission, and is the paper framed clearly for a PLoP/PLoPCon workshop?
 
 pattern_sections:
   - title: Moves
@@ -41,11 +76,11 @@ framing:
   abstract_label: Abstract
   toc_label: Table of Contents
   abstract: |
-    In complex, change-saturated environments, initiatives often stall not because people don’t care—but because they are operating from different interpretations of what is happening. Priorities compete, conversations fragment, and decisions don’t hold long enough to become practice.
+    In complex, change-saturated environments, initiatives often stall not because people don’t care, but because they are operating from different interpretations of what is happening. Priorities compete, conversations fragment, and decisions do not hold long enough to become practice.
 
-    Circle3™ is a compact pattern language for restoring coherence under these conditions. It offers three interlocking moves—**Establish the Circle**, **Balance the Conversation**, and **Reconcile the Intention**—that help a group form shared perception, work tension productively, and translate emerging clarity into commitments that stick.
+    **Circle3™** is a compact pattern language for restoring coherence under these conditions. It offers three interlocking Moves—**Establish the Circle**, **Balance the Conversation**, and **Reconcile the Intention**—that help groups form shared perception, work tension productively, and translate emerging clarity into commitments that stick.
 
-    This paper presents the moves alongside three Leadership Lenses (sense-making, energy awareness, and session intention) that sharpen how leaders and facilitators notice what is shaping a situation. The patterns can be used independently and started in any order, but they are designed to function as a mutually reinforcing set.
+    This paper presents the three Moves alongside three Leadership Lenses (sense-making, energy awareness, and session intention) that support facilitation and sense-making in the same environments.
 
 conclusion:
   title: Origin and Ongoing Evolution
@@ -54,9 +89,9 @@ conclusion:
 
   main_text: |
     Circle3 did not begin as a framework.
-    
+
     These moves emerged from repeated experience in real change efforts—especially where pressure fragmented attention, meaning, and coordination—and coherence had to be rebuilt from lived conditions.
-    
+
     If you want the deeper context—where these patterns came from, what shaped them, and how they continue to evolve—read the Origin Story.
 
   cta_text: "Read the Origin Story:"

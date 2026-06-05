@@ -19,6 +19,7 @@ import sys
 import re
 import shutil
 import subprocess
+import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urlparse
@@ -303,6 +304,36 @@ class CirclePDFBuilder:
         raw_anchor = self._require_config_str('conclusion', 'anchor')
         anchor = self._latex_id(raw_anchor, default='conclusion')
         return title, anchor
+
+    def _parse_bool(self, value: Any, *, default: bool = False) -> bool:
+        """Parse a YAML scalar into a boolean.
+
+        Note: our YAML loader is intentionally tiny and returns scalars as strings.
+        """
+        if value is None:
+            return default
+        if isinstance(value, bool):
+            return value
+        text = str(value).strip().lower()
+        if text in ('true', 'yes', 'y', '1', 'on'):
+            return True
+        if text in ('false', 'no', 'n', '0', 'off'):
+            return False
+        return default
+
+    def _get_paper_intro(self) -> Tuple[str, str, str, bool]:
+        """Return (intro_markdown, intro_label, intro_anchor, include_in_toc)."""
+        paper = self.config.get('paper', {})
+        paper = paper if isinstance(paper, dict) else {}
+
+        intro_markdown = str(paper.get('introduction') or '').strip()
+        intro_label = str(paper.get('introduction_label') or 'Introduction').strip()
+        raw_anchor = str(paper.get('introduction_anchor') or 'introduction').strip()
+        intro_anchor = self._latex_id(raw_anchor, default='introduction')
+
+        include_in_toc = self._parse_bool(paper.get('include_introduction_in_toc'), default=True)
+
+        return intro_markdown, intro_label, intro_anchor, include_in_toc
 
     def _check_dependencies(self) -> bool:
         """Check required external system dependencies."""
@@ -852,10 +883,16 @@ class CirclePDFBuilder:
     def _build_markdown_for_pandoc(
         self,
         pattern_sections: List[Dict[str, Any]],
+        *,
+        intro_markdown: str = '',
+        intro_label: str = 'Introduction',
+        intro_anchor: str = 'introduction',
+        include_intro_in_toc: bool = True,
     ) -> Tuple[str, List[Dict[str, str]]]:
-        """Build the combined pattern-sections body for pandoc.
+        """Build the combined paper body for pandoc.
 
         Key behavior:
+        - Optionally prepends a paper-level introduction section (from config).
         - Links to included pages (moves/lenses) are rewritten as in-PDF links.
         - Links to other site pages remain external (root_url + /path).
         """
@@ -863,6 +900,22 @@ class CirclePDFBuilder:
         toc_items: List[Dict[str, str]] = []
         used_anchors: set[str] = set()
         permalink_to_anchor: Dict[str, str] = {}
+
+        intro_markdown = textwrap.dedent(intro_markdown or '').strip()
+        intro_label = (intro_label or 'Introduction').strip()
+        intro_anchor = (intro_anchor or 'introduction').strip()
+
+        if intro_markdown:
+            # Ensure the intro anchor cannot collide with later section/pattern anchors.
+            intro_anchor_base = intro_anchor
+            suffix = 2
+            while intro_anchor in used_anchors:
+                intro_anchor = f"{intro_anchor_base}-{suffix}"
+                suffix += 1
+            used_anchors.add(intro_anchor)
+
+            if include_intro_in_toc and intro_label:
+                toc_items.append({'kind': 'section', 'label': intro_label, 'anchor': intro_anchor})
 
         # First pass: plan sections/patterns and build a permalink -> anchor map.
         planned_sections: List[Dict[str, Any]] = []
@@ -968,6 +1021,17 @@ class CirclePDFBuilder:
         # True when we need a `\newpage` before the next full-page image (or next pattern).
         # After pattern bodies, we set this True because bodies do not reliably end with a page break.
         page_break_needed = False
+
+        if intro_markdown:
+            intro_clean = self._filter_jekyll_syntax(intro_markdown)
+            intro_clean = self._normalize_relative_links(intro_clean)
+            intro_clean = self._rewrite_pdf_internal_links(intro_clean, permalink_to_anchor)
+
+            chunks.append(self._latex_hypertarget_block(intro_anchor, prepend_page_break=page_break_needed))
+            page_break_needed = False
+            chunks.append(intro_clean)
+            chunks.append("```{=latex}\n\\newpage\n```")
+            page_break_needed = False
 
         for section in planned_sections:
             section_anchor = str(section['anchor'])
@@ -1175,7 +1239,14 @@ class CirclePDFBuilder:
             return False
 
         try:
-            markdown_content, toc_items = self._build_markdown_for_pandoc(pattern_sections)
+            intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_paper_intro()
+            markdown_content, toc_items = self._build_markdown_for_pandoc(
+                pattern_sections,
+                intro_markdown=intro_markdown,
+                intro_label=intro_label,
+                intro_anchor=intro_anchor,
+                include_intro_in_toc=include_intro_in_toc,
+            )
             markdown_content = self._replace_unicode_arrows(markdown_content)
             short_toc = self._build_short_toc_latex(toc_items)
             short_toc = self._replace_unicode_arrows(short_toc)

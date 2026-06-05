@@ -16,6 +16,7 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 ### Files
 
 - **`scripts/build-pdf.py`** — Build orchestrator
+  - Optionally prepends a paper-level **Introduction** from config (`paper.introduction`)
   - Loads **pattern sections** from config (data-driven)
   - Optionally inserts a full-page section intro image (e.g. moves.png, lenses.png)
   - Adds section entries to the short TOC (e.g. "Three Guiding Moves")
@@ -32,6 +33,7 @@ This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml
 
 - **`scripts/config.yaml`** — Configuration
   - Framing + conclusion content
+  - Optional paper-level Introduction content
   - Metadata + output settings
   - Data-driven `pattern_sections:` list (multi-section)
   - Backwards-compatible support for legacy `patterns:`
@@ -97,6 +99,14 @@ framing:
   toc_label: Table of Contents       # Required
   abstract: |                        # Framing page abstract text
     Circle3 is a pattern language...
+
+paper:
+  introduction_label: Introduction
+  introduction_anchor: introduction
+  include_introduction_in_toc: true
+  introduction: |
+    ## Introduction
+    This submission presents Circle3, a compact pattern language...
 
 conclusion:
   title: Learn More                 # Required page title (used in TOC + page heading)

@@ -10,6 +10,7 @@ vendor/
 *.pdf
 
 # Build script artifacts
+context/*
 scripts/debug-intermediate.md
 scripts/BUILD-SUMMARY.md
 scripts/output.*
