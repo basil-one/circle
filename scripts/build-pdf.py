@@ -836,7 +836,7 @@ class CirclePDFBuilder:
             [
                 r"\vspace*{\fill}",
                 r"\begin{center}",
-                rf"\includegraphics[width=\textwidth]{{{image_path}}}",
+                rf"\CircleThreeImage{{\textwidth}}{{{image_path}}}",
                 r"\end{center}",
                 r"\vspace*{\fill}",
                 r"\newpage",
