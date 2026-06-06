@@ -97,6 +97,21 @@ Over time, in a change-saturated environment where initiatives are fragmented an
 
 A Circle session—and any conversation—becomes a space to practice and reinforce this skill. This supports the establishment, evolution, and adjournment of a Circle, and strengthens subsequent moves like Reconcile the Intention.
 
+## Known Uses
+
+The story above is set in an enterprise team, but the facilitation challenge—integrating diverse perspectives and keeping dialogue productive under pressure—recurs across many domains.
+
+This pattern has been observed wherever groups needed to integrate diverse perspectives, work through tension, and maintain productive dialogue under uncertainty.
+
+Examples include:
+
+- Enterprise transformation initiatives where leaders, practitioners, and stakeholders needed to reconcile competing priorities.
+- Cross-functional planning and decision-making sessions where dominant voices, siloed thinking, or unresolved tension limited progress.
+- Facilitation of Agile, DevOps, and systems-thinking workshops involving participants with different roles, incentives, and mental models.
+- Mindset and learning communities that use facilitated dialogue to support reflection, peer coaching, and collective learning.
+- Community dialogue and Authentic Relating environments focused on developing deeper listening, awareness, and mutual understanding.
+- Informal mediation and relationship-repair conversations among families, friends, and volunteer organizations.
+
 ## Key Characteristics
 
 - Focuses on group energy, not just content.

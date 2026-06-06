@@ -161,6 +161,21 @@ But the essential move remains simple:
 
 **Establish the Circle.**
 
+## Known Uses
+
+The story above comes from enterprise change work, but the core move—creating a small, recurring space for collective sense-making—shows up in many domains.
+
+This pattern has been observed in organizational, community, and personal settings where change required ongoing collective sense-making rather than one-time communication.
+
+Examples include:
+
+- Agile, DevOps, and organizational transformation efforts within enterprise IT organizations, where recurring Circles connected isolated champions across teams.
+- Financial-services technology organizations navigating competing priorities, resource constraints, and complex stakeholder environments.
+- Learning communities such as the Mindset and Agile Dojo, where Circle gatherings supported reflection, peer learning, and cross-functional relationship building.
+- Governance settings such as homeowner association and condominium boards, where recurring conversations helped stakeholders build shared understanding before decisions.
+- Community dialogue and Authentic Relating experiments exploring collective reflection, belonging, and relational coherence.
+- Informal family and friendship systems where a recurring conversational container helped participants navigate ongoing tensions and change.
+
 ## Key Characteristics
 
 - begins with three people

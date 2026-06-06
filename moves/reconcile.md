@@ -97,6 +97,21 @@ When the pattern succeeds:
 - Teams understand which metrics matter, track progress over time, and revisit performance to inform alignment.
 - The artifact becomes a **living, iterative tool**—anchoring culture, decision-making, and ongoing alignment across the organization.
 
+## Known Uses
+
+Although the story above comes from an enterprise initiative, the underlying move—iterative alignment through recurring conversations anchored on a shared, visible artifact—shows up in many domains.
+
+This pattern has been observed in settings where groups relied on recurring conversations around a shared artifact to create alignment and coordinated action.
+
+Examples include:
+
+- Enterprise technology organizations seeking shared language around DevOps, systems thinking, and cultural transformation.
+- Leadership teams aligning around strategic priorities, decision-making frameworks, or measures of success.
+- Agile and organizational transformation efforts using charters, principles, working agreements, or operating models to guide change.
+- Governance environments where boards or committees use documented agreements to guide decisions and stakeholder engagement.
+- Learning communities that periodically revisit principles, practices, and expectations as participation grows and evolves.
+- Emerging community experiments that use shared values, agreements, or purpose statements as living artifacts for ongoing alignment.
+
 ## Key Characteristics
 
 - Focuses on **conversation over documentation**
