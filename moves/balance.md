@@ -101,7 +101,7 @@ A Circle session—and any conversation—becomes a space to practice and reinfo
 
 The story above is set in an enterprise team, but the facilitation challenge—integrating diverse perspectives and keeping dialogue productive under pressure—recurs across many domains.
 
-This pattern has been observed wherever groups needed to integrate diverse perspectives, work through tension, and maintain productive dialogue under uncertainty.
+This pattern appears in practice wherever groups need to integrate diverse perspectives, work through tension, and maintain productive dialogue under uncertainty.
 
 Examples include:
 

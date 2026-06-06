@@ -101,7 +101,7 @@ When the pattern succeeds:
 
 Although the story above comes from an enterprise initiative, the underlying move—iterative alignment through recurring conversations anchored on a shared, visible artifact—shows up in many domains.
 
-This pattern has been observed in settings where groups relied on recurring conversations around a shared artifact to create alignment and coordinated action.
+This pattern appears in practice in settings where groups rely on recurring conversations around a shared artifact to create alignment and coordinated action.
 
 Examples include:
 

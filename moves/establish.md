@@ -165,7 +165,7 @@ But the essential move remains simple:
 
 The story above comes from enterprise change work, but the core move—creating a small, recurring space for collective sense-making—shows up in many domains.
 
-This pattern has been observed in organizational, community, and personal settings where change required ongoing collective sense-making rather than one-time communication.
+This pattern appears in practice in organizational, community, and personal settings where change requires ongoing collective sense-making rather than one-time communication.
 
 Examples include:
 
