@@ -2,7 +2,7 @@
 layout: default
 permalink: /
 css_id: home
-title: Circle3 | Make Change Clear and Aligned
+title: Make Change Clear and Aligned
 description: Circle3 is a pattern language for leading change in complex, fast-moving environments.
 ---
 

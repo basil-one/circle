@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Origin Story | The Evolution of Circle3
+title: Origin Story
 description: The lived evolution of Circle3—how recurring patterns in change, fragmentation, and coherence gradually formed into a pattern language.
 permalink: /origin/
 css_id: origin

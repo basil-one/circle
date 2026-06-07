@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Contact
-description: Connect with Michael Basil to explore The Circle and conscious leadership.
+description: Connect with Michael Basil about Circle3 and leadership support for navigating complex change with clarity and steadiness.
 permalink: /contact/
 css_id: contact
 ---

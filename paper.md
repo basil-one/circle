@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Circle3 Paper — A Pattern Language for Navigating Complex Change
-description: Download the Circle3 paper introducing a compact pattern language of guiding moves and leadership lenses for building coherence, shared understanding, and aligned action during continuous change.
+title: Circle3 Paper
+description: The Circle3 paper introduces a compact pattern language of guiding moves and leadership lenses for building coherence, shared understanding, and aligned action in complex change.
 permalink: /paper/
 css_id: paper
 ---

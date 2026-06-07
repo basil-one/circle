@@ -1,7 +1,7 @@
 ---
 layout: default
 title: License
-description: Creative Commons Attribution-ShareAlike 4.0 International License for the content of this site.
+description: License terms for Circle3 written content and patterns (CC BY-SA 4.0).
 permalink: /license/
 css_id: license
 ---

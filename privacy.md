@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Privacy Policy
-description: Privacy Policy
+description: Privacy policy for circle.basil.one. We use Google Analytics for aggregated usage insights and do not collect personal information.
 permalink: /privacy/
 css_id: privacy
 ---
