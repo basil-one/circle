@@ -11,10 +11,7 @@ vendor/
 # OS / editor junk
 .DS_Store
 
-# Build script artifacts (generated locally)
-scripts/debug-intermediate.md
-scripts/BUILD-SUMMARY.md
-scripts/output.*
+# Build script artifacts
 scripts/__pycache__/
 scripts/.pytest_cache/
 

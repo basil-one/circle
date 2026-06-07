@@ -21,7 +21,7 @@ framing:
   abstract_file: content/plop.paper.abstract.md
   include_abstract_in_toc: true
 
-paper:
+body:
   introduction_label: Introduction
   introduction_anchor: introduction
   introduction_file: content/plop.paper.introduction.md
@@ -31,7 +31,7 @@ paper:
   back_matter_file: content/plop.paper.back-matter.md
   include_back_matter_in_toc: true
   
-pattern_sections:
+sections:
   - title: Three Guiding Moves
     include_in_toc: true
     intro_image: images/full/moves.png

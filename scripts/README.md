@@ -1,248 +1,30 @@
-# Circle3 PDF Publication Pipeline (Multi-Pattern)
+# PDF build (Circle3 / PLoP paper)
 
-A configurable PDF publication pipeline for creating a single, conference-ready PDF containing multiple Circle3 patterns (with the same existing framing + conclusion styling).
+Build the Circle3 PLoP paper PDF using pandoc + xelatex.
 
-## Quick Start
-
-```bash
-cd /workspaces/circle
-python3 scripts/build-pdf.py
-```
-
-This generates `circle-paper.pdf` based on configuration in `scripts/config.yaml`.
-
-## Architecture
-
-### Files
-
-- **`scripts/build-pdf.py`** — Build orchestrator
-  - Optionally prepends a paper-level **Introduction** from config (`paper.introduction`)
-  - Optionally appends paper-level **Back Matter** from config (`paper.back_matter`) (e.g., References, Acknowledgements)
-  - Loads **pattern sections** from config (data-driven)
-  - Optionally inserts a full-page section intro image (e.g. moves.png, lenses.png)
-  - Adds section entries to the short TOC (e.g. "Three Guiding Moves")
-  - Inserts a full-page intro image before each pattern
-  - Cleans pattern content dynamically (removes subtitle, images, trailing sections)
-  - Filters Jekyll syntax
-  - Passes combined markdown + config to pandoc
-
-- **`scripts/template.tex`** — Custom LaTeX template
-  - Uses config variables for all text content (framing abstract, conclusion text, CTAs)
-  - Uses config variables for all image paths
-  - Page structure: Cover → Abstract → TOC → Content → Conclusion (title/anchor configured in `config.yaml`)
-  - Optimized spacing and typography for readability
-
-- **`scripts/config.yaml`** — Configuration
-  - Framing + conclusion content
-  - Optional paper-level Introduction content
-  - Metadata + output settings
-  - Data-driven `pattern_sections:` list (multi-section)
-  - Backwards-compatible support for legacy `patterns:`
-
-### Content Pipeline
-
-```
-config.yaml
-           ↓
-      build-pdf.py
-           ↓
-      establish.md / balance.md / reconcile.md → [Clean: remove subtitle, images, explore section, Jekyll syntax]
-           ↓
-      template.tex [Use config variables to populate all content]
-           ↓
-      pandoc + xelatex
-           ↓
-      circle-paper.pdf
-```
-
-## Configuration Structure
-
-Edit `scripts/config.yaml` to customize (notably the `pattern_sections:` list):
-
-```yaml
-output:
-  filename: circle-paper.pdf      # Output PDF filename
-  directory: ./                    # Output directory
-
-metadata:
-  title: Circle3 - Establish the Circle    # PDF title
-  author: Michael Basil                     # PDF author
-  date: June 2026                           # Publication date
-  email: michael@basil.one                  # Optional (rendered on cover)
-  url: https://circle.basil.one             # Optional (rendered on cover)
-
-pattern_sections:
-  - title: Moves
-    label: Three Guiding Moves
-    intro_image: images/full/moves.png
-    patterns:
-      - file: moves/establish.md
-        intro_image: images/full/move-establish.png
-      - file: moves/balance.md
-        intro_image: images/full/move-balance.png
-      - file: moves/reconcile.md
-        intro_image: images/full/move-reconcile.png
-
-  - title: Lenses
-    label: Three Leadership Lenses
-    intro_image: images/full/lenses.png
-    patterns:
-      - file: lenses/sense.md
-        intro_image: images/full/lens-sense.png
-      - file: lenses/energy.md
-        intro_image: images/full/lens-energy.png
-      - file: lenses/session.md
-        intro_image: images/full/lens-session.png
-
-framing:
-  images:                           # 2 images for cover cascade layout (4.6in width)
-    - images/full/index.png
-    - images/full/method.png
-  abstract_label: Abstract           # Required
-  toc_label: Table of Contents       # Required
-  abstract: |                        # Framing page abstract text
-    Circle3 is a pattern language...
-
-paper:
-  introduction_label: Introduction
-  introduction_anchor: introduction
-  include_introduction_in_toc: true
-  introduction: |
-    ## Introduction
-    This submission presents Circle3, a compact pattern language...
-
-  back_matter_label: References
-  back_matter_anchor: references
-  include_back_matter_in_toc: true
-  back_matter: |
-    # References
-    - ...
-
-    # Acknowledgements
-    - ...
-
-conclusion:
-  title: Learn More                 # Required page title (used in TOC + page heading)
-  anchor: learn-more                # Required (used for internal PDF links)
-  image: images/full/origin.png     # Conclusion page image (3.0in width)
-  main_text: |                      # Main paragraph
-    Establish the Circle is the signature move...
-  cta_text: "Explore the full pattern language:"
-  cta_url: https://circle.basil.one
-  cta_label: circle.basil.one
-```
-
-## Using with Other Patterns
-
-Edit `scripts/config.yaml` and update `pattern_sections:` (order, files, and images). Then rebuild:
+## Run
 
 ```bash
-python3 scripts/build-pdf.py
+python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 ```
 
-## Content Cleaning
+- Output: `assets/pdfs/circle3-paper.pdf`
+- Intermediate markdown (for debugging): `/tmp/plop.paper.config.debug-intermediate.md` (derived from the config filename)
 
-The build script automatically:
-- ✓ Removes the Moves subtitle ("A Pattern for … by …")
-- ✓ Removes the Lenses subtitle/byline ("A Reflective Exercise …" / "by …")
-- ✓ Removes pattern image references
-- ✓ Removes the entire "Explore in Your Context" section
-- ✓ Filters Jekyll kramdown attributes (`{: data-ga-event="..." }`)
-- ✓ Cleans excess whitespace
+## Inputs
 
-**No manual editing required** — source markdown files are left untouched.
+- `scripts/plop.paper.config.yaml` — build config (strict)
+- `scripts/template.tex` — LaTeX template
+- `scripts/content/*.md` — longform markdown blocks referenced by the config
+- `_moves/*.md`, `_lenses/*.md` — pattern sources (web + PDF share these)
 
-## Design Notes
+## Config shape (top-level)
 
-### Page 1: Framing Page
-- **Title**: "Circle3" + "A Pattern Language for..."
-- **Author contact** (optional): `metadata.email`, `metadata.url`
-- **Visual**: 2-image cover layout (from `framing.images[0..1]`)
-- Introduces the pattern and context
+- `output`: `filename`, `directory`
+- `metadata`: `title`, `author`, `date`, `url` (+ optional `email`)
+- `framing`: cover/abstract/TOC labels + cover images + `abstract_file`
+- `body`: `introduction_file` + `back_matter_file` (+ labels/anchors/include flags)
+- `sections`: ordered pattern sections with `intro_image` and `patterns[]` entries
+- `conclusion`: final page (image + main text file + CTA)
 
-### Page 2: Abstract
-- Pulls from `framing.abstract` in config
-
-### Page 3: TOC
-- Includes section headers + indented patterns
-
-### Page 4+: Pattern Content
-- Pattern title + "For leaders, facilitators..." context
-- Standard sections: Summary, Story, Context, Problem, Forces, Solution, etc.
-- Professional typography with optimized spacing
-- Tight list formatting for readability
-
-### Last Page: Conclusion
-- **Title**: From `conclusion.title`
-- **Image**: Single large image (3.0in, centered) from `conclusion.image`
-- **Main text**: From `conclusion.main_text`
-- **CTA**: Call-to-action with hyperlinked URL
-
-## Customization
-
-### Typography Adjustments
-
-Edit `scripts/template.tex`:
-
-```latex
-% Change font size
-\documentclass[12pt]{article}  # Change 11pt to 12pt
-
-% Adjust margins
-\usepackage[margin=0.5in]{geometry}  # Change margin values
-
-% Adjust heading spacing
-\titlespacing*{\section}{0pt}{8pt}{4pt}  # Adjust values
-```
-
-### Image Sizing
-
-Edit `scripts/template.tex`:
-
-```latex
-% Framing page cascade images
-\includegraphics[width=2.8in]{...}  # Change 2.8in to desired width
-
-% Conclusion page image
-\includegraphics[width=3.0in]{...}  # Change 3.0in to desired width
-```
-
-### List Spacing
-
-Edit `scripts/template.tex`:
-
-```latex
-% Tighter list spacing
-\setlist[itemize]{topsep=2pt, itemsep=2pt, parsep=0pt}
-```
-
-## CI/CD Ready
-
-This pipeline is designed for GitHub Actions integration:
-- Single command: `python3 scripts/build-pdf.py`
-- No external dependencies beyond pandoc (pre-installed)
-- Config-driven (no code changes needed for new patterns)
-- Automatic PDF generation on config/pattern changes
-
-## Dependencies
-
-- **Python 3.13+** (stdlib only, no pip packages)
-- **Pandoc 3.1+** (for markdown → PDF conversion)
-- **texlive-xetex** + **fonts-noto** (for LaTeX rendering with Unicode/emoji support)
-
-All included in the dev container.
-
-## Output
-
-- **File**: `circle-paper.pdf`
-- **Size**: ~8-9 MB per pattern
-- **Format**: Professional PDF with:
-  - Hyperlinked content
-  - Unicode/emoji rendering
-  - Print-ready styling
-
----
-
-**Status**: Production ready  
-**Last Updated**: June 1, 2026  
-**Tested With**: Python 3.13.5, Pandoc 3.1.11.1, xelatex
+Inline markdown in YAML is not supported; use `*_file` keys.

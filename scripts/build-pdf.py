@@ -20,6 +20,7 @@ import re
 import shutil
 import subprocess
 import textwrap
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urlparse
@@ -217,17 +218,6 @@ def simple_yaml_load(content: str) -> dict:
     return root
 
 
-def deep_merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
-    """Deep-merge override into base (override wins)."""
-    merged: Dict[str, Any] = dict(base)
-    for k, v in override.items():
-        if k in merged and isinstance(merged[k], dict) and isinstance(v, dict):
-            merged[k] = deep_merge_dicts(merged[k], v)
-        else:
-            merged[k] = v
-    return merged
-
-
 class CirclePDFBuilder:
     """Build Circle3 multi-pattern PDF."""
 
@@ -240,18 +230,11 @@ class CirclePDFBuilder:
         self.config = self._load_config()
     
     def _load_config(self) -> dict:
-        """Load configuration (optionally layering on top of a base config)."""
+        """Load configuration."""
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             config = simple_yaml_load(content)
-
-            base_config_rel = config.get('base_config')
-            if base_config_rel:
-                base_path = (self.config_path.parent / str(base_config_rel)).resolve()
-                with open(base_path, 'r', encoding='utf-8') as f:
-                    base = simple_yaml_load(f.read())
-                config = deep_merge_dicts(base, config)
 
             logger.info("Configuration loaded successfully")
             return config
@@ -294,46 +277,55 @@ class CirclePDFBuilder:
             raise ValueError(f"Could not read {description} at {path}: {e}")
 
     def _get_markdown_content(self, cfg: Dict[str, Any], *, inline_key: str, file_key: str) -> str:
-        """Load markdown either inline or from a referenced file."""
+        """Load required markdown content from a referenced file.
+
+        Inline markdown in YAML is intentionally not supported.
+        """
         if not isinstance(cfg, dict):
             cfg = {}
 
         file_path = cfg.get(file_key)
-        if file_path:
-            return self._read_text_file(str(file_path), description=file_key).strip()
+        if not file_path:
+            inline = cfg.get(inline_key)
+            if str(inline or '').strip():
+                raise ValueError(
+                    f"Inline markdown for '{inline_key}' is no longer supported; "
+                    f"move it to a markdown file and set '{file_key}'."
+                )
+            raise ValueError(f"Missing required config value: {file_key}")
 
-        return str(cfg.get(inline_key) or '').strip()
+        return self._read_text_file(str(file_path), description=file_key).strip()
 
     def _get_root_url(self) -> str:
-        """Return the root URL used to absolutize site-relative links.
-
-        Prefer config.root_url if present; otherwise fall back to metadata.url.
-        """
+        """Return the root URL used to absolutize site-relative links."""
         root_url = str(self.config.get('root_url') or '').strip().rstrip('/')
         if root_url:
             return root_url
 
-        metadata = self.config.get('metadata', {})
-        metadata = metadata if isinstance(metadata, dict) else {}
-        return str(metadata.get('url') or '').strip().rstrip('/')
+        # Strict: metadata.url is required.
+        return self._require_config_str('metadata', 'url').rstrip('/')
 
     def _get_framing_abstract_toc_settings(self) -> Tuple[str, str, bool]:
         """Return (abstract_label, abstract_anchor, include_in_toc)."""
-        framing = self.config.get('framing', {})
-        framing = framing if isinstance(framing, dict) else {}
+        framing = self.config.get('framing')
+        if not isinstance(framing, dict):
+            raise ValueError("Config section 'framing' must be a mapping/object")
 
-        label = str(framing.get('abstract_label') or 'Abstract').strip()
-        raw_anchor = str(framing.get('abstract_anchor') or 'abstract').strip()
+        label = self._require_config_str('framing', 'abstract_label')
+        raw_anchor = self._require_config_str('framing', 'abstract_anchor')
         anchor = self._latex_id(raw_anchor, default='abstract')
+
+        if 'include_abstract_in_toc' not in framing:
+            raise ValueError("Missing required config value: framing.include_abstract_in_toc")
         include_in_toc = self._parse_bool(framing.get('include_abstract_in_toc'), default=False)
 
         return label, anchor, include_in_toc
 
     def _get_pdf_engine(self) -> str:
         """Return the configured PDF engine (default: xelatex)."""
-        output_cfg = self.config.get('output', {})
+        output_cfg = self.config.get('output')
         if not isinstance(output_cfg, dict):
-            output_cfg = {}
+            raise ValueError("Config section 'output' must be a mapping/object")
 
         engine = (
             str(self.config.get('pdf_engine') or '')
@@ -343,7 +335,7 @@ class CirclePDFBuilder:
         return engine
 
     def _require_config_str(self, section: str, key: str) -> str:
-        cfg = self.config.get(section, {})
+        cfg = self.config.get(section)
         if not isinstance(cfg, dict):
             raise ValueError(f"Config section '{section}' must be a mapping/object")
 
@@ -351,6 +343,30 @@ class CirclePDFBuilder:
         value = '' if value is None else str(value).strip()
         if not value:
             raise ValueError(f"Missing required config value: {section}.{key}")
+        return value
+
+    def _require_dict_str(self, cfg: Dict[str, Any], key: str, *, context: str) -> str:
+        if not isinstance(cfg, dict):
+            raise ValueError(f"Config section '{context}' must be a mapping/object")
+        value = cfg.get(key)
+        value = '' if value is None else str(value).strip()
+        if not value:
+            raise ValueError(f"Missing required config value: {context}.{key}")
+        return value
+
+    def _require_dict_bool(self, cfg: Dict[str, Any], key: str, *, context: str) -> bool:
+        if not isinstance(cfg, dict):
+            raise ValueError(f"Config section '{context}' must be a mapping/object")
+        if key not in cfg:
+            raise ValueError(f"Missing required config value: {context}.{key}")
+        return self._parse_bool(cfg.get(key), default=False)
+
+    def _require_dict_list(self, cfg: Dict[str, Any], key: str, *, context: str) -> List[Any]:
+        if not isinstance(cfg, dict):
+            raise ValueError(f"Config section '{context}' must be a mapping/object")
+        value = cfg.get(key)
+        if not isinstance(value, list) or not value:
+            raise ValueError(f"Missing required config value: {context}.{key} (must be a non-empty list)")
         return value
 
     def _get_framing_labels(self) -> Tuple[str, str]:
@@ -391,31 +407,33 @@ class CirclePDFBuilder:
             return False
         return default
 
-    def _get_paper_intro(self) -> Tuple[str, str, str, bool]:
+    def _get_body_intro(self) -> Tuple[str, str, str, bool]:
         """Return (intro_markdown, intro_label, intro_anchor, include_in_toc)."""
-        paper = self.config.get('paper', {})
-        paper = paper if isinstance(paper, dict) else {}
+        body = self.config.get('body')
+        if not isinstance(body, dict):
+            raise ValueError("Config section 'body' must be a mapping/object")
 
-        intro_markdown = self._get_markdown_content(paper, inline_key='introduction', file_key='introduction_file')
-        intro_label = str(paper.get('introduction_label') or 'Introduction').strip()
-        raw_anchor = str(paper.get('introduction_anchor') or 'introduction').strip()
+        intro_markdown = self._get_markdown_content(body, inline_key='introduction', file_key='introduction_file')
+        intro_label = self._require_dict_str(body, 'introduction_label', context='body')
+        raw_anchor = self._require_dict_str(body, 'introduction_anchor', context='body')
         intro_anchor = self._latex_id(raw_anchor, default='introduction')
 
-        include_in_toc = self._parse_bool(paper.get('include_introduction_in_toc'), default=True)
+        include_in_toc = self._require_dict_bool(body, 'include_introduction_in_toc', context='body')
 
         return intro_markdown, intro_label, intro_anchor, include_in_toc
 
-    def _get_paper_back_matter(self) -> Tuple[str, str, str, bool]:
+    def _get_body_back_matter(self) -> Tuple[str, str, str, bool]:
         """Return (back_matter_markdown, back_matter_label, back_matter_anchor, include_in_toc)."""
-        paper = self.config.get('paper', {})
-        paper = paper if isinstance(paper, dict) else {}
+        body = self.config.get('body')
+        if not isinstance(body, dict):
+            raise ValueError("Config section 'body' must be a mapping/object")
 
-        back_matter_markdown = self._get_markdown_content(paper, inline_key='back_matter', file_key='back_matter_file')
-        back_matter_label = str(paper.get('back_matter_label') or 'References').strip()
-        raw_anchor = str(paper.get('back_matter_anchor') or 'references').strip()
+        back_matter_markdown = self._get_markdown_content(body, inline_key='back_matter', file_key='back_matter_file')
+        back_matter_label = self._require_dict_str(body, 'back_matter_label', context='body')
+        raw_anchor = self._require_dict_str(body, 'back_matter_anchor', context='body')
         back_matter_anchor = self._latex_id(raw_anchor, default='references')
 
-        include_in_toc = self._parse_bool(paper.get('include_back_matter_in_toc'), default=False)
+        include_in_toc = self._require_dict_bool(body, 'include_back_matter_in_toc', context='body')
 
         return back_matter_markdown, back_matter_label, back_matter_anchor, include_in_toc
 
@@ -541,23 +559,10 @@ class CirclePDFBuilder:
         return path
 
     def _infer_section_permalink(self, section: Dict[str, Any]) -> str | None:
-        """Best-effort mapping for section-index links (e.g. '/moves/')."""
-        for key in ('permalink', 'path', 'url', 'site_path', 'site_url'):
-            raw = section.get(key)
-            norm = self._normalize_site_path(str(raw)) if raw else None
-            if norm:
-                return norm
-
-        section_title = str(section.get('title') or '').strip().lower()
-        section_toc_label = str(section.get('toc_label') or section.get('label') or '').strip().lower()
-        candidate = section_toc_label or section_title
-
-        if candidate == 'moves':
-            return '/moves/'
-        if candidate == 'lenses':
-            return '/lenses/'
-
-        return None
+        """Return the canonical site permalink for a section, if explicitly provided."""
+        raw = section.get('permalink')
+        norm = self._normalize_site_path(str(raw)) if raw else None
+        return norm
 
     def _rewrite_pdf_internal_links(self, content: str, permalink_to_anchor: Dict[str, str]) -> str:
         """Rewrite site links that target included pages into in-PDF anchor links."""
@@ -668,64 +673,12 @@ class CirclePDFBuilder:
             logger.error(f"Error reading pattern file '{pattern_file}': {e}")
             sys.exit(1)
 
-    def _get_patterns(self) -> List[Dict[str, str]]:
-        """Return ordered *flat* patterns configuration (legacy).
-
-        Preferred (legacy) config shape:
-
-        patterns:
-          - file: moves/establish.md
-            intro_image: images/full/move-establish.png
-          - file: moves/balance.md
-            intro_image: images/full/move-balance.png
-          - file: moves/reconcile.md
-            intro_image: images/full/move-reconcile.png
-
-        Backwards-compatibility:
-        - If patterns is missing, fall back to `pattern_file`.
-
-        Note:
-          New configs should prefer `pattern_sections:`. See `_get_pattern_sections()`.
-        """
-
-        raw_patterns = self.config.get('patterns')
-        patterns: List[Dict[str, str]] = []
-
-        if isinstance(raw_patterns, list) and raw_patterns:
-            for item in raw_patterns:
-                if isinstance(item, str):
-                    patterns.append({'file': item})
-                elif isinstance(item, dict):
-                    # ensure we only carry string-ish values
-                    pattern: Dict[str, str] = {}
-                    for k, v in item.items():
-                        if v is None:
-                            continue
-                        pattern[str(k)] = str(v)
-                    patterns.append(pattern)
-                else:
-                    raise ValueError(f"Unsupported patterns item: {item}")
-
-        if patterns:
-            for p in patterns:
-                if 'file' not in p:
-                    raise ValueError(f"Each patterns item must include 'file'. Got: {p}")
-            return patterns
-
-        pattern_file = self.config.get('pattern_file')
-        if pattern_file:
-            intro_image = self.config.get('pattern_intro_image', '')
-            return [{'file': str(pattern_file), 'intro_image': str(intro_image)}]
-
-        # Final fallback
-        return [{'file': 'moves/establish.md'}]
-
     def _get_pattern_sections(self) -> List[Dict[str, Any]]:
-        """Return ordered pattern-sections configuration.
+        """Return ordered sectioned-pattern configuration.
 
         Preferred config shape:
 
-        pattern_sections:
+        sections:
           - title: Moves
             intro_image: images/full/moves.png      # optional
             patterns:
@@ -746,22 +699,19 @@ class CirclePDFBuilder:
               - file: lenses/session.md
                 intro_image: images/full/lens-session.png
 
-        Also supports:
-        - `section_image` as an alias for `intro_image` (for section intros).
-
-        Backwards-compatibility:
-        - If `pattern_sections` is missing, fall back to the legacy flat `patterns:` list.
-        - If `patterns` is missing, fall back to `pattern_file`/`pattern_intro_image`.
         """
 
-        raw_sections = self.config.get('pattern_sections')
+        raw_sections = self.config.get('sections')
+        if not isinstance(raw_sections, list) or not raw_sections:
+            raise ValueError("Missing required config value: sections (must be a non-empty list)")
+
         sections: List[Dict[str, Any]] = []
 
         if isinstance(raw_sections, list) and raw_sections:
             for idx, item in enumerate(raw_sections):
                 if not isinstance(item, dict):
                     raise ValueError(
-                        f"Unsupported pattern_sections item at index {idx}: expected mapping/object, got {type(item)}"
+                        f"Unsupported sections item at index {idx}: expected mapping/object, got {type(item)}"
                     )
 
                 # Copy top-level section keys (stringify), then coerce patterns.
@@ -774,31 +724,29 @@ class CirclePDFBuilder:
                 raw_patterns = section.get('patterns')
                 if not isinstance(raw_patterns, list) or not raw_patterns:
                     raise ValueError(
-                        "Each pattern_sections item must include a non-empty 'patterns' list. "
+                        "Each sections item must include a non-empty 'patterns' list. "
                         f"Got: {item}"
                     )
 
                 patterns: List[Dict[str, str]] = []
                 for p_idx, p in enumerate(raw_patterns):
-                    if isinstance(p, str):
-                        patterns.append({'file': p})
-                    elif isinstance(p, dict):
-                        pattern: Dict[str, str] = {}
-                        for pk, pv in p.items():
-                            if pv is None:
-                                continue
-                            pattern[str(pk)] = str(pv)
-                        patterns.append(pattern)
-                    else:
+                    if not isinstance(p, dict):
                         raise ValueError(
-                            f"Unsupported patterns item in pattern_sections[{idx}] at index {p_idx}: {p}"
+                            f"Unsupported patterns item in sections[{idx}] at index {p_idx}: expected mapping/object, got {type(p)}"
                         )
+
+                    pattern: Dict[str, str] = {}
+                    for pk, pv in p.items():
+                        if pv is None:
+                            continue
+                        pattern[str(pk)] = str(pv)
+                    patterns.append(pattern)
 
                 for p in patterns:
                     if 'file' not in p:
                         raise ValueError(
                             "Each patterns item must include 'file'. "
-                            f"Got: {p} (in pattern_sections[{idx}])"
+                            f"Got: {p} (in sections[{idx}])"
                         )
 
                 section['patterns'] = patterns
@@ -806,8 +754,7 @@ class CirclePDFBuilder:
 
             return sections
 
-        # Fallback: wrap the legacy flat patterns list into a single unnamed section.
-        return [{'title': '', 'patterns': self._get_patterns()}]
+        raise ValueError("Missing required config value: sections (must be a non-empty list)")
 
     def _slugify(self, text: str) -> str:
         """Create a stable anchor slug for LaTeX hypertargets."""
@@ -972,22 +919,22 @@ class CirclePDFBuilder:
         self,
         pattern_sections: List[Dict[str, Any]],
         *,
-        abstract_label: str = 'Abstract',
-        abstract_anchor: str = 'abstract',
-        include_abstract_in_toc: bool = False,
-        intro_markdown: str = '',
-        intro_label: str = 'Introduction',
-        intro_anchor: str = 'introduction',
-        include_intro_in_toc: bool = True,
-        back_matter_markdown: str = '',
-        back_matter_label: str = 'References',
-        back_matter_anchor: str = 'references',
-        include_back_matter_in_toc: bool = False,
+        abstract_label: str,
+        abstract_anchor: str,
+        include_abstract_in_toc: bool,
+        intro_markdown: str,
+        intro_label: str,
+        intro_anchor: str,
+        include_intro_in_toc: bool,
+        back_matter_markdown: str,
+        back_matter_label: str,
+        back_matter_anchor: str,
+        include_back_matter_in_toc: bool,
     ) -> Tuple[str, List[Dict[str, str]]]:
         """Build the combined paper body for pandoc.
 
         Key behavior:
-        - Optionally prepends a paper-level introduction section (from config).
+        - Optionally prepends a document/body-level introduction section (from config).
         - Links to included pages (moves/lenses) are rewritten as in-PDF links.
         - Links to other site pages remain external (root_url + /path).
         """
@@ -996,8 +943,8 @@ class CirclePDFBuilder:
         used_anchors: set[str] = set()
         permalink_to_anchor: Dict[str, str] = {}
 
-        abstract_label = (abstract_label or 'Abstract').strip()
-        abstract_anchor = self._latex_id(str(abstract_anchor or 'abstract'), default='abstract')
+        abstract_label = str(abstract_label).strip()
+        abstract_anchor = self._latex_id(str(abstract_anchor).strip(), default='abstract')
         include_abstract_in_toc = bool(include_abstract_in_toc)
 
         # The abstract anchor is created in the LaTeX template (not in the markdown body),
@@ -1008,13 +955,13 @@ class CirclePDFBuilder:
         if include_abstract_in_toc and abstract_label and abstract_anchor:
             toc_items.append({'kind': 'section', 'label': abstract_label, 'anchor': abstract_anchor})
 
-        intro_markdown = textwrap.dedent(intro_markdown or '').strip()
-        intro_label = (intro_label or 'Introduction').strip()
-        intro_anchor = (intro_anchor or 'introduction').strip()
+        intro_markdown = textwrap.dedent(intro_markdown).strip()
+        intro_label = str(intro_label).strip()
+        intro_anchor = str(intro_anchor).strip()
 
-        back_matter_markdown = textwrap.dedent(back_matter_markdown or '').strip()
-        back_matter_label = (back_matter_label or 'References').strip()
-        back_matter_anchor = (back_matter_anchor or 'references').strip()
+        back_matter_markdown = textwrap.dedent(back_matter_markdown).strip()
+        back_matter_label = str(back_matter_label).strip()
+        back_matter_anchor = str(back_matter_anchor).strip()
 
         if intro_markdown:
             # Ensure the intro anchor cannot collide with later section/pattern anchors.
@@ -1037,21 +984,11 @@ class CirclePDFBuilder:
                     f"Unsupported pattern section at index {section_idx}: expected mapping/object, got {type(section)}"
                 )
 
-            section_title = str(section.get('title') or '').strip()
-            section_toc_label = str(section.get('toc_label') or section.get('label') or section_title).strip()
-            section_intro_image = str(
-                section.get('intro_image')
-                or section.get('section_image')
-                or section.get('section_intro_image')
-                or ''
-            ).strip()
+            section_title = self._require_dict_str(section, 'title', context=f"sections[{section_idx}]")
+            section_toc_label = section_title
+            section_intro_image = self._require_dict_str(section, 'intro_image', context=f"sections[{section_idx}]")
 
-            patterns = section.get('patterns', [])
-            if not isinstance(patterns, list) or not patterns:
-                raise ValueError(
-                    "Each pattern section must include a non-empty 'patterns' list. "
-                    f"Got: {section}"
-                )
+            patterns = self._require_dict_list(section, 'patterns', context=f"sections[{section_idx}]")
 
             if section_title:
                 logger.info(f"Loaded pattern section: {section_title} ({len(patterns)} patterns)")
@@ -1064,7 +1001,7 @@ class CirclePDFBuilder:
                 suffix += 1
             used_anchors.add(section_anchor)
 
-            include_section_in_toc = self._parse_bool(section.get('include_in_toc'), default=True)
+            include_section_in_toc = self._require_dict_bool(section, 'include_in_toc', context=f"sections[{section_idx}]")
             if include_section_in_toc and section_toc_label:
                 toc_items.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
 
@@ -1073,12 +1010,22 @@ class CirclePDFBuilder:
                 permalink_to_anchor[section_permalink] = section_anchor
 
             planned_patterns: List[Dict[str, Any]] = []
-            for pattern in patterns:
-                if not isinstance(pattern, dict) or 'file' not in pattern:
-                    raise ValueError(f"Each pattern must be a mapping with a 'file' key. Got: {pattern}")
+            for pattern_idx, pattern in enumerate(patterns):
+                if not isinstance(pattern, dict):
+                    raise ValueError(
+                        f"Each pattern must be a mapping/object. Got: {type(pattern)} (in sections[{section_idx}].patterns[{pattern_idx}])"
+                    )
 
-                pattern_file = str(pattern['file'])
-                intro_image = str(pattern.get('intro_image', '') or '').strip()
+                pattern_file = self._require_dict_str(
+                    pattern,
+                    'file',
+                    context=f"sections[{section_idx}].patterns[{pattern_idx}]",
+                )
+                intro_image = self._require_dict_str(
+                    pattern,
+                    'intro_image',
+                    context=f"sections[{section_idx}].patterns[{pattern_idx}]",
+                )
 
                 frontmatter, body = self._read_and_clean_pattern(pattern_file)
                 title = self._infer_pattern_title(pattern_file, frontmatter, body)
@@ -1274,24 +1221,29 @@ class CirclePDFBuilder:
                 return False
             
             # Prepare pandoc arguments
-            metadata = self.config.get('metadata', {})
-            metadata = metadata if isinstance(metadata, dict) else {}
-            title = metadata.get('title', 'Document')
-            author = metadata.get('author', 'Author')
-            date = metadata.get('date', '')
-            email = metadata.get('email', '')
-            url = metadata.get('url', '')
-            
+            title = self._require_config_str('metadata', 'title')
+            author = self._require_config_str('metadata', 'author')
+            date = self._require_config_str('metadata', 'date')
+
+            metadata = self.config.get('metadata')
+            if not isinstance(metadata, dict):
+                raise ValueError("Config section 'metadata' must be a mapping/object")
+            email = str(metadata.get('email') or '').strip()  # optional
+            url = self._require_config_str('metadata', 'url')
+
             # Extract framing and conclusion config
-            framing = self.config.get('framing', {})
-            framing = framing if isinstance(framing, dict) else {}
-            conclusion = self.config.get('conclusion', {})
-            conclusion = conclusion if isinstance(conclusion, dict) else {}
+            framing = self.config.get('framing')
+            if not isinstance(framing, dict):
+                raise ValueError("Config section 'framing' must be a mapping/object")
+
+            conclusion = self.config.get('conclusion')
+            if not isinstance(conclusion, dict):
+                raise ValueError("Config section 'conclusion' must be a mapping/object")
 
             framing_abstract_label, framing_toc_label = self._get_framing_labels()
             conclusion_title, conclusion_anchor = self._get_conclusion_meta()
             
-            abstract_anchor = self._latex_id(str(framing.get('abstract_anchor') or 'abstract'), default='abstract')
+            abstract_anchor = self._latex_id(self._require_config_str('framing', 'abstract_anchor'), default='abstract')
 
             # Convert markdown formatting to LaTeX in config values
             framing_abstract_md = self._get_markdown_content(framing, inline_key='abstract', file_key='abstract_file')
@@ -1304,6 +1256,24 @@ class CirclePDFBuilder:
             framing_abstract = self._replace_unicode_arrows(framing_abstract)
             conclusion_main = self._replace_unicode_arrows(conclusion_main)
             
+            framing_title = self._require_dict_str(framing, 'title', context='framing')
+            framing_subtitle = self._require_dict_str(framing, 'subtitle', context='framing')
+
+            images = self._require_dict_list(framing, 'images', context='framing')
+            if len(images) < 2:
+                raise ValueError("framing.images must include at least 2 images")
+            framing_image_1 = str(images[0]).strip()
+            framing_image_2 = str(images[1]).strip()
+            if not framing_image_1:
+                raise ValueError("Missing required config value: framing.images[0]")
+            if not framing_image_2:
+                raise ValueError("Missing required config value: framing.images[1]")
+
+            conclusion_image = self._require_dict_str(conclusion, 'image', context='conclusion')
+            conclusion_cta = self._require_dict_str(conclusion, 'cta_text', context='conclusion')
+            conclusion_url = self._require_dict_str(conclusion, 'cta_url', context='conclusion')
+            conclusion_label = self._require_dict_str(conclusion, 'cta_label', context='conclusion')
+
             args = [
                 'pandoc',
                 '--from', 'markdown',
@@ -1315,23 +1285,22 @@ class CirclePDFBuilder:
                 '-V', 'date=' + str(date),
                 '-V', 'email=' + str(email),
                 '-V', 'url=' + str(url),
-                '-V', 'framing_title=' + str(framing.get('title', 'Document')),
-                '-V', 'framing_subtitle=' + str(framing.get('subtitle', '')),
+                '-V', 'framing_title=' + framing_title,
+                '-V', 'framing_subtitle=' + framing_subtitle,
                 '-V', 'framing_abstract_label=' + framing_abstract_label,
                 '-V', 'framing_toc_label=' + framing_toc_label,
                 '-V', 'framing_abstract_anchor=' + str(abstract_anchor),
                 '-V', 'framing_abstract=' + framing_abstract,
-                '-V', 'framing_image_1=' + (framing.get('images', [])[0] if len(framing.get('images', [])) > 0 else ''),
-                '-V', 'framing_image_2=' + (framing.get('images', [])[1] if len(framing.get('images', [])) > 1 else ''),
-                '-V', 'framing_image_3=' + (framing.get('images', [])[2] if len(framing.get('images', [])) > 2 else ''),
+                '-V', 'framing_image_1=' + framing_image_1,
+                '-V', 'framing_image_2=' + framing_image_2,
                 '-V', 'short_toc=' + (short_toc or ''),
                 '-V', 'conclusion_title=' + conclusion_title,
                 '-V', 'conclusion_anchor=' + conclusion_anchor,
-                '-V', 'conclusion_image=' + str(conclusion.get('image', '')),
+                '-V', 'conclusion_image=' + conclusion_image,
                 '-V', 'conclusion_main=' + conclusion_main,
-                '-V', 'conclusion_cta=' + str(conclusion.get('cta_text', '')),
-                '-V', 'conclusion_url=' + str(conclusion.get('cta_url', '')),
-                '-V', 'conclusion_label=' + str(conclusion.get('cta_label', '')),
+                '-V', 'conclusion_cta=' + conclusion_cta,
+                '-V', 'conclusion_url=' + conclusion_url,
+                '-V', 'conclusion_label=' + conclusion_label,
                 '--output', str(output_path),
             ]
             
@@ -1386,9 +1355,9 @@ class CirclePDFBuilder:
 
         try:
             abstract_label, abstract_anchor, include_abstract_in_toc = self._get_framing_abstract_toc_settings()
-            intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_paper_intro()
+            intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_body_intro()
             back_matter_markdown, back_matter_label, back_matter_anchor, include_back_matter_in_toc = (
-                self._get_paper_back_matter()
+                self._get_body_back_matter()
             )
 
             markdown_content, toc_items = self._build_markdown_for_pandoc(
@@ -1412,8 +1381,8 @@ class CirclePDFBuilder:
             logger.error("Configuration error: %s", e)
             return False
 
-        # Optionally save intermediate markdown for inspection
-        debug_md_path = self.config_path.parent / 'debug-intermediate.md'
+        # Save intermediate markdown for inspection (to /tmp)
+        debug_md_path = Path(tempfile.gettempdir()) / f"{self.config_path.stem}.debug-intermediate.md"
         try:
             with open(debug_md_path, 'w', encoding='utf-8') as f:
                 f.write(markdown_content)
@@ -1423,12 +1392,12 @@ class CirclePDFBuilder:
         
         # Step 3: Generate PDF
         logger.info("Step 3: Generating PDF with custom template...")
-        output_cfg = self.config.get('output', {})
+        output_cfg = self.config.get('output')
         if not isinstance(output_cfg, dict):
-            output_cfg = {}
+            raise ValueError("Config section 'output' must be a mapping/object")
 
-        output_filename = str(output_cfg.get('filename') or 'circle-paper.pdf')
-        output_dir = str(output_cfg.get('directory') or './')
+        output_filename = self._require_dict_str(output_cfg, 'filename', context='output')
+        output_dir = self._require_dict_str(output_cfg, 'directory', context='output')
         
         out_dir_path = Path(output_dir)
         if not out_dir_path.is_absolute():
