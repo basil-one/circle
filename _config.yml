@@ -13,6 +13,14 @@ analytics:
 footer:
   copyright: "© 2026 Michael Basil. All rights reserved."
 
+collections:
+  moves:
+    output: true
+    permalink: /moves/:name/
+  lenses:
+    output: true
+    permalink: /lenses/:name/
+
 exclude:
   - scripts
   - vendor
