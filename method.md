@@ -60,6 +60,8 @@ The other enhances perception.
 
 👉 [Explore the lenses](/lenses/){: data-ga-event="learn_more" data-ga-label="method_to_lenses"}
 
+👉 [Download the Circle3 paper](/paper/){: data-ga-event="download" data-ga-label="method_to_paper"}
+
 ## Where this came from
 
 Circle3 did not begin as a formal framework.

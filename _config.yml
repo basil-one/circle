@@ -12,3 +12,15 @@ analytics:
   ga_measurement_id: G-4EZ2K11GYN
 footer:
   copyright: "© 2026 Michael Basil. All rights reserved."
+
+exclude:
+  - scripts
+  - vendor
+  - .bundle
+  - .sass-cache
+  - .jekyll-cache
+  - .ruby-lsp
+  - .devcontainer
+  - Gemfile
+  - Gemfile.lock
+  - README.md
