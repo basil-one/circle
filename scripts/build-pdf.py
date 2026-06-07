@@ -259,6 +259,76 @@ class CirclePDFBuilder:
             logger.error(f"Error loading config: {e}")
             sys.exit(1)
 
+    def _resolve_path(self, raw_path: str | Path, *, must_exist: bool = True) -> Path:
+        """Resolve a config-specified path.
+
+        Resolution order:
+        1) absolute paths are used as-is
+        2) relative to the config file's directory (e.g. scripts/)
+        3) relative to the workspace root (repo root)
+        """
+        if raw_path is None:
+            raise ValueError("Path is required")
+
+        p = Path(str(raw_path))
+        if p.is_absolute():
+            resolved = p
+        else:
+            candidate = (self.config_path.parent / p).resolve()
+            if candidate.exists() or not must_exist:
+                resolved = candidate
+            else:
+                resolved = (self.root_dir / p).resolve()
+
+        if must_exist and not resolved.exists():
+            raise FileNotFoundError(f"File not found: {raw_path} (resolved to {resolved})")
+
+        return resolved
+
+    def _read_text_file(self, raw_path: str, *, description: str = "file") -> str:
+        path = self._resolve_path(raw_path, must_exist=True)
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            raise ValueError(f"Could not read {description} at {path}: {e}")
+
+    def _get_markdown_content(self, cfg: Dict[str, Any], *, inline_key: str, file_key: str) -> str:
+        """Load markdown either inline or from a referenced file."""
+        if not isinstance(cfg, dict):
+            cfg = {}
+
+        file_path = cfg.get(file_key)
+        if file_path:
+            return self._read_text_file(str(file_path), description=file_key).strip()
+
+        return str(cfg.get(inline_key) or '').strip()
+
+    def _get_root_url(self) -> str:
+        """Return the root URL used to absolutize site-relative links.
+
+        Prefer config.root_url if present; otherwise fall back to metadata.url.
+        """
+        root_url = str(self.config.get('root_url') or '').strip().rstrip('/')
+        if root_url:
+            return root_url
+
+        metadata = self.config.get('metadata', {})
+        metadata = metadata if isinstance(metadata, dict) else {}
+        return str(metadata.get('url') or '').strip().rstrip('/')
+
+    def _get_framing_abstract_toc_settings(self) -> Tuple[str, str, bool]:
+        """Return (abstract_label, abstract_anchor, include_in_toc)."""
+        framing = self.config.get('framing', {})
+        framing = framing if isinstance(framing, dict) else {}
+
+        label = str(framing.get('abstract_label') or 'Abstract').strip()
+        raw_anchor = str(framing.get('abstract_anchor') or 'abstract').strip()
+        anchor = self._latex_id(raw_anchor, default='abstract')
+        include_in_toc = self._parse_bool(framing.get('include_abstract_in_toc'), default=False)
+
+        return label, anchor, include_in_toc
+
     def _get_pdf_engine(self) -> str:
         """Return the configured PDF engine (default: xelatex)."""
         output_cfg = self.config.get('output', {})
@@ -289,7 +359,7 @@ class CirclePDFBuilder:
         return abstract_label, toc_label
 
     def _latex_id(self, raw: str, *, default: str) -> str:
-        """Return a LaTeX-safe id for \hypertarget/\label."""
+        r"""Return a LaTeX-safe id for \hypertarget/\label."""
         raw = (raw or '').strip()
         if raw and re.match(r'^[A-Za-z0-9][A-Za-z0-9:-]*$', raw):
             return raw
@@ -326,7 +396,7 @@ class CirclePDFBuilder:
         paper = self.config.get('paper', {})
         paper = paper if isinstance(paper, dict) else {}
 
-        intro_markdown = str(paper.get('introduction') or '').strip()
+        intro_markdown = self._get_markdown_content(paper, inline_key='introduction', file_key='introduction_file')
         intro_label = str(paper.get('introduction_label') or 'Introduction').strip()
         raw_anchor = str(paper.get('introduction_anchor') or 'introduction').strip()
         intro_anchor = self._latex_id(raw_anchor, default='introduction')
@@ -340,7 +410,7 @@ class CirclePDFBuilder:
         paper = self.config.get('paper', {})
         paper = paper if isinstance(paper, dict) else {}
 
-        back_matter_markdown = str(paper.get('back_matter') or '').strip()
+        back_matter_markdown = self._get_markdown_content(paper, inline_key='back_matter', file_key='back_matter_file')
         back_matter_label = str(paper.get('back_matter_label') or 'References').strip()
         raw_anchor = str(paper.get('back_matter_anchor') or 'references').strip()
         back_matter_anchor = self._latex_id(raw_anchor, default='references')
@@ -399,7 +469,7 @@ class CirclePDFBuilder:
 
     def _normalize_relative_links(self, content: str) -> str:
         """Convert relative site links into absolute URLs using root_url."""
-        root_url = self.config.get('root_url', '').rstrip('/')
+        root_url = self._get_root_url()
         if not root_url:
             return content
 
@@ -439,7 +509,7 @@ class CirclePDFBuilder:
         if parsed.scheme and parsed.scheme not in ('http', 'https'):
             return None
 
-        root_url = str(self.config.get('root_url') or '').rstrip('/')
+        root_url = self._get_root_url()
 
         if parsed.scheme in ('http', 'https'):
             if root_url and url.startswith(root_url + '/'):
@@ -812,7 +882,7 @@ class CirclePDFBuilder:
         anchor: str | None = None,
         prepend_page_break: bool,
     ) -> str:
-        """A full-page image (centered), emitted as a Pandoc raw LaTeX block.
+        r"""A full-page image (centered), emitted as a Pandoc raw LaTeX block.
 
         If `anchor` is provided, we emit a \hypertarget so the short TOC can
         link directly to this intro image page.
@@ -902,6 +972,9 @@ class CirclePDFBuilder:
         self,
         pattern_sections: List[Dict[str, Any]],
         *,
+        abstract_label: str = 'Abstract',
+        abstract_anchor: str = 'abstract',
+        include_abstract_in_toc: bool = False,
         intro_markdown: str = '',
         intro_label: str = 'Introduction',
         intro_anchor: str = 'introduction',
@@ -922,6 +995,18 @@ class CirclePDFBuilder:
         toc_items: List[Dict[str, str]] = []
         used_anchors: set[str] = set()
         permalink_to_anchor: Dict[str, str] = {}
+
+        abstract_label = (abstract_label or 'Abstract').strip()
+        abstract_anchor = self._latex_id(str(abstract_anchor or 'abstract'), default='abstract')
+        include_abstract_in_toc = bool(include_abstract_in_toc)
+
+        # The abstract anchor is created in the LaTeX template (not in the markdown body),
+        # but we reserve it here so later anchors cannot collide with it.
+        if abstract_anchor:
+            used_anchors.add(abstract_anchor)
+
+        if include_abstract_in_toc and abstract_label and abstract_anchor:
+            toc_items.append({'kind': 'section', 'label': abstract_label, 'anchor': abstract_anchor})
 
         intro_markdown = textwrap.dedent(intro_markdown or '').strip()
         intro_label = (intro_label or 'Introduction').strip()
@@ -979,7 +1064,8 @@ class CirclePDFBuilder:
                 suffix += 1
             used_anchors.add(section_anchor)
 
-            if section_toc_label:
+            include_section_in_toc = self._parse_bool(section.get('include_in_toc'), default=True)
+            if include_section_in_toc and section_toc_label:
                 toc_items.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
 
             section_permalink = self._infer_section_permalink(section)
@@ -1205,9 +1291,14 @@ class CirclePDFBuilder:
             framing_abstract_label, framing_toc_label = self._get_framing_labels()
             conclusion_title, conclusion_anchor = self._get_conclusion_meta()
             
+            abstract_anchor = self._latex_id(str(framing.get('abstract_anchor') or 'abstract'), default='abstract')
+
             # Convert markdown formatting to LaTeX in config values
-            framing_abstract = self._markdown_to_latex(str(framing.get('abstract', '') or ''))
-            conclusion_main = self._markdown_to_latex(str(conclusion.get('main_text', '') or ''))
+            framing_abstract_md = self._get_markdown_content(framing, inline_key='abstract', file_key='abstract_file')
+            framing_abstract = self._markdown_to_latex(framing_abstract_md)
+
+            conclusion_main_md = self._get_markdown_content(conclusion, inline_key='main_text', file_key='main_text_file')
+            conclusion_main = self._markdown_to_latex(conclusion_main_md)
 
             # Replace Unicode arrows (e.g. →) with LaTeX-rendered arrows.
             framing_abstract = self._replace_unicode_arrows(framing_abstract)
@@ -1228,6 +1319,7 @@ class CirclePDFBuilder:
                 '-V', 'framing_subtitle=' + str(framing.get('subtitle', '')),
                 '-V', 'framing_abstract_label=' + framing_abstract_label,
                 '-V', 'framing_toc_label=' + framing_toc_label,
+                '-V', 'framing_abstract_anchor=' + str(abstract_anchor),
                 '-V', 'framing_abstract=' + framing_abstract,
                 '-V', 'framing_image_1=' + (framing.get('images', [])[0] if len(framing.get('images', [])) > 0 else ''),
                 '-V', 'framing_image_2=' + (framing.get('images', [])[1] if len(framing.get('images', [])) > 1 else ''),
@@ -1293,6 +1385,7 @@ class CirclePDFBuilder:
             return False
 
         try:
+            abstract_label, abstract_anchor, include_abstract_in_toc = self._get_framing_abstract_toc_settings()
             intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_paper_intro()
             back_matter_markdown, back_matter_label, back_matter_anchor, include_back_matter_in_toc = (
                 self._get_paper_back_matter()
@@ -1300,6 +1393,9 @@ class CirclePDFBuilder:
 
             markdown_content, toc_items = self._build_markdown_for_pandoc(
                 pattern_sections,
+                abstract_label=abstract_label,
+                abstract_anchor=abstract_anchor,
+                include_abstract_in_toc=include_abstract_in_toc,
                 intro_markdown=intro_markdown,
                 intro_label=intro_label,
                 intro_anchor=intro_anchor,
@@ -1333,8 +1429,13 @@ class CirclePDFBuilder:
 
         output_filename = str(output_cfg.get('filename') or 'circle-paper.pdf')
         output_dir = str(output_cfg.get('directory') or './')
-        output_path = Path(output_dir) / output_filename
         
+        out_dir_path = Path(output_dir)
+        if not out_dir_path.is_absolute():
+            out_dir_path = (self.root_dir / out_dir_path).resolve()
+
+        output_path = out_dir_path / output_filename
+
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
         success = self._call_pandoc(markdown_content, output_path, short_toc=short_toc)
@@ -1354,13 +1455,15 @@ def main() -> None:
     script_dir = Path(__file__).parent
     workspace_root = script_dir.parent
 
-    # Allow an explicit config path: python3 scripts/build-pdf.py scripts/config.yaml
-    if len(sys.argv) > 1:
-        config_path = Path(sys.argv[1])
-        if not config_path.is_absolute():
-            config_path = (Path.cwd() / config_path).resolve()
-    else:
-        config_path = script_dir / 'config.yaml'
+    # Require an explicit config path.
+    # Example: python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
+    if len(sys.argv) <= 1:
+        logger.error("Missing config file argument. Usage: python3 scripts/build-pdf.py <config.yaml>")
+        raise SystemExit(2)
+
+    config_path = Path(sys.argv[1])
+    if not config_path.is_absolute():
+        config_path = (Path.cwd() / config_path).resolve()
 
     builder = CirclePDFBuilder(str(config_path), str(workspace_root))
     success = builder.build()

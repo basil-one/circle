@@ -1,0 +1,64 @@
+output:
+  filename: circle3-paper.pdf
+  directory: assets/pdfs
+
+metadata:
+  title: Circle3 - Make Change Clear and Aligned
+  author: Michael Basil
+  date: June 2026
+  email: michael@basil.one
+  url: https://circle.basil.one
+
+framing:
+  title: Circle3
+  subtitle: A Pattern Language for Leading Change in Complex Environments
+  images:
+    - images/full/index.png
+    - images/full/method.png
+  toc_label: Table of Contents
+  abstract_label: Abstract
+  abstract_anchor: abstract
+  abstract_file: content/plop.paper.abstract.md
+  include_abstract_in_toc: true
+
+paper:
+  introduction_label: Introduction
+  introduction_anchor: introduction
+  introduction_file: content/plop.paper.introduction.md
+  include_introduction_in_toc: true
+  back_matter_label: References and Acknowledgements
+  back_matter_anchor: references
+  back_matter_file: content/plop.paper.back-matter.md
+  include_back_matter_in_toc: true
+  
+pattern_sections:
+  - title: Three Guiding Moves
+    include_in_toc: true
+    intro_image: images/full/moves.png
+    patterns:
+      - file: _moves/establish.md
+        intro_image: images/full/move-establish.png
+      - file: _moves/balance.md
+        intro_image: images/full/move-balance.png
+      - file: _moves/reconcile.md
+        intro_image: images/full/move-reconcile.png
+
+  - title: Three Leadership Lenses
+    include_in_toc: true
+    intro_image: images/full/lenses.png
+    patterns:
+      - file: _lenses/sense.md
+        intro_image: images/full/lens-sense.png
+      - file: _lenses/energy.md
+        intro_image: images/full/lens-energy.png
+      - file: _lenses/session.md
+        intro_image: images/full/lens-session.png
+
+conclusion:
+  title: Origin and Ongoing Evolution
+  anchor: origin
+  image: images/full/origin.png
+  main_text_file: content/plop.paper.conclusion.md
+  cta_text: "Read the Origin Story:"
+  cta_url: https://circle.basil.one/origin/
+  cta_label: https://circle.basil.one/origin
