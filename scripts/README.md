@@ -21,7 +21,7 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 ## Config shape (top-level)
 
 - `output`: `filename`, `directory`
-- `metadata`: `title`, `author`, `date`, `url` (+ optional `email`)
+- `metadata`: `title`, `author`, `date`, `url`, `email`, `keywords`
 - `framing`: cover/abstract/TOC labels + cover images + `abstract_file`
 - `body`: `introduction_file` + `back_matter_file` (+ labels/anchors/include flags)
 - `sections`: ordered pattern sections with `intro_image` and `patterns[]` entries

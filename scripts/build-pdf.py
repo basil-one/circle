@@ -1228,8 +1228,25 @@ class CirclePDFBuilder:
             metadata = self.config.get('metadata')
             if not isinstance(metadata, dict):
                 raise ValueError("Config section 'metadata' must be a mapping/object")
-            email = str(metadata.get('email') or '').strip()  # optional
+            email = self._require_config_str('metadata', 'email')
             url = self._require_config_str('metadata', 'url')
+
+            # Keywords are required. Use a YAML list in metadata.keywords:
+            #
+            #   keywords:
+            #     - pattern language
+            #     - change leadership
+            #
+            # We pass a LaTeX-ready, line-separated rendering into the template.
+            raw_keywords = self._require_dict_list(metadata, 'keywords', context='metadata')
+            keywords_list = [str(k).strip() for k in raw_keywords if str(k).strip()]
+            if not keywords_list:
+                raise ValueError(
+                    "Missing required config value: metadata.keywords (must contain at least one keyword)"
+                )
+
+            keywords_list_escaped = [self._escape_latex_text(k) for k in keywords_list]
+            keywords_lines = r" \\ ".join(keywords_list_escaped)
 
             # Extract framing and conclusion config
             framing = self.config.get('framing')
@@ -1303,6 +1320,9 @@ class CirclePDFBuilder:
                 '-V', 'conclusion_label=' + conclusion_label,
                 '--output', str(output_path),
             ]
+
+            if keywords_lines:
+                args += ['-V', 'keywords_lines=' + keywords_lines]
             
             logger.info(f"Calling pandoc with custom template")
             logger.info(f"Template: {template_path}")

@@ -128,7 +128,7 @@ $endif$
 \vspace*{0.15in}
 
 \begin{center}
-{\Large \textbf{$framing_abstract_label$}}
+{\Large \headingfont\bfseries\color{headingcolor} $framing_abstract_label$}
 \end{center}
 
 \vspace{0.2in}
@@ -140,6 +140,24 @@ $endif$
 \setlength{\parindent}{0pt}
 $framing_abstract$
 \endgroup
+
+$if(keywords_lines)$
+\vspace{0.25in}
+
+\begin{center}
+{\Large \headingfont\bfseries\color{headingcolor} Keywords}
+\end{center}
+
+\vspace{0.1in}
+
+\begin{center}
+\normalsize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l}
+$keywords_lines$
+\end{tabular}
+\end{center}
+$endif$
 
 \vspace*{\fill}
 
@@ -153,7 +171,7 @@ $if(short_toc)$
 \vspace*{0.15in}
 
 \begin{center}
-{\Large \textbf{$framing_toc_label$}}
+{\Large \headingfont\bfseries\color{headingcolor} $framing_toc_label$}
 \end{center}
 
 \vspace{0.2in}
