@@ -12,6 +12,4 @@ The site will be available at http://localhost:4000.
 
 ## License
 
-The HTML structure and site code in this repository are licensed under the MIT License.
-
-The written content and patterns are licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit [https://creativecommons.org/licenses/by-sa/4.0/](https://creativecommons.org/licenses/by-sa/4.0/).
+Unless otherwise noted, this repository (including site code, build scripts, written content, and patterns) is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0). See [LICENSE.md](LICENSE.md).
