@@ -1,6 +1,86 @@
 # PDF build (Circle3 / PLoP paper)
 
-Build the Circle3 PLoP paper PDF using pandoc + xelatex.
+Build the Circle3 PLoP paper PDF using Pandoc + a LaTeX PDF engine (default: `xelatex`).
+
+## Prerequisites
+
+This pipeline shells out to external tools:
+
+- **Pandoc** (`pandoc`) — converts the assembled Markdown into PDF.
+- **TeX/LaTeX** (TeX Live) — provides the PDF engine. Default is **XeLaTeX** (`xelatex`).
+- **Fonts + fontconfig** — the LaTeX template uses system fonts (via `fontspec`). The default styling expects **Noto Sans**.
+
+### Linux (Debian/Ubuntu)
+
+Install everything needed for the default config (`--pdf-engine=xelatex` + Noto fonts):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  pandoc \
+  texlive-xetex \
+  texlive-latex-recommended \
+  texlive-latex-extra \
+  texlive-fonts-recommended \
+  fontconfig \
+  fonts-noto-core \
+  fonts-noto-ui-core
+
+# Refresh font cache (usually automatic, but helpful in containers)
+fc-cache -f -v
+```
+
+Quick sanity checks:
+
+```bash
+pandoc --version
+xelatex --version
+fc-match "Noto Sans"
+```
+
+#### Common errors and what to install (Linux)
+
+- `bash: pandoc: command not found`
+
+  ```bash
+  sudo apt-get update
+  sudo apt-get install -y pandoc
+  ```
+
+- `PDF engine 'xelatex' is not installed`
+
+  ```bash
+  sudo apt-get update
+  sudo apt-get install -y texlive-xetex
+  ```
+
+- `Package fontspec Error: The font "Noto Sans" cannot be found`
+
+  ```bash
+  sudo apt-get update
+  sudo apt-get install -y fonts-noto-core fonts-noto-ui-core fontconfig
+  fc-cache -f -v
+  ```
+
+  If you don’t want to install Noto, change the template/config to a font that exists in your environment.
+
+### macOS
+
+```bash
+brew install pandoc
+brew install --cask mactex-no-gui
+```
+
+If you hit a `Noto Sans` error, install the font (or change `mainfont`/template settings if applicable):
+
+```bash
+brew install --cask font-noto-sans
+```
+
+### Notes
+
+- The PDF engine is configurable via `pdf_engine` in `scripts/plop.paper.config.yaml` (or under `output.pdf_engine`). The default is `xelatex`.
+- The build script checks for `pandoc` and the selected PDF engine on `PATH`. Missing fonts show up later as a LaTeX `fontspec` error.
 
 ## Run
 
