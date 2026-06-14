@@ -8,8 +8,7 @@ css_id: lens-sense
 
 # Sense Making Reflection  
 
-*A Reflective Exercise for Understanding How Reality Is Being Interpreted*  
-by **Michael Basil**
+*A Reflective Exercise for Understanding How Reality Is Being Interpreted by* **Michael Basil**
 
 ![Sense Making Reflection](/images/lens-sense.png)
 
@@ -21,31 +20,33 @@ This can lead to friction, misunderstanding, and frustration—even when intenti
 
 This reflection helps make those underlying interpretive differences visible.
 
-## Sense-making domains
+## Framing
 
-The framing below is based on the [Cynefin framework developed by Dave Snowden](https://www.youtube.com/watch?v=N7oz366X0-8).
+### Sense-making domains
+
+The framing below is based on the [Cynefin framework developed by Dave Snowden](https://www.youtube.com/watch?v=N7oz366X0-8){: data-ga-event="external_link" data-ga-label="lenses_sense_cynefin_video"}.
 
 Each domain reflects a different way of interpreting and responding to reality.
 
-### Clear  
+#### Clear
 
 The situation is stable and understandable. Cause and effect are known, and established rules or best practices apply.
 
 Approach: sense → categorize → respond using known practice.
 
-### Complicated  
+#### Complicated
 
 The situation requires analysis or expertise. Multiple possible answers may exist, and understanding emerges through investigation.
 
 Approach: sense → analyze → respond using expert judgment or good practice.
 
-### Complex  
+#### Complex
 
 The situation is uncertain and evolving. Cause and effect can only be understood in hindsight, and outcomes cannot be predicted in advance.
 
 Approach: probe → sense → respond through adaptation.
 
-### Chaotic  
+#### Chaotic
 
 The situation is unstable or highly disrupted. Immediate action is required to restore stability or create direction.
 
@@ -56,7 +57,7 @@ This may show up as:
 
 Approach: act → sense → respond.
 
-### Confused (Disorder)  
+#### Confused (Disorder)
 
 There is no shared clarity about what kind of situation this is. Multiple interpretations exist at the same time without a shared frame.
 
@@ -68,7 +69,7 @@ Take a moment to settle your attention before beginning.
 
 Use a short mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.
 
-* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s)
+* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s){: data-ga-event="external_link" data-ga-label="lenses_sense_one_breath"}
 
 Let your attention shift from immediate thinking into memory.
 

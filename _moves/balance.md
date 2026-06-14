@@ -73,10 +73,10 @@ Ideas expand rapidly but struggle to integrate into clear priorities and action.
 
 - Observe energy in the room; notice dominant, quiet, or disconnected voices.
 - Adjust interventions to shift the conversation toward productive equilibrium:
-  - Ground ideas with practical next steps.  
-  - Introduce focus to prioritize and commit to action.  
-  - Open siloed perspectives to broader dialogue and integration.  
-  - Surface stuck energy using **affect labeling** (“It seems like we’re frustrated”), followed by **dynamic silence** to allow reflection and reorientation.  
+  - Ground ideas with practical next steps.
+  - Introduce focus to prioritize and commit to action.
+  - Open siloed perspectives to broader dialogue and integration.
+  - Surface stuck energy using **affect labeling** (“It seems like we’re frustrated”), followed by **dynamic silence** to allow reflection and reorientation.
 - Guide the group to **acknowledge and release outdated ideas or priorities**, allowing movement toward clarity.
 - Practice active listening, reflective questioning, and ongoing calibration of the conversation.
 
@@ -161,14 +161,14 @@ Examples include:
 - [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"}
   - Balanced facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
 
-### [Zen Leadership Patterns](https://zenleader.global)
+### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="balance_to_zen_leadership"}
 
 - *Driver*: Brings focus, urgency, and movement toward decisions and action.
 - *Organizer*: Creates structure, clarity, and coordination across people and work.
 - *Collaborator*: Builds connection, inclusion, and shared understanding across perspectives.
 - *Visionary*: Expands possibility, introduces new ideas, and challenges current thinking.
 
-### [Fearless Change Patterns](https://fearlesschangepatterns.com)
+### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="balance_to_fearless_change"}
 
 - *Time for Reflection*: Use structured pauses to observe group energy and recalibrate.
 - *Plant the Seeds*: Introduce ideas strategically to encourage participation and contribution.
@@ -195,15 +195,15 @@ Build awareness of how relational energy is showing up in your conversations—a
 
 Recognize the core polarities present in every conversation—such as speaking and listening, control and emergence, or divergence and convergence—and learn to work with them rather than resolve them.
 
-👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E)
+👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E){: data-ga-event="external_link" data-ga-label="balance_two_sides_reflection"}
 
 ### Accessing Energy Patterns
 
 Explore practical patterns for working with relational dynamics in real time as a core facilitation move.
 
-👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg)
+👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg){: data-ga-event="external_link" data-ga-label="balance_accessing_energy_patterns"}
 
-## Explore in your context
+## Explore in Your Context
 
 This pattern becomes meaningful when applied in real conversations, not just understood conceptually.
 
@@ -219,4 +219,4 @@ If you’d like to deepen this work:
 - practicing conscious facilitation and conversational micro-moves
 - working more intentionally with relational energy in teams and systems
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="balance_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="balance_to_connect"}

@@ -233,11 +233,13 @@ Examples include:
 
 - [Balance the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="establish_to_balance"} – Balanced conversations ensure diverse voices are heard and tensions are productively surfaced, supporting the Circle’s nucleus.
 - [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Aligning on shared principles or artifacts strengthens the Circle’s output and ensures early insights are codified and actionable.
-- [Fearless Change](https://fearlesschangepatterns.com):
-  - Ask For Help – Engage key participants early to strengthen the nucleus and expand reach.
-  - Study Group – Form a small learning or reflective group to support iterative reasoning.
-  - Go-To Person – Identify people who can unblock issues and bring critical perspectives to the early Circle.
-  - Future Commitment – Encourage participants to make small commitments that sustain engagement over time.
+
+### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="establish_to_fearless_change"}
+
+- *Ask For Help*: Engage key participants early to strengthen the nucleus and expand reach.
+- *Study Group*: Form a small learning or reflective group to support iterative reasoning.
+- *Go-To Person*: Identify people who can unblock issues and bring critical perspectives to the early Circle.
+- *Future Commitment*: Encourage participants to make small commitments that sustain engagement over time.
 
 ## Explore in Your Context
 
@@ -247,4 +249,4 @@ Interested in:
 - Sharing a similar method
 - Starting a Circle
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="establish_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="establish_to_connect"}
