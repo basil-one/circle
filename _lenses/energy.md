@@ -8,7 +8,7 @@ css_id: lens-energy
 
 # Energy Awareness Reflection  
 
-*A Reflective Exercise for Understanding Energy in Conversation* by **Michael Basil**
+*A Reflective Exercise for Understanding Energy in Conversation by* **Michael Basil**
 
 ![Energy Awareness Reflection](/images/lens-energy.png)
 
@@ -18,25 +18,27 @@ It helps you notice patterns in how their presence shifts or stabilizes across d
 
 You’ll rate how strongly each type of energy shows up on a scale from 1 (barely there) to 10 (very strong).
 
-## Ways energy shows up
+## Framing
 
-The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Ginny Whitelaw](https://zenleader.global/resources/febi-assessment).
+### Ways energy shows up
+
+The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Ginny Whitelaw](https://zenleader.global/resources/febi-assessment){: data-ga-event="external_link" data-ga-label="lenses_energy_febi"}.
 
 A person may move through all of these depending on the situation or emotional context.
 
-### Driver  
+#### Driver
 
 Driver energy is about action and forward movement—initiating, deciding, and helping things move.
 
-### Organizer  
+#### Organizer
 
 Organizer energy is about structure and clarity—planning, shaping, and making things workable.
 
-### Collaborator  
+#### Collaborator
 
 Collaborator energy is about connection—listening, aligning, and building shared understanding.
 
-### Visionary  
+#### Visionary
 
 Visionary energy is about possibility—imagining, reframing, and opening up new directions.
 
@@ -46,7 +48,7 @@ Take a moment to settle your attention before beginning.
 
 Use a short mindfulness practice—such as following the breath, feeling the body, or sitting in quiet awareness—to help you slow down and become present.  
 
-* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s)
+* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s){: data-ga-event="external_link" data-ga-label="lenses_energy_one_breath"}
 
 Let your attention shift from immediate thinking into memory.
 
@@ -136,4 +138,4 @@ And invite the person to complete the same reflection from their side.
 
 If you’d like to go further with this work or explore additional dimensions, you’re welcome to connect.
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="lenses_energy_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="lenses_energy_to_connect"}

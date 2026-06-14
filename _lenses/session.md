@@ -8,8 +8,7 @@ css_id: lens-session
 
 # Session Intention Reflection  
 
-*A Reflective Exercise for Preparing a Circle Session*  
-by **Michael Basil**
+*A Reflective Exercise for Preparing a Circle Session by* **Michael Basil**
 
 ![Session Intention Reflection](/images/lens-session.png)
 
@@ -28,7 +27,9 @@ More often, it begins when people can better see:
 
 A Circle session helps create the conditions for that kind of shared awareness.
 
-## Grounding lenses
+## Framing
+
+### Grounding lenses
 
 Before beginning, it can help to revisit two related reflections:
 
@@ -43,7 +44,7 @@ Take a moment to settle your attention before beginning.
 
 Use a simple mindfulness or grounding practice to slow down and become present.
 
-* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s)
+* Suggested exercise: [One Breath](https://www.youtube.com/watch?v=3zv9kQA-wfE&t=5s){: data-ga-event="external_link" data-ga-label="lenses_session_one_breath"}
 
 Allow your attention to move from immediate problem-solving into broader awareness of the people, relationships, and dynamics involved.
 

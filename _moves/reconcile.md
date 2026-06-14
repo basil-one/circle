@@ -124,38 +124,45 @@ Examples include:
 
 ### Premature Agreement
 
-*Description*: One meeting creates the illusion of alignment; key voices haven’t fully engaged.
+*Description*: One meeting creates the illusion of alignment; key voices haven’t fully engaged.  
+
 *Mitigation*: Iterate, revisit, and engage social leaders multiple times until affirmation.
 
 ### Artifact as Output Only
 
-*Description*: Document exists but conversations never occur; culture remains misaligned.
+*Description*: Document exists but conversations never occur; culture remains misaligned.  
+
 *Mitigation*: Center the artifact on discussion, not completion.
 
 ### Ignoring Cultural Ambiguity
 
-*Description*: Subtle misalignments remain unaddressed; principles drift from practice.
+*Description*: Subtle misalignments remain unaddressed; principles drift from practice.  
+
 *Mitigation*: Surface disagreements openly; revisit regularly.
 
 ### Lack of Visibility
 
-*Description*: Artifact remains internal; others interacting with the group remain unclear on intent.
+*Description*: Artifact remains internal; others interacting with the group remain unclear on intent.  
+
 *Mitigation*: Share with relevant audiences while balancing safety and scrutiny.
 
 ### Overformalization
 
-*Description*: Artifact becomes rigid, stifling reflection and adaptation.
+*Description*: Artifact becomes rigid, stifling reflection and adaptation.  
+
 *Mitigation*: Maintain iterative, conversational approach; allow principles to evolve.
 
 ## Related Patterns
 
 - [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for iterative review, discussion, and surfacing key tensions.
 - [Balance the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Balanced facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
-- [Fearless Change Patterns](https://fearlesschangepatterns.com):
-  - Evolving Vision – Periodically revisit vision and priorities to maintain alignment over time.
-  - Concrete Action Plan – Define concrete next steps that anchor aligned intentions in observable outputs.
-  - Small Successes – Celebrate iterative progress to reinforce alignment and build credibility.
-  - Big Jolt – Showcase alignment achievements visibly to create momentum and influence adoption.
+
+### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="reconcile_to_fearless_change"}
+
+- *Evolving Vision*: Periodically revisit vision and priorities to maintain alignment over time.
+- *Concrete Action Plan*: Define concrete next steps that anchor aligned intentions in observable outputs.
+- *Small Successes*: Celebrate iterative progress to reinforce alignment and build credibility.
+- *Big Jolt*: Showcase alignment achievements visibly to create momentum and influence adoption.
 
 ## Practical Resources
 
@@ -179,4 +186,4 @@ Interested in:
 - Creating living artifacts for your team or department
 - Strengthening cultural clarity and shared understanding
 
-👉 [Let's connect](/contact/){: data-ga-event="contact_click" data-ga-label="reconcile_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="reconcile_to_connect"}
