@@ -8,6 +8,22 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-30
+
+### Changed
+- Reframed the second Guiding Move from **Balance the Conversation** to **Integrate the Conversation**.
+- Revised the concluding material and appended an appendix section for the Leadership Lenses.
+- Refined language in the Origin Story and examples for clarity and consistency.
+- Updated section headings and reflective framing across Lenses.
+
+### Added
+- New imagery and references for **Integrate the Conversation**.
+- Expanded PDF build behavior to better support the current paper structure and output.
+
+### Fixed
+- Updated links and supporting references related to **Integrate the Conversation**.
+- Regenerated `assets/pdfs/circle3-paper.pdf` so the release PDF matches the current content.
+
 ## [0.1.1] - 2026-06-14
 
 ### Changed
@@ -39,6 +55,7 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/basil-one/circle/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/basil-one/circle/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/basil-one/circle/releases/tag/v0.1.0
