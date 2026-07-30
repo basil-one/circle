@@ -28,19 +28,19 @@ The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Gi
 
 A person may move through all of these depending on the situation or emotional context.
 
-#### Driver
+**Driver**
 
 Driver energy is about action and forward movement—initiating, deciding, and helping things move.
 
-#### Organizer
+**Organizer**
 
 Organizer energy is about structure and clarity—planning, shaping, and making things workable.
 
-#### Collaborator
+**Collaborator**
 
 Collaborator energy is about connection—listening, aligning, and building shared understanding.
 
-#### Visionary
+**Visionary**
 
 Visionary energy is about possibility—imagining, reframing, and opening up new directions.
 

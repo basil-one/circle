@@ -30,25 +30,25 @@ The framing below is based on the [Cynefin framework developed by Dave Snowden](
 
 Each domain reflects a different way of interpreting and responding to reality.
 
-#### Clear
+**Clear**
 
 The situation is stable and understandable. Cause and effect are known, and established rules or best practices apply.
 
 Approach: sense → categorize → respond using known practice.
 
-#### Complicated
+**Complicated**
 
 The situation requires analysis or expertise. Multiple possible answers may exist, and understanding emerges through investigation.
 
 Approach: sense → analyze → respond using expert judgment or good practice.
 
-#### Complex
+**Complex**
 
 The situation is uncertain and evolving. Cause and effect can only be understood in hindsight, and outcomes cannot be predicted in advance.
 
 Approach: probe → sense → respond through adaptation.
 
-#### Chaotic
+**Chaotic**
 
 The situation is unstable or highly disrupted. Immediate action is required to restore stability or create direction.
 
@@ -59,7 +59,7 @@ This may show up as:
 
 Approach: act → sense → respond.
 
-#### Confused (Disorder)
+**Confused (Disorder)**
 
 There is no shared clarity about what kind of situation this is. Multiple interpretations exist at the same time without a shared frame.
 
@@ -82,6 +82,7 @@ Engage the following prompts from that state of awareness.
 Bring the person, group, or organization clearly into mind.
 
 This might be:
+
 - an individual you are working with
 - a team or leadership group
 - a wider organization
