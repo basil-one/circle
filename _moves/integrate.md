@@ -107,7 +107,7 @@ Examples include:
 - Cross-functional planning and decision-making sessions where dominant voices, siloed thinking, or unresolved tension limited progress.
 - Facilitation of Agile, DevOps, and systems-thinking workshops involving participants with different roles, incentives, and mental models.
 - Mindset and learning communities that use facilitated dialogue to support reflection, peer coaching, and collective learning.
-- Community dialogue and Authentic Relating environments focused on developing deeper listening, awareness, and mutual understanding.
+- Community dialogue and relational practice environments focused on developing deeper listening, awareness, and mutual understanding.
 - Informal mediation and relationship-repair conversations among families, friends, and volunteer organizations.
 
 ## Key Characteristics

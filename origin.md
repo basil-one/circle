@@ -190,7 +190,6 @@ Only later did I find language and lineages that helped name what was already ha
 - [Aikido practice through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
 - [Negotiation practice by Chris Voss through Black Swan Group](https://www.blackswanltd.com/)  
 - [Sense-making framework by Dave Snowden through Cynefin](https://www.youtube.com/watch?v=N7oz366X0-8)  
-- [Authentic Relating practice through AR Go Live](https://www.ar-go.live/)
 
 ## The emergence of perception: the lenses
 
