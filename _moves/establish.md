@@ -183,7 +183,7 @@ Examples include:
 
 ## Related Patterns
 
-- [Integrate the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="establish_to_balance"} – Integrative facilitation keeps the Circle generative under pressure so diverse voices remain usable for alignment.
+- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="establish_to_integrate"} – Integrative facilitation keeps the Circle generative under pressure so diverse voices remain usable for alignment.
 - [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Aligning on shared principles or artifacts strengthens the Circle’s output and ensures early insights are codified and actionable.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="establish_to_fearless_change"}

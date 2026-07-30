@@ -159,7 +159,7 @@ Examples include:
 ## Related Patterns
 
 - [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for iterative review, discussion, and surfacing key tensions.
-- [Integrate the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Integrative facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
+- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="reconcile_to_integrate"} – Integrative facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="reconcile_to_fearless_change"}
 
