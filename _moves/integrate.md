@@ -2,8 +2,8 @@
 layout: default
 title: Integrate the Conversation
 description: Guide attention, surface perspectives, and work tension so insight can integrate into aligned action.
-permalink: /moves/balance/
-css_id: balance
+permalink: /moves/integrate/
+css_id: integrate
 ---
 
 # Integrate the Conversation
@@ -153,20 +153,20 @@ Examples include:
 
 ## Related Patterns
 
-- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="balance_to_establish"}
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"}
   - Integrative conversations are critical to forming and sustaining the initial nucleus; without a small, recurring gathering, efforts to work with group energy have no stable home.
 
-- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="balance_to_reconcile"}
+- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="integrate_to_reconcile"}
   - Integrative facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
 
-### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="balance_to_zen_leadership"}
+### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
 - *Driver*: Brings focus, urgency, and movement toward decisions and action.
 - *Organizer*: Creates structure, clarity, and coordination across people and work.
 - *Collaborator*: Builds connection, inclusion, and shared understanding across perspectives.
 - *Visionary*: Expands possibility, introduces new ideas, and challenges current thinking.
 
-### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="balance_to_fearless_change"}
+### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="integrate_to_fearless_change"}
 
 - *Time for Reflection*: Use structured pauses to observe group energy and recalibrate.
 - *Plant the Seeds*: Introduce ideas strategically to encourage participation and contribution.
@@ -181,13 +181,13 @@ Developing the ability to integrate a conversation requires both reflection and 
 
 Understand how different interpretations of a situation shape coordination, decision-making, and alignment—and where misalignment emerges when people are operating from different sense-making frames.
 
-👉 [Explore](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="balance_to_lenses_sense"}
+👉 [Explore](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_sense"}
 
 ### Energy Awareness Reflection
 
 Build awareness of how relational energy is showing up in your conversations—and how your interventions influence attention, tension, and participation.
 
-👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="balance_to_lenses_energy"}
+👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_energy"}
 
 ### Two Sides Reflection
 
@@ -217,4 +217,4 @@ If you’d like to deepen this work:
 - practicing conscious facilitation and conversational micro-moves
 - working more intentionally with relational energy in teams and systems
 
-👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="balance_to_connect"}
+👉 [Let’s connect](/contact/){: data-ga-event="contact_click" data-ga-label="integrate_to_connect"}
