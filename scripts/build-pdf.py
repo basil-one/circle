@@ -827,6 +827,8 @@ class CirclePDFBuilder:
         image_path: str,
         *,
         anchor: str | None = None,
+        marker_kicker: str | None = None,
+        marker_title: str | None = None,
         prepend_page_break: bool,
     ) -> str:
         r"""A full-page image (centered), emitted as a Pandoc raw LaTeX block.
@@ -849,11 +851,48 @@ class CirclePDFBuilder:
             lines.append(r"\phantomsection")
             lines.append(rf"\label{{{anchor}}}")
 
+        kicker = str(marker_kicker or '').strip()
+        marker = str(marker_title or '').strip()
+        if kicker or marker:
+            safe_kicker = self._escape_latex_text(kicker)
+            safe_marker = self._escape_latex_text(marker)
+            lines.extend(
+                [
+                    r"\vspace*{1.5em}",
+                    r"\begin{center}",
+                    rf"{{\large\textbf{{{safe_kicker}}}}}" if safe_kicker else '',
+                    rf"{{\large\textbf{{{safe_marker}}}}}" if safe_marker else '',
+                    r"\end{center}",
+                    r"\vspace*{0.5em}",
+                ]
+            )
+            lines = [ln for ln in lines if ln != '']
+
         lines.extend(
             [
                 r"\vspace*{\fill}",
                 r"\begin{center}",
                 rf"\CircleThreeImage{{\textwidth}}{{{image_path}}}",
+                r"\end{center}",
+                r"\vspace*{\fill}",
+                r"\newpage",
+            ]
+        )
+
+        return "```{=latex}\n" + "\n".join(lines) + "\n```"
+
+    def _latex_minimal_appendix_divider_page(self, *, prepend_page_break: bool) -> str:
+        """Emit a minimal standalone appendix divider page."""
+        lines: List[str] = []
+        if prepend_page_break:
+            lines.append(r"\newpage")
+
+        lines.extend(
+            [
+                r"\thispagestyle{empty}",
+                r"\vspace*{\fill}",
+                r"\begin{center}",
+                r"{\LARGE\textbf{APPENDIX}}",
                 r"\end{center}",
                 r"\vspace*{\fill}",
                 r"\newpage",
@@ -930,6 +969,13 @@ class CirclePDFBuilder:
         back_matter_label: str,
         back_matter_anchor: str,
         include_back_matter_in_toc: bool,
+        origin_title: str,
+        origin_anchor: str,
+        origin_image: str,
+        origin_main_markdown: str,
+        origin_cta_text: str,
+        origin_cta_url: str,
+        origin_cta_label: str,
     ) -> Tuple[str, List[Dict[str, str]]]:
         """Build the combined paper body for pandoc.
 
@@ -940,6 +986,8 @@ class CirclePDFBuilder:
         """
 
         toc_items: List[Dict[str, str]] = []
+        toc_core_items: List[Dict[str, str]] = []
+        toc_appendix_items: List[Dict[str, str]] = []
         used_anchors: set[str] = set()
         permalink_to_anchor: Dict[str, str] = {}
 
@@ -962,6 +1010,13 @@ class CirclePDFBuilder:
         back_matter_markdown = textwrap.dedent(back_matter_markdown).strip()
         back_matter_label = str(back_matter_label).strip()
         back_matter_anchor = str(back_matter_anchor).strip()
+        origin_title = str(origin_title).strip()
+        origin_anchor = self._latex_id(str(origin_anchor).strip(), default='origin')
+        origin_image = str(origin_image).strip()
+        origin_main_markdown = textwrap.dedent(origin_main_markdown).strip()
+        origin_cta_text = str(origin_cta_text).strip()
+        origin_cta_url = str(origin_cta_url).strip()
+        origin_cta_label = str(origin_cta_label).strip()
 
         if intro_markdown:
             # Ensure the intro anchor cannot collide with later section/pattern anchors.
@@ -987,6 +1042,8 @@ class CirclePDFBuilder:
             section_title = self._require_dict_str(section, 'title', context=f"sections[{section_idx}]")
             section_toc_label = section_title
             section_intro_image = self._require_dict_str(section, 'intro_image', context=f"sections[{section_idx}]")
+            is_appendix_section = section_title.lower().startswith('appendix:')
+            section_toc_bucket = toc_appendix_items if is_appendix_section else toc_core_items
 
             patterns = self._require_dict_list(section, 'patterns', context=f"sections[{section_idx}]")
 
@@ -1003,7 +1060,7 @@ class CirclePDFBuilder:
 
             include_section_in_toc = self._require_dict_bool(section, 'include_in_toc', context=f"sections[{section_idx}]")
             if include_section_in_toc and section_toc_label:
-                toc_items.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
+                section_toc_bucket.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
 
             section_permalink = self._infer_section_permalink(section)
             if section_permalink:
@@ -1039,7 +1096,7 @@ class CirclePDFBuilder:
                 used_anchors.add(anchor)
 
                 logger.info(f"Loaded pattern: {title}")
-                toc_items.append({'kind': 'pattern', 'label': title, 'anchor': anchor})
+                section_toc_bucket.append({'kind': 'pattern', 'label': title, 'anchor': anchor})
 
                 pattern_permalink = self._normalize_site_path(str(frontmatter.get('permalink') or ''))
                 if pattern_permalink:
@@ -1061,9 +1118,23 @@ class CirclePDFBuilder:
                     'toc_label': section_toc_label,
                     'anchor': section_anchor,
                     'intro_image': section_intro_image,
+                    'is_appendix': is_appendix_section,
                     'patterns': planned_patterns,
                 }
             )
+
+        # Core content appears before back matter; appendix sections are rendered after back matter.
+        core_sections = [s for s in planned_sections if not bool(s.get('is_appendix'))]
+        appendix_sections = [s for s in planned_sections if bool(s.get('is_appendix'))]
+        planned_sections = core_sections + appendix_sections
+
+        # Reserve origin anchor and include it in TOC as part of the core paper.
+        origin_anchor_base = origin_anchor
+        suffix = 2
+        while origin_anchor in used_anchors:
+            origin_anchor = f"{origin_anchor_base}-{suffix}"
+            suffix += 1
+        used_anchors.add(origin_anchor)
 
         # Optionally add back matter (e.g., References/Acknowledgements) as the last body section.
         if back_matter_markdown:
@@ -1076,16 +1147,15 @@ class CirclePDFBuilder:
 
             if include_back_matter_in_toc and back_matter_label:
                 # Back matter should appear in the TOC but not be emphasized like the main content sections.
-                toc_items.append({'kind': 'backmatter', 'label': back_matter_label, 'anchor': back_matter_anchor})
+                pass
 
-        # Add the conclusion as the final entry.
-        conclusion_title, conclusion_anchor = self._get_conclusion_meta()
-        if conclusion_anchor in used_anchors:
-            logger.warning(
-                "Conclusion anchor '%s' conflicts with a pattern anchor; consider setting conclusion.anchor in config.",
-                conclusion_anchor,
-            )
-        toc_items.append({'kind': 'conclusion', 'label': conclusion_title, 'anchor': conclusion_anchor})
+        # Assemble TOC in presentation order: core patterns -> back matter -> appendix -> conclusion.
+        toc_items.extend(toc_core_items)
+        if origin_title:
+            toc_items.append({'kind': 'section', 'label': origin_title, 'anchor': origin_anchor})
+        if back_matter_markdown and include_back_matter_in_toc and back_matter_label:
+            toc_items.append({'kind': 'backmatter', 'label': back_matter_label, 'anchor': back_matter_anchor})
+        toc_items.extend(toc_appendix_items)
 
         # Second pass: emit markdown/latex blocks, rewriting internal links now that we know all anchors.
         chunks: List[str] = []
@@ -1105,7 +1175,7 @@ class CirclePDFBuilder:
             chunks.append("```{=latex}\n\\newpage\n```")
             page_break_needed = False
 
-        for section in planned_sections:
+        for section in core_sections:
             section_anchor = str(section['anchor'])
             section_intro_image = str(section.get('intro_image') or '').strip()
 
@@ -1144,6 +1214,34 @@ class CirclePDFBuilder:
                 chunks.append(body)
                 page_break_needed = True
 
+        # Origin sits in the core argument flow, before references.
+        if origin_image:
+            chunks.append(
+                self._latex_full_width_image_page(
+                    origin_image,
+                    anchor=origin_anchor,
+                    prepend_page_break=page_break_needed,
+                )
+            )
+            page_break_needed = False
+        else:
+            chunks.append(self._latex_hypertarget_block(origin_anchor, prepend_page_break=page_break_needed))
+            page_break_needed = False
+
+        if origin_title:
+            chunks.append(f"## {origin_title}")
+
+        if origin_main_markdown:
+            origin_clean = self._filter_jekyll_syntax(origin_main_markdown)
+            origin_clean = self._normalize_relative_links(origin_clean)
+            origin_clean = self._rewrite_pdf_internal_links(origin_clean, permalink_to_anchor)
+            chunks.append(origin_clean)
+
+        if origin_cta_text and origin_cta_url and origin_cta_label:
+            chunks.append(f"**{origin_cta_text}**\n\n[{origin_cta_label}]({origin_cta_url})")
+
+        page_break_needed = True
+
         if back_matter_markdown:
             back_clean = self._filter_jekyll_syntax(back_matter_markdown)
             back_clean = self._normalize_relative_links(back_clean)
@@ -1153,6 +1251,54 @@ class CirclePDFBuilder:
             chunks.append(self._latex_hypertarget_block(back_matter_anchor, prepend_page_break=True))
             chunks.append(back_clean)
             page_break_needed = True
+
+        # Render appendix sections after back matter (if any), before conclusion.
+        appendix_divider_emitted = False
+        for section in appendix_sections:
+            section_anchor = str(section['anchor'])
+            section_intro_image = str(section.get('intro_image') or '').strip()
+
+            if not appendix_divider_emitted:
+                chunks.append(self._latex_minimal_appendix_divider_page(prepend_page_break=page_break_needed))
+                page_break_needed = False
+                appendix_divider_emitted = True
+
+            if section_intro_image:
+                chunks.append(
+                    self._latex_full_width_image_page(
+                        section_intro_image,
+                        anchor=section_anchor,
+                        marker_kicker='',
+                        marker_title='',
+                        prepend_page_break=page_break_needed,
+                    )
+                )
+                page_break_needed = False
+            else:
+                chunks.append(self._latex_hypertarget_block(section_anchor, prepend_page_break=page_break_needed))
+                page_break_needed = False
+
+            for pattern in section.get('patterns', []):
+                anchor = str(pattern['anchor'])
+                intro_image = str(pattern.get('intro_image') or '').strip()
+
+                if intro_image:
+                    chunks.append(
+                        self._latex_full_width_image_page(
+                            intro_image,
+                            anchor=anchor,
+                            prepend_page_break=page_break_needed,
+                        )
+                    )
+                    page_break_needed = False
+                else:
+                    chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed))
+                    page_break_needed = False
+
+                body = str(pattern.get('body') or '')
+                body = self._rewrite_pdf_internal_links(body, permalink_to_anchor)
+                chunks.append(body)
+                page_break_needed = True
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
         return markdown_body, toc_items
@@ -1379,6 +1525,19 @@ class CirclePDFBuilder:
             back_matter_markdown, back_matter_label, back_matter_anchor, include_back_matter_in_toc = (
                 self._get_body_back_matter()
             )
+            conclusion = self.config.get('conclusion')
+            if not isinstance(conclusion, dict):
+                raise ValueError("Config section 'conclusion' must be a mapping/object")
+            origin_title, origin_anchor = self._get_conclusion_meta()
+            origin_image = self._require_dict_str(conclusion, 'image', context='conclusion')
+            origin_main_markdown = self._get_markdown_content(
+                conclusion,
+                inline_key='main_text',
+                file_key='main_text_file',
+            )
+            origin_cta_text = self._require_dict_str(conclusion, 'cta_text', context='conclusion')
+            origin_cta_url = self._require_dict_str(conclusion, 'cta_url', context='conclusion')
+            origin_cta_label = self._require_dict_str(conclusion, 'cta_label', context='conclusion')
 
             markdown_content, toc_items = self._build_markdown_for_pandoc(
                 pattern_sections,
@@ -1393,6 +1552,13 @@ class CirclePDFBuilder:
                 back_matter_label=back_matter_label,
                 back_matter_anchor=back_matter_anchor,
                 include_back_matter_in_toc=include_back_matter_in_toc,
+                origin_title=origin_title,
+                origin_anchor=origin_anchor,
+                origin_image=origin_image,
+                origin_main_markdown=origin_main_markdown,
+                origin_cta_text=origin_cta_text,
+                origin_cta_url=origin_cta_url,
+                origin_cta_label=origin_cta_label,
             )
             markdown_content = self._replace_unicode_arrows(markdown_content)
             short_toc = self._build_short_toc_latex(toc_items)
