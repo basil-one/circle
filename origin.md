@@ -148,7 +148,7 @@ As anchors for remembering.
 
 And then something changed.
 
-In my own life, periods of personal and professional hardship forced a deeper reevaluation of what balance actually meant.
+In my own life, periods of personal and professional hardship forced a deeper reevaluation of how coherence could be sustained under pressure.
 
 Until then, the instinct had been simple:
 
@@ -164,7 +164,7 @@ Not because the problems were bigger.
 
 Because the response was no longer sufficient.
 
-Balance was no longer something to think about.
+Integration was no longer something to think about.
 
 It became something to recognize in real time—while things were still breaking.
 
@@ -184,7 +184,7 @@ As a constraint.
 
 ## Influences that shaped what became visible
 
-These made what was already happening easier to see.
+Only later did I find language and lineages that helped name what was already happening.
 
 - [Leadership practice by Ginny Whitelaw through Institute of Zen Leadership](https://zenleader.global)  
 - [Aikido practice through Tenshinkan Dojo](https://japaneseculturecenter.com/classes/aikido)  
@@ -216,17 +216,17 @@ And over time, that pattern became visible enough that it could no longer be tre
 
 It had to be named.
 
-**the lenses of Circle3**
+**The lenses of Circle3**
 
-## The third pattern: balancing the system
+## The third pattern
 
-And once that was visible, something followed immediately.
+Once that became visible, something followed immediately.
 
 Not as choice.
 
 As necessity.
 
-Something had to be done with it.
+Something had to be done with that difference in perception.
 
 ## Integrate the Conversation
 
@@ -236,7 +236,7 @@ Not forcing agreement.
 
 Stepping out of direction and control.
 
-Balance does not mean leveling differences or giving every perspective equal weight.
+Integration does not mean leveling differences or giving every perspective equal weight.
 
 It means staying responsive to the conditions that allow coherence and shared insight to emerge as the conversation unfolds.
 
