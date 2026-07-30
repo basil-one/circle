@@ -10,7 +10,7 @@ css_id: integrate
 
 *A Pattern for Adaptive Change Leadership by* **Michael Basil**
 
-![Integrate the Conversation](/images/move-balance.png)
+![Integrate the Conversation](/images/move-integrate.png)
 
 *For facilitators, team leads, or change agents when everyone wants progress—but energy and focus are stuck in fragmented conversations.*
 
@@ -193,13 +193,13 @@ Build awareness of how relational energy is showing up in your conversations—a
 
 Recognize the core polarities present in every conversation—such as speaking and listening, control and emergence, or divergence and convergence—and learn to work with them rather than resolve them.
 
-👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E){: data-ga-event="external_link" data-ga-label="balance_two_sides_reflection"}
+👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E){: data-ga-event="external_link" data-ga-label="integrate_two_sides_reflection"}
 
 ### Accessing Energy Patterns
 
 Explore practical patterns for working with relational dynamics in real time as a core facilitation move.
 
-👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg){: data-ga-event="external_link" data-ga-label="balance_accessing_energy_patterns"}
+👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg){: data-ga-event="external_link" data-ga-label="integrate_accessing_energy_patterns"}
 
 ## Explore in Your Context
 

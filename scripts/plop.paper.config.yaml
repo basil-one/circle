@@ -45,7 +45,7 @@ sections:
       - file: _moves/establish.md
         intro_image: images/full/move-establish.png
       - file: _moves/integrate.md
-        intro_image: images/full/move-balance.png
+        intro_image: images/full/move-integrate.png
       - file: _moves/reconcile.md
         intro_image: images/full/move-reconcile.png
 

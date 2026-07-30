@@ -684,8 +684,8 @@ class CirclePDFBuilder:
             patterns:
               - file: moves/establish.md
                 intro_image: images/full/move-establish.png
-              - file: moves/balance.md
-                intro_image: images/full/move-balance.png
+                            - file: moves/integrate.md
+                              intro_image: images/full/move-integrate.png
               - file: moves/reconcile.md
                 intro_image: images/full/move-reconcile.png
 
