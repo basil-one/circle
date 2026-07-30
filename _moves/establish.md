@@ -16,7 +16,7 @@ css_id: establish
 
 ## Summary
 
-Create a small, recurring gathering where a few participants come together to reason about a change initiative. They represent multiple perspectives and are guided by a skilled facilitator.
+Create a small, recurring gathering where a few participants reason together about a change initiative. They represent multiple perspectives and are guided by a skilled facilitator.
 
 The Circle surfaces tensions, builds shared understanding, and gradually connects isolated champions. Over time, it becomes a nucleus of alignment, fostering coherence and momentum across the organization.
 
@@ -46,17 +46,9 @@ But it all began with one move:
 
 ## Context
 
-You are leading or supporting change inside a complex organization.
+You are leading change in an environment where many initiatives compete for attention and people are interpreting the same situation differently.
 
-Multiple initiatives compete for attention. Stakeholders hold different mental models of the change. People experience the initiative through different roles, incentives, and pressures.
-
-Most enterprise organizations are structurally hierarchical. Decision authority sits higher in the structure, while the lived experience of change occurs deeper in the system.
-
-Meanwhile, organizations often lack spaces designed for collective sense-making.
-
-Traditional change communication spreads information but rarely creates shared understanding or alignment.
-
-Without deliberate intervention, organizational energy becomes fragmented.
+Formal communication channels distribute updates, but they do not create a recurring space where cross-role participants can reason together and build shared coherence.
 
 ## Problem
 
@@ -73,10 +65,6 @@ You need a small relational space where coherence can actually form.
 
 ## Forces
 
-### Speed vs. Safety
-
-Leadership wants faster delivery while still maintaining reliability, governance, and control.
-
 ### Hierarchy vs. Experience
 
 Decision makers sit high in the structure while those experiencing the change operate deeper in the organization.
@@ -84,10 +72,6 @@ Decision makers sit high in the structure while those experiencing the change op
 ### Coordination vs. Attention Scarcity
 
 The organization needs coordinated change, but people’s attention is already fragmented across many initiatives.
-
-### Structure vs. Emergence
-
-Formal change structures provide legitimacy but can slow down learning and adaptation. Informal networks move faster but may lack visibility or support.
 
 ### Expertise vs. Integration
 
@@ -101,65 +85,33 @@ Organizations reward action and execution, yet meaningful change requires time f
 
 **Establish the Circle.**
 
-Create a small recurring gathering where participants reason together about the change in real time.
+**Core principle**: a small, recurring nucleus makes it possible for shared interpretation to form before broad alignment is expected.
 
-The Circle begins with a **three-person nucleus**.
+- Form a **three-person nucleus** with at least two subject matter perspectives plus facilitation capability.
+  - Mechanism: diversity of perspective plus conversational containment prevents early groupthink and allows tensions to surface safely.
+  - Effect: the group can see the same initiative from multiple realities without fragmenting.
+- Include an **integrative facilitator** who can move the room between grounding and expanding, inquiry and action, and listening and integration.
+  - Mechanism: active facilitation converts scattered observations into usable shared meaning.
+  - Effect: conversations become progressively more coherent instead of cyclical or performative.
+- Meet **weekly at a consistent time** and keep the core intentionally small (three to seven regular participants).
+  - Mechanism: cadence builds relational memory; small size preserves candor, accountability, and depth.
+  - Effect: shared language and trust accumulate fast enough to influence live change decisions.
+- Involve sponsors lightly at first and invite additional participants selectively when learning or progress requires it.
+  - Mechanism: visible sponsorship provides legitimacy while selective participation protects conversational quality.
+  - Effect: insights can spread outward without collapsing the core space.
 
-Between these three participants, the group must contain:
-
-- multiple subject matter perspectives (at least two)
-- facilitation capability
-- confidence and credibility within the organization
-
-The third role is critical: an **integrative facilitator**.
-
-This person is skilled in guiding conversation, sensing energy in the room, and helping participants move between:
-
-- grounding and expanding
-- inquiry and action
-- listening and integration
-
-Ideally this facilitator has experience with reflective or conscious conversation practices.
-
-The Circle meets **weekly at a consistent time**.
-
-Participation is intentionally small. Three is the center. The group may grow to five to seven regular participants, with others occasionally joining when relevant.
-
-The sponsor or senior stakeholder is typically **informally involved at first**—aware of the Circle and supportive but not dominating the conversation.
-
-Within the Circle participants:
-
-- explore tensions around the change
-- share different perspectives
-- surface concerns and uncertainties
-- gradually build shared understanding
-
-Participants invite others when it becomes useful for learning or progress.
+Use this move as an operating container, not a status forum. When drift appears, use the Failure Modes below as a diagnostic and coaching aid.
 
 ## Resulting Context
 
-When the Circle works well, something shifts.
+When this move is practiced with consistency, a predictable sequence emerges.
 
-Participants develop a shared language for the change.
+- The recurring nucleus stabilizes attention around the change.
+- Stabilized attention allows tensions and assumptions to be examined rather than avoided.
+- Repeated cross-role reasoning builds shared language and shared interpretation.
+- Shared interpretation enables coordinated decisions and more durable commitments.
 
-Potential champions discover one another and begin collaborating.
-
-Stakeholders gain a place to bring questions and concerns before conflicts escalate.
-
-Over time the Circle becomes a **nucleus of alignment** within the organization.
-
-As understanding grows, the group may evolve into:
-
-- a champion network
-- a change coalition
-- a community of practice
-- or a formal change working group
-
-Small islands of coherence begin forming across teams as shared understanding spreads through relationships.
-
-But the essential move remains simple:
-
-**Establish the Circle.**
+As that sequence repeats, potential champions connect, stakeholders bring concerns earlier, and the Circle becomes a **nucleus of alignment** that can evolve into a broader coalition, community of practice, or formal working group.
 
 ## Known Uses
 
@@ -173,17 +125,17 @@ Examples include:
 - Financial-services technology organizations navigating competing priorities, resource constraints, and complex stakeholder environments.
 - Learning communities such as the Mindset and Agile Dojo, where Circle gatherings supported reflection, peer learning, and cross-functional relationship building.
 - Governance settings such as homeowner association and condominium boards, where recurring conversations helped stakeholders build shared understanding before decisions.
-- Community dialogue and Authentic Relating experiments exploring collective reflection, belonging, and relational coherence.
+- Community dialogue and relational practice environments exploring collective reflection, belonging, and relational coherence.
 - Informal family and friendship systems where a recurring conversational container helped participants navigate ongoing tensions and change.
 
 ## Key Characteristics
 
-- begins with three people
-- includes at least two subject matter perspectives
-- includes an integrative facilitator
-- meets weekly
-- operates initially informally
-- invites participation as needed
+- Begins with three people
+- Includes at least two subject matter perspectives
+- Includes an integrative facilitator
+- Meets weekly
+- Operates initially informally
+- Invites participation as needed
 
 ## Failure Modes
 
@@ -231,7 +183,7 @@ Examples include:
 
 ## Related Patterns
 
-- [Balance the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="establish_to_balance"} – Balanced conversations ensure diverse voices are heard and tensions are productively surfaced, supporting the Circle’s nucleus.
+- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="establish_to_integrate"} – Integrative facilitation keeps the Circle generative under pressure so diverse voices remain usable for alignment.
 - [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Aligning on shared principles or artifacts strengthens the Circle’s output and ensures early insights are codified and actionable.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="establish_to_fearless_change"}

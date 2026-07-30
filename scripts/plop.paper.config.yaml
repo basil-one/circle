@@ -44,12 +44,12 @@ sections:
     patterns:
       - file: _moves/establish.md
         intro_image: images/full/move-establish.png
-      - file: _moves/balance.md
-        intro_image: images/full/move-balance.png
+      - file: _moves/integrate.md
+        intro_image: images/full/move-integrate.png
       - file: _moves/reconcile.md
         intro_image: images/full/move-reconcile.png
 
-  - title: Three Leadership Lenses
+  - title: Appendix: Leadership Lenses
     include_in_toc: true
     intro_image: images/full/lenses.png
     patterns:

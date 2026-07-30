@@ -30,7 +30,7 @@ This creates a shared space where attention can hold.
 
 👉 [Learn more](/moves/establish/){: data-ga-event="learn_more" data-ga-label="moves_index_to_establish"}
 
-## Balance the Conversation
+## Integrate the Conversation
 
 **When pressure or fatigue creates fragmentation**
 
@@ -43,9 +43,9 @@ Visionaries step back and reframe.
 
 This move makes those tendencies visible.
 
-It helps the group see how differently the situation is being experienced—so the conversation can integrate instead of breaking apart.
+It helps the group see how differently the situation is being experienced so the conversation can integrate instead of breaking apart.
 
-👉 [Learn more](/moves/balance/){: data-ga-event="learn_more" data-ga-label="moves_index_to_balance"}
+👉 [Learn more](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="moves_index_to_integrate"}
 
 ## Reconcile the Intention
 
