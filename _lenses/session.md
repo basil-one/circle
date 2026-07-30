@@ -27,6 +27,8 @@ More often, it begins when people can better see:
 
 A Circle session helps create the conditions for that kind of shared awareness.
 
+Within Circle3, this lens functions as a practical bridge from diagnosis to action. It helps facilitators decide how to apply Establish the Circle, Integrate the Conversation, and Reconcile the Intention in a specific upcoming session.
+
 ## Framing
 
 ### Grounding lenses

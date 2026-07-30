@@ -228,7 +228,7 @@ As necessity.
 
 Something had to be done with it.
 
-## Balance the Conversation
+## Integrate the Conversation
 
 Not directing the group.
 
@@ -250,7 +250,7 @@ Over time, three movements kept appearing:
 
 - Establish the Circle  
 - Reconcile the Intention  
-- Balance the Conversation  
+- Integrate the Conversation  
 
 Not designed.
 

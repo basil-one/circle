@@ -20,6 +20,8 @@ This can lead to friction, misunderstanding, and frustration—even when intenti
 
 This reflection helps make those underlying interpretive differences visible.
 
+Within Circle3, this lens is a perceptual support for facilitation, especially when practicing Establish the Circle, Integrate the Conversation, and Reconcile the Intention. It helps leaders diagnose why coordination is breaking down before they choose the next conversational move.
+
 ## Framing
 
 ### Sense-making domains

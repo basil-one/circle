@@ -32,11 +32,9 @@ The result: **a culture of iterative alignment and clarity**—not just a docume
 
 ## Context
 
-You are leading or supporting change inside a complex, ambiguous environment.
+You are leading change where intent exists but is interpreted inconsistently across participants and stakeholders.
 
-Existing charters or guiding documents may be stale, incomplete, or misunderstood. Mental models across the group are fragmented. People pursue initiatives in isolation. Stakeholders outside the group need clarity to collaborate effectively. Organizational culture rewards action but lacks structured spaces for alignment.
-
-Without intervention, ambiguity persists, decisions remain reactive, and opportunities for coordinated impact are lost.
+Existing principles or charters are not functioning as living alignment tools, so decisions drift, collaboration fragments, and ambiguity persists under pressure.
 
 ## Problem
 
@@ -56,10 +54,6 @@ Conventional meetings or status updates rarely surface misalignment or build col
 
 Alignment requires revisiting, refining, and iterating; premature “agreement” hides ambiguity.
 
-### Visibility vs. Safety
-
-Publishing an artifact signals intent but invites scrutiny; it must balance clarity with psychological safety.
-
 ### Structure vs. Emergence
 
 Formal documents provide reference and legitimacy, but alignment emerges through conversation and shared sense-making.
@@ -76,30 +70,40 @@ Artifacts should capture culture and intent, but remain flexible to reflect new 
 
 **Reconcile the Intention.**
 
-Create a structured, iterative process around a **visible alignment artifact**:
+**Core principle**: intention becomes actionable when conversation and artifact evolve together through repeated affirmation.
 
-- Identify or create the artifact (charter, principles, guiding document).
-- Convene key participants, including social leaders and subject matter experts.
-- Facilitate conversations that surface ambiguity, clarify principles, reconcile differences, and invite critique.
-- Iterate until all key participants can **affirm the artifact**: “This is right, here’s why, and how it helps in my role.”
-- Publish or share the artifact with relevant audiences to guide interaction, decisions, and future alignment.
+- Establish or refresh a **visible alignment artifact** (charter, principles, or working agreement).
+  - Mechanism: a shared reference externalizes assumptions so they can be examined collectively.
+  - Effect: ambiguity becomes discussable instead of implicit.
+- Convene key participants, including social leaders and subject matter experts, for structured alignment conversations.
+  - Mechanism: bringing influence and expertise into the same room reveals hidden divergences early.
+  - Effect: differences can be reconciled before they become execution friction.
+- Run iterative dialogue cycles: clarify language, test practical implications, invite critique, and revise.
+  - Mechanism: iteration converts abstract agreement into role-level understanding.
+  - Effect: participants can explain not only what the intention is, but why it works in practice.
+- Continue until key participants can **affirm the artifact**: "This is right, here is why, and this is how it helps in my role."
+  - Mechanism: explicit affirmation validates both comprehension and commitment.
+  - Effect: the artifact becomes a living coordination tool.
+- Share the artifact with relevant internal and external stakeholders.
+  - Mechanism: visibility creates a common reference for decisions, interfaces, and accountability.
+  - Effect: collaboration becomes more predictable across boundaries.
 
-The **conversation is the value**, not the artifact alone. Each iteration strengthens shared understanding, culture, and collective action.
+The **conversation is the value**, and the artifact carries that value forward between conversations. Use Failure Modes to diagnose drift when alignment appears present on paper but weak in practice.
 
 ## Resulting Context
 
-When the pattern succeeds:
+When this move is sustained, alignment matures through a visible progression.
 
-- Mental models are aligned; ambiguity is reduced.
-- Participants share a common language for intent, priorities, and principles.
-- Interactions with other teams or departments become smoother, more predictable, and effective.
-- Leadership gains a clear reference point to guide decisions, set priorities, and support the group.
-- Teams understand which metrics matter, track progress over time, and revisit performance to inform alignment.
-- The artifact becomes a **living, iterative tool**—anchoring culture, decision-making, and ongoing alignment across the organization.
+- Ambiguity is surfaced and addressed through recurring dialogue.
+- Shared language emerges around intent, priorities, and principles.
+- Shared language stabilizes decisions and improves cross-team coordination.
+- The artifact becomes a **living, iterative tool** that anchors culture and guides adaptation.
+
+As this progression repeats, leadership gains a reliable reference for decisions, teams revisit performance with clearer intent, and alignment holds longer under change.
 
 ## Known Uses
 
-Although the story above comes from an enterprise initiative, the underlying move—iterative alignment through recurring conversations anchored on a shared, visible artifact—shows up in many domains.
+Although the story above comes from an enterprise initiative, the underlying move of iterative alignment through recurring conversations anchored on a shared, visible artifact appears in many domains.
 
 This pattern appears in practice in settings where groups rely on recurring conversations around a shared artifact to create alignment and coordinated action.
 
@@ -155,7 +159,7 @@ Examples include:
 ## Related Patterns
 
 - [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for iterative review, discussion, and surfacing key tensions.
-- [Balance the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Balanced facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
+- [Integrate the Conversation](/moves/balance/){: data-ga-event="learn_more" data-ga-label="reconcile_to_balance"} – Integrative facilitation ensures the artifact accurately reflects diverse perspectives and produces actionable alignment.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="reconcile_to_fearless_change"}
 

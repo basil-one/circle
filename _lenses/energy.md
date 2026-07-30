@@ -18,6 +18,8 @@ It helps you notice patterns in how their presence shifts or stabilizes across d
 
 You’ll rate how strongly each type of energy shows up on a scale from 1 (barely there) to 10 (very strong).
 
+Within Circle3, this lens is a perceptual support for facilitation across the three guiding moves. It helps leaders notice how relational energy shapes whether a Circle can be established, a conversation can be integrated, and intention can be translated into durable action.
+
 ## Framing
 
 ### Ways energy shows up
