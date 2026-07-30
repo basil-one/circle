@@ -39,6 +39,6 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-family-lab/circle/compare/v0.1.1...HEAD
-[0.1.1]: https://github.com/basil-family-lab/circle/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/basil-family-lab/circle/releases/tag/v0.1.0
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/basil-one/circle/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/basil-one/circle/releases/tag/v0.1.0
