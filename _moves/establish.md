@@ -125,7 +125,7 @@ Examples include:
 - Financial-services technology organizations navigating competing priorities, resource constraints, and complex stakeholder environments.
 - Learning communities such as the Mindset and Agile Dojo, where Circle gatherings supported reflection, peer learning, and cross-functional relationship building.
 - Governance settings such as homeowner association and condominium boards, where recurring conversations helped stakeholders build shared understanding before decisions.
-- Community dialogue and Authentic Relating experiments exploring collective reflection, belonging, and relational coherence.
+- Community dialogue and relational practice environments exploring collective reflection, belonging, and relational coherence.
 - Informal family and friendship systems where a recurring conversational container helped participants navigate ongoing tensions and change.
 
 ## Key Characteristics
