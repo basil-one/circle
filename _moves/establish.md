@@ -48,38 +48,34 @@ But it all began with one move:
 
 You are leading change in an environment where many initiatives compete for attention and people are interpreting the same situation differently.
 
-Formal communication channels distribute updates, but they do not create a recurring space where cross-role participants can reason together and build shared coherence.
-
 ## Problem
 
 How do you create coherence and momentum for change when:
 
-- people hold different interpretations of the change
-- champions are isolated from one another
-- leadership is structurally distant from lived experience
-- the organization is saturated with competing initiatives
+- **People hold different interpretations of the change**, making it difficult to reach shared understanding and coordinate action toward the same direction.
+- **Champions are isolated from one another**, limiting their ability to connect, form coalitions, and build enough collective momentum to influence the broader system.
+- **Leadership is structurally distant from lived experience**, creating gaps between decisions about the change and the realities of those doing the work, so decisions can miss what only direct experience reveals.
+- **The organization is saturated with competing initiatives**, fragmenting attention and making it difficult to sustain enough focus on the deeper causes of the situation rather than reacting to surface symptoms.
 
-Large meetings often become performative rather than reflective. Broadcast communication increases awareness but rarely creates commitment.
-
-You need a small relational space where coherence can actually form.
+Typical responses rarely help: large meetings often become performative rather than reflective, and broadcast communication increases awareness but rarely creates commitment.
 
 ## Forces
 
 ### Hierarchy vs. Experience
 
-Decision makers sit high in the structure while those experiencing the change operate deeper in the organization.
+Decision makers hold formal authority high in the structure, while those experiencing the change operate deeper in the organization. Decisions can therefore be shaped without the full benefit of the experience of those doing the work, while practitioners may lack the authority to act on what they see.
 
 ### Coordination vs. Attention Scarcity
 
-The organization needs coordinated change, but people’s attention is already fragmented across many initiatives.
+The organization needs coordinated change, but people’s attention is already fragmented across many initiatives, producing locally optimized activity without enough attention to the larger system.
 
 ### Expertise vs. Integration
 
-Different subject matter experts understand different parts of the system, but few spaces exist where their perspectives can be integrated.
+Different subject matter experts understand different parts of the system, but their perspectives can remain separated within their domains. Each perspective may be locally valid while the combined picture remains fragmented, making it difficult to optimize for the larger system.
 
 ### Action vs. Reflection
 
-Organizations reward action and execution, yet meaningful change requires time for reflection and sense-making.
+Organizations reward visible action and execution, while meaningful change often requires time to reflect, make sense of experience, and integrate what has been learned. Pressure to demonstrate progress can therefore crowd out the reflection needed for coherent action.
 
 ## Solution
 
