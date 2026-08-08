@@ -63,15 +63,15 @@ Typical responses rarely help: large meetings often become performative rather t
 
 ### Hierarchy vs. Experience
 
-Decision makers hold formal authority high in the structure, while those experiencing the change operate deeper in the organization. Decisions can therefore be shaped without the full benefit of the experience of those doing the work, while practitioners may lack the authority to act on what they see.
+Decision makers hold formal authority high in the structure, while those experiencing the change operate deeper in the organization. Decisions can therefore be made without the full benefit of the experience of those doing the work, while practitioners may lack the authority to act on what they see.
 
 ### Coordination vs. Attention Scarcity
 
-The organization needs coordinated change, but people’s attention is already fragmented across many initiatives, producing locally optimized activity without enough attention to the larger system.
+The organization needs coordinated change, but people’s attention is already fragmented across many initiatives, producing activity that's locally useful but poorly coordinated with the larger system.
 
 ### Expertise vs. Integration
 
-Different subject matter experts understand different parts of the system, but their perspectives can remain separated within their domains. Each perspective may be locally valid while the combined picture remains fragmented, making it difficult to optimize for the larger system.
+Different subject matter experts understand different parts of the system, but their perspectives can remain separated within their domains. Each perspective may be locally valid while the combined picture remains fragmented, making it hard to see how the parts fit together.
 
 ### Action vs. Reflection
 
@@ -84,7 +84,7 @@ Organizations reward visible action and execution, while meaningful change often
 **Core principle**: a small, recurring nucleus makes it possible for shared interpretation to form before broad alignment is expected.
 
 - Form a **three-person nucleus** with at least two subject matter perspectives plus facilitation capability.
-  - Mechanism: diversity of perspective plus conversational containment prevents early groupthink and allows tensions to surface safely.
+  - Mechanism: diversity of perspective plus a small, trusted space prevents early groupthink and allows tensions to surface safely.
   - Effect: the group can see the same initiative from multiple realities without fragmenting.
 - Include an **integrative facilitator** who can move the room between grounding and expanding, inquiry and action, and listening and integration.
   - Mechanism: active facilitation converts scattered observations into usable shared meaning.
