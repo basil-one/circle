@@ -170,7 +170,7 @@ Examples include:
 
 ## Practical Resources
 
-Developing the ability to integrate a conversation requires both reflection and exposure to complementary lenses and practices.
+Developing the ability to integrate a conversation requires reflection and practice. These resources offer complementary lenses for noticing how meaning and energy shape what happens in the conversation.
 
 ### Sense Making Reflection
 
@@ -183,18 +183,6 @@ Understand how different interpretations of a situation shape coordination, deci
 Build awareness of how relational energy is showing up in your conversations, and how your interventions influence attention, tension, and participation.
 
 👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_energy"}
-
-### Two Sides Reflection
-
-Recognize the core polarities present in every conversation (such as speaking and listening, control and emergence, or divergence and convergence) and learn to work with them rather than resolve them.
-
-👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E){: data-ga-event="external_link" data-ga-label="integrate_two_sides_reflection"}
-
-### Accessing Energy Patterns
-
-Explore practical patterns for working with relational dynamics in real time as a core facilitation move.
-
-👉 [Explore](https://www.youtube.com/watch?v=RdRpkZwu5rg){: data-ga-event="external_link" data-ga-label="integrate_accessing_energy_patterns"}
 
 ## Explore in Your Context
 
