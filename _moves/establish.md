@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Establish the Circle
-description: Create a small, recurring gathering where a few participants—representing multiple perspectives and guided by a skilled facilitator—reason together about a change initiative.
+description: Create a small, recurring gathering where a few participants, representing multiple perspectives and guided by a skilled facilitator, reason together about a change initiative.
 permalink: /moves/establish/
 css_id: establish
 ---
@@ -12,7 +12,7 @@ css_id: establish
 
 ![Establish the Circle](/images/move-establish.png)
 
-*For leaders, facilitators, or change agents when people care about the change—but can’t connect, align, or move together.*
+*For leaders, facilitators, or change agents when people care about the change, but can’t connect, align, or move together.*
 
 ## Summary
 
@@ -24,7 +24,7 @@ The Circle surfaces tensions, builds shared understanding, and gradually connect
 
 A large enterprise organization was attempting to introduce a new initiative affecting multiple teams. Leaders wanted faster progress while maintaining safety and governance. Practitioners were overwhelmed with competing priorities. Stakeholders held conflicting interpretations of what the change meant.
 
-Conversations about the initiative occurred everywhere—project meetings, hallway conversations, and internal messaging channels—but rarely in a place designed for shared understanding.
+Conversations about the initiative occurred everywhere: project meetings, hallway conversations, and internal messaging channels, but rarely in a place designed for shared understanding.
 
 As a result, awareness was uneven, desire was fragmented, and potential champions remained isolated.
 
@@ -111,7 +111,7 @@ As that sequence repeats, potential champions connect, stakeholders bring concer
 
 ## Known Uses
 
-The story above comes from enterprise change work, but the core move—creating a small, recurring space for collective sense-making—shows up in many domains.
+The story above comes from enterprise change work, but the core move (creating a small, recurring space for collective sense-making) shows up in many domains.
 
 This pattern appears in practice in organizational, community, and personal settings where change requires ongoing collective sense-making rather than one-time communication.
 

@@ -12,7 +12,7 @@ css_id: integrate
 
 ![Integrate the Conversation](/images/move-integrate.png)
 
-*For facilitators, team leads, or change agents when everyone wants progress—but energy and focus are stuck in fragmented conversations.*
+*For facilitators, team leads, or change agents when everyone wants progress, but energy and focus are stuck in fragmented conversations.*
 
 ## Summary
 
@@ -26,7 +26,7 @@ In a large enterprise, a team had been meeting for months, generating ideas but 
 
 A change leader entered the conversation and observed the group’s dynamics. They intervened with small shifts: grounding ideas, inviting cross-silo perspectives, and creating space for quieter voices. Using **affect labeling** (“It seems like we’re frustrated”) followed by **dynamic silence**, the group began to surface and process stuck tension.
 
-Over time, participants cleared out ideas and priorities that no longer made sense, integrated perspectives, and made aligned commitments. Strategic initiatives that had stalled began producing tangible deliverables—completed, showcased, and connected to broader goals. Conversations shifted from fragmented debate to a **collaborative, flowing system**, where energy, insight, and action moved in harmony. The group became capable of learning, adapting, and responding to volatility and ambiguity in real time.
+Over time, participants cleared out ideas and priorities that no longer made sense, integrated perspectives, and made aligned commitments. Strategic initiatives that had stalled began producing tangible deliverables: completed, showcased, and connected to broader goals. Conversations shifted from fragmented debate to a **collaborative, flowing system**, where energy, insight, and action moved in harmony. The group became capable of learning, adapting, and responding to volatility and ambiguity in real time.
 
 ## Context
 
@@ -95,7 +95,7 @@ Over time, conversations become **more collaborative, responsive, and adaptive**
 
 ## Known Uses
 
-The story above is set in an enterprise team, but the facilitation challenge—integrating diverse perspectives and keeping dialogue productive under pressure—recurs across many domains.
+The story above is set in an enterprise team, but the facilitation challenge (integrating diverse perspectives and keeping dialogue productive under pressure) recurs across many domains.
 
 This pattern appears in practice wherever groups need to integrate diverse perspectives, work through tension, and maintain productive dialogue under uncertainty.
 
@@ -177,19 +177,19 @@ Developing the ability to integrate a conversation requires both reflection and 
 
 ### Sense Making Reflection
 
-Understand how different interpretations of a situation shape coordination, decision-making, and alignment—and where misalignment emerges when people are operating from different sense-making frames.
+Understand how different interpretations of a situation shape coordination, decision-making, and alignment, and where misalignment emerges when people are operating from different sense-making frames.
 
 👉 [Explore](/lenses/sense/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_sense"}
 
 ### Energy Awareness Reflection
 
-Build awareness of how relational energy is showing up in your conversations—and how your interventions influence attention, tension, and participation.
+Build awareness of how relational energy is showing up in your conversations, and how your interventions influence attention, tension, and participation.
 
 👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_energy"}
 
 ### Two Sides Reflection
 
-Recognize the core polarities present in every conversation—such as speaking and listening, control and emergence, or divergence and convergence—and learn to work with them rather than resolve them.
+Recognize the core polarities present in every conversation (such as speaking and listening, control and emergence, or divergence and convergence) and learn to work with them rather than resolve them.
 
 👉 [Explore](https://www.youtube.com/watch?v=b2OZ22QX47E){: data-ga-event="external_link" data-ga-label="integrate_two_sides_reflection"}
 
