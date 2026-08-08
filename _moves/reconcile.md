@@ -16,19 +16,19 @@ css_id: reconcile
 
 ## Summary
 
-Guide a group through structured, iterative conversations anchored on a **visible alignment artifact**—a charter, principles document, or other codified intention. The focus is on the **conversation itself**, surfacing ambiguity, reconciling perspectives, and creating shared understanding. Over time, this strengthens culture, clarifies roles, and aligns actions within and beyond the group.
+Guide a group through structured, iterative conversations anchored on a **visible alignment artifact** (a charter, principles document, or other codified intention). The focus is on the **conversation itself**, surfacing ambiguity, reconciling perspectives, and creating shared understanding. Over time, this strengthens culture, clarifies roles, and aligns actions within and beyond the group.
 
 ## Story
 
 A department led a major initiative spanning multiple teams. They had a charter and principles on paper, but in practice, people held different interpretations. Misalignment caused duplicated effort, missed opportunities, and occasional friction.
 
-A change leader introduced a **series of conversations** centered on a visible artifact—a living charter. Over several sessions, key participants revisited principles, clarified roles, and reconciled differences.
+A change leader introduced a **series of conversations** centered on a visible artifact: a living charter. Over several sessions, key participants revisited principles, clarified roles, and reconciled differences.
 
-Some social leaders were quiet at first, others vocal. Each engaged through successive iterations until they could affirm the final artifact: “This captures our intent—and here’s why and how it helps in my role.”
+Some social leaders were quiet at first, others vocal. Each engaged through successive iterations until they could affirm the final artifact: “This captures our intent, and here’s why and how it helps in my role.”
 
 As alignment grew, collaboration improved. Conversations with other teams became smoother. Decisions were clearer. The artifact became a **reference point**, visible to others, guiding interaction, supporting management decisions, and even providing context for automated systems downstream.
 
-The result: **a culture of iterative alignment and clarity**—not just a document, but a living conversation that strengthens collective action.
+The result: **a culture of iterative alignment and clarity**, not just a document, but a living conversation that strengthens collective action.
 
 ## Context
 
@@ -184,7 +184,15 @@ It helps translate what is emerging in the work into a clear, grounded intention
 
 ## Explore in Your Context
 
-Interested in:
+This pattern becomes meaningful when applied to your own alignment challenges, not just understood conceptually.
+
+If it resonates with your work, consider:
+
+- Where do principles or charters exist on paper but aren’t functioning as living alignment tools?
+- Which key voices haven’t yet affirmed a shared understanding of intent?
+- What artifact could anchor recurring conversation rather than sit as a one-time document?
+
+If you’d like to deepen this work:
 
 - Introducing iterative alignment exercises
 - Creating living artifacts for your team or department
