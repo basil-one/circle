@@ -32,16 +32,14 @@ Over time, participants cleared out ideas and priorities that no longer made sen
 
 You are in a change conversation where attention is fragmented, perspectives are unevenly represented, and progress is stalling even though people care about outcomes.
 
-The group does not only need more ideas or faster decisions; it needs a way to integrate multiple perspectives under pressure so action can become coherent.
-
 ## Problem
 
 How do you guide a conversation when:
 
-- drivers clash while organizers silo their perspectives
-- visionaries dominate and collaborators disengage
-- ideas accumulate but fail to integrate, and outdated priorities persist
-- tension or frustration blocks aligned action
+- **Drivers clash while organizers silo their perspectives**, making it difficult to connect urgency and coordination across the system even when each perspective is legitimate on its own.
+- **Visionaries dominate and collaborators disengage**, causing important perspectives and information to disappear from the conversation and eroding the participation needed to turn possibility into shared understanding.
+- **Ideas accumulate but fail to integrate, and outdated priorities persist**, so the conversation keeps generating possibilities without producing coherent priorities or decisions that fit the current situation.
+- **Tension or frustration blocks aligned action**, consuming emotional and relational energy that could otherwise support sense-making, integration, and movement.
 
 Without integration, discussions remain fragmented, performative, and unproductive, preventing aligned action and learning.
 
@@ -49,19 +47,19 @@ Without integration, discussions remain fragmented, performative, and unproducti
 
 ### Speaking vs. Listening
 
-Some participants dominate the conversation while others hold back, limiting shared understanding.
+Some participants dominate the conversation while others hold back. More speaking can increase expression without increasing understanding, while too little participation leaves important perspectives unheard, making integration difficult.
 
 ### Speed vs. Reflection
 
-The group pushes toward decisions before perspectives are integrated, or reflects without moving forward.
+The group pushes toward decisions before perspectives are integrated, or reflects without moving forward. Pressure for visible progress can make reflection feel like delay, while insufficient reflection can lead the group to act before it understands what it is seeing.
 
 ### Control vs. Emergence
 
-Attempts to direct the conversation can restrict insight, while too little direction allows drift.
+Attempts to direct the conversation can restrict insight and participation, while too little direction allows the conversation to drift. The facilitator must provide enough structure to maintain coherence without controlling what the group discovers.
 
 ### Divergence vs. Convergence
 
-Ideas expand rapidly but struggle to integrate into clear priorities and action.
+Ideas can expand faster than the group can connect and prioritize them. Too little divergence limits what the group can see, while too much divergence without convergence leaves ideas fragmented and prevents clear priorities and action from emerging.
 
 ## Solution
 
