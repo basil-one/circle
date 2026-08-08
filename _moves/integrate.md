@@ -151,11 +151,8 @@ Examples include:
 
 ## Related Patterns
 
-- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"}
-  - Integrative conversations are critical to forming and sustaining the initial nucleus; without a small, recurring gathering, efforts to work with group energy have no stable home.
-
-- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="integrate_to_reconcile"}
-  - Integrative facilitation ensures alignment exercises surface all perspectives, making artifacts meaningful and actionable.
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"} – Integrative conversations sustain the nucleus so the Circle has a stable home for working with group energy.
+- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="integrate_to_reconcile"} – Integrative facilitation helps alignment exercises surface all perspectives so artifacts stay meaningful and actionable.
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
