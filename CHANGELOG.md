@@ -8,6 +8,8 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-09
+
 ### Removed
 - Stopped committing the generated paper PDF (`assets/pdfs/circle3-paper.pdf` is now git-ignored, built locally/by CI, and distributed via GitHub Releases). Historical PDF blobs were also purged from git history to shrink the repository.
 
@@ -74,7 +76,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/basil-one/circle/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/basil-one/circle/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/basil-one/circle/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/basil-one/circle/compare/v0.1.0...v0.1.1
