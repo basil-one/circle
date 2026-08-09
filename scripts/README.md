@@ -100,7 +100,7 @@ Pushing a tag matching `v*.*.*` triggers [.github/workflows/release-pdf.yml](../
 
 Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG.md` plus a static "Includes"/"License" section (keep the pattern/lens list in that workflow step in sync with `_moves/`/`_lenses/` if they change).
 
-The committed copy at `assets/pdfs/circle3-paper.pdf` is still regenerated and committed for now as a safety net until this pipeline has proven itself over a few releases.
+`assets/pdfs/circle3-paper.pdf` is a local/CI build artifact only (git-ignored) — it is no longer committed to the repository. Run the build locally to regenerate it, or download it from the latest GitHub Release.
 
 ## Inputs
 

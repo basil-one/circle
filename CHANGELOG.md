@@ -8,6 +8,9 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+### Removed
+- Stopped committing the generated paper PDF (`assets/pdfs/circle3-paper.pdf` is now git-ignored, built locally/by CI, and distributed via GitHub Releases). Historical PDF blobs were also purged from git history to shrink the repository.
+
 ## [0.1.3] - 2026-08-09
 
 ### Added

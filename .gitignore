@@ -18,3 +18,6 @@ scripts/.pytest_cache/
 # Python bytecode
 __pycache__/
 *.py[cod]
+
+# Generated paper PDF (built locally or by CI, published via GitHub Releases)
+assets/pdfs/*.pdf
