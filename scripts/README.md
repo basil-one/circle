@@ -93,7 +93,12 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 
 ## Publishing (release automation)
 
-Pushing a tag matching `v*.*.*` triggers [.github/workflows/release-pdf.yml](../.github/workflows/release-pdf.yml), which installs the dependencies above, runs this build, and attaches `circle3-paper.pdf` to the corresponding GitHub Release (marked as the latest release). The site's download link on `/paper/` points at `https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf`, so it always resolves to whatever release is currently marked latest — no need to update the link each release.
+Pushing a tag matching `v*.*.*` triggers [.github/workflows/release-pdf.yml](../.github/workflows/release-pdf.yml), which installs the dependencies above, runs this build, and publishes a (non-prerelease) GitHub Release for that tag with two PDF assets attached:
+
+- `circle3-paper.pdf` — stable filename, used by the site's download link (`https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf`), so `/paper/` always resolves to whatever release is currently marked latest without needing an edit each release.
+- `circle3-paper-vX.Y.Z.pdf` — versioned filename, for archival/citation links to a specific release.
+
+Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG.md` plus a static "Includes"/"License" section (keep the pattern/lens list in that workflow step in sync with `_moves/`/`_lenses/` if they change).
 
 The committed copy at `assets/pdfs/circle3-paper.pdf` is still regenerated and committed for now as a safety net until this pipeline has proven itself over a few releases.
 

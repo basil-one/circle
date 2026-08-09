@@ -32,20 +32,42 @@ jobs:
       - name: Build PDF
         run: python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 
-      - name: Extract release notes from CHANGELOG.md
+      - name: Prepare versioned PDF copy
+        run: cp assets/pdfs/circle3-paper.pdf "assets/pdfs/circle3-paper-${GITHUB_REF_NAME}.pdf"
+
+      - name: Build release notes
         run: |
           version="${GITHUB_REF_NAME#v}"
-          awk -v ver="$version" '
+
+          changed="$(awk -v ver="$version" '
             /^## \[/ {
               if (found) exit
               if (index($0, "[" ver "]") > 0) { found=1; next }
               next
             }
             found { print }
-          ' CHANGELOG.md > /tmp/release-notes.md
-          if [ ! -s /tmp/release-notes.md ]; then
-            echo "See CHANGELOG.md for details." > /tmp/release-notes.md
-          fi
+          ' CHANGELOG.md)"
+
+          {
+            echo "## What changed"
+            echo
+            if [ -n "$changed" ]; then
+              echo "$changed"
+            else
+              echo "See CHANGELOG.md for details."
+            fi
+            echo
+            # Keep this list in sync with _moves/ and _lenses/ if patterns are added/renamed.
+            echo "## Includes"
+            echo
+            echo "- The Circle3™ paper PDF (attached as a release asset)"
+            echo "- Three Guiding Moves™ (patterns): Establish the Circle, Integrate the Conversation, Reconcile the Intention"
+            echo "- Three Leadership Lenses™ (reflective exercises): Sense-Making, Energy Awareness, Session Intention"
+            echo
+            echo "## License"
+            echo
+            echo "Unless otherwise noted, the written content and patterns in this repository are licensed under CC BY-SA 4.0. See LICENSE.md."
+          } > /tmp/release-notes.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -53,5 +75,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body_path: /tmp/release-notes.md
-          files: assets/pdfs/circle3-paper.pdf
+          prerelease: false
           make_latest: true
+          files: |
+            assets/pdfs/circle3-paper.pdf
+            assets/pdfs/circle3-paper-${{ github.ref_name }}.pdf
