@@ -8,6 +8,22 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-09
+
+### Added
+- GitHub Actions workflow ([.github/workflows/release-pdf.yml](.github/workflows/release-pdf.yml)) that builds the paper PDF and attaches it to the GitHub Release when a `v*.*.*` tag is pushed.
+
+### Changed
+- The paper download link now points to `https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf` instead of the committed `assets/pdfs/circle3-paper.pdf`, so it always resolves to the latest release.
+- Refined language across **Establish the Circle**, **Integrate the Conversation**, and **Reconcile the Intention** for clarity and coherence, expanding the Problem, Forces, Solution, and Resulting Context sections with fuller explanations.
+- Condensed **Related Patterns** cross-links into inline descriptions for **Establish the Circle**, **Integrate the Conversation**, and **Reconcile the Intention**.
+
+### Removed
+- Removed the **Two Sides Reflection** and **Accessing Energy Patterns** practical-resource links from **Integrate the Conversation**.
+
+### Fixed
+- Regenerated `assets/pdfs/circle3-paper.pdf` so the release PDF matches the current content.
+
 ## [0.1.2] - 2026-07-30
 
 ### Changed
@@ -55,7 +71,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/basil-one/circle/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/basil-one/circle/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/basil-one/circle/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/basil-one/circle/releases/tag/v0.1.0
