@@ -8,6 +8,11 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-09
+
+### Changed
+- PDF build now sources its imagery from the smaller web-resolution images (`images/`) instead of `images/full/`, cutting the generated PDF from ~28MB to ~2.4MB with no meaningful quality loss for on-screen reading.
+
 ## [0.1.4] - 2026-08-09
 
 ### Removed

@@ -19,8 +19,8 @@ framing:
   title: Circle3
   subtitle: A Pattern Language for Leading Change in Complex Environments
   images:
-    - images/full/index.png
-    - images/full/method.png
+    - images/index.png
+    - images/method.png
   toc_label: Table of Contents
   abstract_label: Abstract
   abstract_anchor: abstract
@@ -40,30 +40,30 @@ body:
 sections:
   - title: Three Guiding Moves
     include_in_toc: true
-    intro_image: images/full/moves.png
+    intro_image: images/moves.png
     patterns:
       - file: _moves/establish.md
-        intro_image: images/full/move-establish.png
+        intro_image: images/move-establish.png
       - file: _moves/integrate.md
-        intro_image: images/full/move-integrate.png
+        intro_image: images/move-integrate.png
       - file: _moves/reconcile.md
-        intro_image: images/full/move-reconcile.png
+        intro_image: images/move-reconcile.png
 
   - title: Appendix: Leadership Lenses
     include_in_toc: true
-    intro_image: images/full/lenses.png
+    intro_image: images/lenses.png
     patterns:
       - file: _lenses/sense.md
-        intro_image: images/full/lens-sense.png
+        intro_image: images/lens-sense.png
       - file: _lenses/energy.md
-        intro_image: images/full/lens-energy.png
+        intro_image: images/lens-energy.png
       - file: _lenses/session.md
-        intro_image: images/full/lens-session.png
+        intro_image: images/lens-session.png
 
 conclusion:
   title: Origin and Ongoing Evolution
   anchor: origin
-  image: images/full/origin.png
+  image: images/origin.png
   main_text_file: content/plop.paper.conclusion.md
   cta_text: "Read the Origin Story:"
   cta_url: https://circle.basil.one/origin/
