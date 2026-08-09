@@ -12,4 +12,4 @@ Circle3™ is a compact pattern language for navigating complex change. The pape
 
 ## Download
 
-👉 [Download the Circle3 Paper (PDF)](/assets/pdfs/circle3-paper.pdf){: download data-ga-event="download" data-ga-label="circle3-paper.pdf" }
+👉 [Download the Circle3 Paper (PDF)]({{ site.paper_pdf_url }}){: download data-ga-event="download" data-ga-label="circle3-paper.pdf" }

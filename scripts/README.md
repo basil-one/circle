@@ -91,6 +91,12 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 - Output: `assets/pdfs/circle3-paper.pdf`
 - Intermediate markdown (for debugging): `/tmp/plop.paper.config.debug-intermediate.md` (derived from the config filename)
 
+## Publishing (release automation)
+
+Pushing a tag matching `v*.*.*` triggers [.github/workflows/release-pdf.yml](../.github/workflows/release-pdf.yml), which installs the dependencies above, runs this build, and attaches `circle3-paper.pdf` to the corresponding GitHub Release (marked as the latest release). The site's download link on `/paper/` points at `https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf`, so it always resolves to whatever release is currently marked latest — no need to update the link each release.
+
+The committed copy at `assets/pdfs/circle3-paper.pdf` is still regenerated and committed for now as a safety net until this pipeline has proven itself over a few releases.
+
 ## Inputs
 
 - `scripts/plop.paper.config.yaml` — build config (strict)
