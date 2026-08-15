@@ -170,7 +170,7 @@ Examples include:
 
 ## Practical Resources
 
-Developing the ability to integrate a conversation requires reflection and practice. These resources offer complementary lenses for noticing how meaning and energy shape what happens in the conversation.
+Developing the ability to integrate a conversation requires reflection and practice. These resources offer complementary lenses for noticing how meaning, energy, and paradigm shape what happens in the conversation.
 
 ### Sense Making Reflection
 
@@ -183,6 +183,12 @@ Understand how different interpretations of a situation shape coordination, deci
 Build awareness of how relational energy is showing up in your conversations, and how your interventions influence attention, tension, and participation.
 
 👉 [Explore](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_energy"}
+
+### Paradigm Awareness Reflection
+
+Notice when a survival paradigm—protection, defensiveness, withdrawal, or the need to be right—is constraining the conversation, so the group can find the courage and neutrality that make integration possible.
+
+👉 [Explore](/lenses/paradigm/){: data-ga-event="learn_more" data-ga-label="integrate_to_lenses_paradigm"}
 
 ## Explore in Your Context
 

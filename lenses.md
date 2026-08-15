@@ -45,15 +45,14 @@ Visionaries step back and reframe.
 
 👉 [Learn more](/lenses/energy/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_energy"}
 
-## Session Intention Reflection
+## Paradigm Awareness Reflection
 
-**When preparing a Circle or important conversation**
+**When change reveals what people are protecting or creating**
 
-Notice what is emerging before the conversation begins.
+Notice the paradigm from which people are responding.
 
-What matters is becoming visible.  
-Tensions are starting to surface.  
-Questions are beginning to form.  
-Support needs are becoming clearer.  
+Survival protects what is.  
+Neutrality creates space to be with what is.  
+Generative possibility creates what could be.  
 
-👉 [Learn more](/lenses/session/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_session"}
+👉 [Learn more](/lenses/paradigm/){: data-ga-event="learn_more" data-ga-label="lenses_index_to_paradigm"}

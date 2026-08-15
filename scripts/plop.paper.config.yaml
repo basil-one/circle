@@ -57,8 +57,8 @@ sections:
         intro_image: images/lens-sense.png
       - file: _lenses/energy.md
         intro_image: images/lens-energy.png
-      - file: _lenses/session.md
-        intro_image: images/lens-session.png
+      - file: _lenses/paradigm.md
+        intro_image: images/lens-paradigm.png
 
 conclusion:
   title: Origin and Ongoing Evolution

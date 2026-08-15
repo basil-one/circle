@@ -20,7 +20,7 @@ A typical progression is:
 2. Integrate the Conversation — keep conversation generative under tension and time pressure
 3. Reconcile the Intention — anchor alignment through an artifact and iterative conversation
 
-The Lenses are presented here as **perceptual supports** for facilitators and change leaders. They are not additional core Moves; they are practical reflections that help leaders notice interpretive differences, relational energy, and session readiness while practicing the Moves.
+The Lenses are presented here as **perceptual supports** for facilitators and change leaders. They are not additional core Moves; they are practical reflections that help leaders notice interpretive differences, relational energy, and the paradigm shaping how people respond while practicing the Moves.
 
 For many practitioners, a Lens is the most practical entry point before pattern-language terms become intuitive. For others, the Move language comes first. In both cases, the progression converges: stronger perception leads to stronger application.
 

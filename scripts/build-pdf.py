@@ -696,8 +696,8 @@ class CirclePDFBuilder:
                 intro_image: images/full/lens-sense.png
               - file: lenses/energy.md
                 intro_image: images/full/lens-energy.png
-              - file: lenses/session.md
-                intro_image: images/full/lens-session.png
+              - file: lenses/paradigm.md
+                intro_image: images/full/lens-paradigm.png
 
         """
 

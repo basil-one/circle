@@ -8,6 +8,13 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+### Changed
+- Replaced the **Session Intention Reflection** lens with **Paradigm Awareness Reflection**, a new lens for noticing the paradigm (Survival, Neutrality, Generative) from which a person, group, or organization is responding under uncertainty, disruption, conflict, or change, and the thresholds (Courage, Curiosity) between them.
+- Added **Paradigm Awareness Reflection** as a practical resource within **Integrate the Conversation**, where surfacing protective positions without prematurely resolving them is most relevant.
+
+### Removed
+- Removed the **Session Intention Reflection** practical-resource link from **Reconcile the Intention**; its session-preparation purpose has no direct equivalent in the new lens set.
+
 ## [0.1.5] - 2026-08-09
 
 ### Changed

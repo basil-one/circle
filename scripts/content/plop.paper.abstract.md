@@ -2,4 +2,4 @@ In complex, change-saturated environments, initiatives often stall not because p
 
 Circle3™ is a compact pattern language for restoring coherence under these conditions. It offers Three Guiding Moves™—Establish the Circle, Integrate the Conversation, and Reconcile the Intention—that help groups form shared perception, work tension productively, and translate emerging clarity into commitments that stick.
 
-This paper presents the Three Guiding Moves™ alongside Three Leadership Lenses™ (sense-making, energy awareness, and session intention) as perceptual supports for facilitation in the same environments.
+This paper presents the Three Guiding Moves™ alongside Three Leadership Lenses™ (sense-making, energy awareness, and paradigm awareness) as perceptual supports for facilitation in the same environments.
