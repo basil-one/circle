@@ -16,7 +16,7 @@ This exercise helps you notice the paradigm from which a person, group, or organ
 
 In difficult situations, people can become organized around protecting what they know, what they have, or how they see themselves. When this happens, conversations can become constrained by a survival paradigm even when people consciously want to change.
 
-Within Circle3, this lens is a perceptual support for facilitation across the three guiding moves. It helps a Circle notice when a survival paradigm is constraining a conversation, particularly during Integrate the Conversation, and creates awareness of the thresholds between protection, neutrality, and generative possibility.
+Within Circle3, this lens is a perceptual support for facilitation across the three guiding moves. It helps a Circle notice when a survival paradigm is constraining a conversation, particularly during [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="lenses_paradigm_to_moves_integrate"}, and creates awareness of the thresholds between protection, neutrality, and generative possibility.
 
 ## Framing
 
