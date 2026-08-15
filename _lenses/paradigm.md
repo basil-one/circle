@@ -104,9 +104,9 @@ As you reflect on the situation, what do you notice?
 
 What paradigm seems most present?
 
-### 3. What might be being protected?
+### 3. What is this paradigm revealing?
 
-If survival is present:
+**If survival is present:**
 
 What might this person, group, or organization be protecting?
 
@@ -116,53 +116,27 @@ What identity, assumption, position, relationship, resource, or way of working m
 
 What might be difficult to acknowledge?
 
-### 4. What would courage make possible?
+**If neutrality is present:**
 
-What might this person, group, or organization need to be willing to face?
+What is this person, group, or organization able to stay present with, without needing to defend, fix, control, or resolve it?
 
-What could be acknowledged without immediately needing to defend, fix, control, or resolve it?
+What curiosity might already be quietly present?
 
-Where do you notice courage already emerging?
-
-### 5. What is becoming possible?
-
-From a place of greater neutrality:
-
-What are you curious about?
-
-What question becomes available?
-
-What else might be possible that wasn't visible before?
-
-What could you explore if you did not have to defend the existing way of seeing the situation?
-
-### 6. What possibility wants to be brought into being?
-
-From a generative paradigm:
-
-What could be created that does not yet exist?
-
-What possibility feels worth exploring further?
-
-What might be worth naming or declaring?
-
-What could you commit to?
-
-What could you do to make that possibility observable to others?
+What might they be noticing now that wasn't visible before?
 
 ## Reflection
 
 As you look across your responses, this reflection is pointing toward a working hypothesis about the paradigm shaping this situation.
 
-You may begin to notice that what feels like resistance, conflict, or difficulty moving forward can sometimes reflect a survival paradigm protecting something that feels important. When that protection becomes visible, it can create space for courage, neutrality, and curiosity to open new possibilities.
+You may begin to notice that what feels like resistance, conflict, or difficulty moving forward can sometimes reflect a survival paradigm protecting something that feels important. Naming that can bring clarity, even before anything about the situation changes.
 
-When these shifts become visible, you may begin to see not only what is constraining movement, but what could make a generative response possible.
+This reflection is not a judgment of where a person or group is. Paradigms can shift depending on the situation, relationships, and conditions around them.
 
 Take a moment to notice:
 
 - what appears to be protected
-- where courage, neutrality, or curiosity may be emerging
-- and what possibility becomes visible when the situation is approached from a generative paradigm
+- where neutrality or curiosity may already be present
+- and how this paradigm may be shaping the situation
 
 ## Sharing
 
@@ -173,8 +147,8 @@ A second perspective adds contrast, and that contrast deepens understanding.
 When reciprocal reflections are shared, you can begin to see:
 
 - where survival paradigms may be operating
-- where different paradigms may be present at the same time
-- and where a shift toward neutrality, curiosity, or generative possibility may be available
+- where neutrality or curiosity may already be present
+- and where different paradigms may be present at the same time
 
 If you choose to share it, you might begin simply with:
 
