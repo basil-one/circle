@@ -152,25 +152,17 @@ What could you do to make that possibility observable to others?
 
 ## Reflection
 
-This reflection represents your current perception of the paradigm operating within a particular situation.
+As you look across your responses, this reflection is pointing toward a working hypothesis about the paradigm shaping this situation.
 
-The purpose is not to label a person or group as being at a particular level. People and groups can move between paradigms depending on the situation, relationships, and conditions around them.
+You may begin to notice that what feels like resistance, conflict, or difficulty moving forward can sometimes reflect a survival paradigm protecting something that feels important. When that protection becomes visible, it can create space for courage, neutrality, and curiosity to open new possibilities.
 
-The value is in noticing the movement.
+When these shifts become visible, you may begin to see not only what is constraining movement, but what could make a generative response possible.
 
-What may appear as resistance can sometimes be protection.
+Take a moment to notice:
 
-What may appear as conflict can sometimes be a survival paradigm defending itself.
-
-**Courage creates the possibility of staying present with what is happening.**
-
-**Neutrality creates space.**
-
-**Curiosity opens possibility.**
-
-And possibility creates the conditions for a generative paradigm.
-
-From there, Circle3 can move toward reconciling intention and translating possibility into aligned, durable commitments.
+- what appears to be protected
+- where courage, neutrality, or curiosity may be emerging
+- and what possibility becomes visible when the situation is approached from a generative paradigm
 
 ## Sharing
 
@@ -181,17 +173,14 @@ A second perspective adds contrast, and that contrast deepens understanding.
 When reciprocal reflections are shared, you can begin to see:
 
 - where survival paradigms may be operating
-- what may be being protected
-- where courage is needed
-- where neutrality is available
-- where curiosity is opening possibility
-- and what might help the Circle move toward a generative paradigm
+- where different paradigms may be present at the same time
+- and where a shift toward neutrality, curiosity, or generative possibility may be available
 
 If you choose to share it, you might begin simply with:
 
-*Would you be open to exploring what paradigm we might be operating from in this situation?*
+*Would you be open to exploring what might be shaping our response to this situation?*
 
-And invite the other person, group, or team to complete the same reflection from their side.
+And invite the person, group, or team to complete the same reflection from their side.
 
 ## Continue exploring
 

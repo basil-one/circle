@@ -122,6 +122,12 @@ This reflection represents your current perception of how this person shows up a
 
 This can support clearer awareness of what is happening between you, relief from interpretations carried from past interactions, and new possibilities for how you understand and engage with this person going forward.
 
+Take a moment to notice:
+
+- what feels consistent
+- where their energy shifts
+- and how those patterns may be shaping the experience between you
+
 ## Sharing
 
 One perspective brings useful clarity.
