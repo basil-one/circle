@@ -8,9 +8,13 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-16
+
 ### Changed
 - Replaced the **Session Intention Reflection** lens with **Paradigm Awareness Reflection**, a new lens for noticing the paradigm (Survival, Neutrality, Generative) from which a person, group, or organization is responding under uncertainty, disruption, conflict, or change, and the thresholds (Courage, Curiosity) between them.
 - Added **Paradigm Awareness Reflection** as a practical resource within **Integrate the Conversation**, where surfacing protective positions without prematurely resolving them is most relevant.
+- Refined **Paradigm Awareness Reflection** to stay focused on noticing rather than resolving: narrowed the exercise to reflect on the situation, the paradigm operating within it, and what that paradigm may be revealing (protection under Survival, or curiosity under Neutrality), and aligned its Reflection/Sharing structure with **Sense Making Reflection** and **Energy Awareness Reflection**.
+- Refreshed imagery across several lenses, moves, and pages (including new artwork for **Paradigm Awareness Reflection**) for improved visual quality.
 
 ### Removed
 - Removed the **Session Intention Reflection** practical-resource link from **Reconcile the Intention**; its session-preparation purpose has no direct equivalent in the new lens set.
@@ -88,7 +92,9 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/basil-one/circle/compare/v0.1.5...v0.1.6
+[0.1.5]: https://github.com/basil-one/circle/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/basil-one/circle/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/basil-one/circle/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/basil-one/circle/compare/v0.1.1...v0.1.2
