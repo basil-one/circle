@@ -32,10 +32,12 @@ Each Move follows a recurring section rhythm so readers can quickly scan from si
 - **Forces** surfaces the tensions that make the problem hard to resolve.
 - **Solution** describes actions, mechanisms, and expected effects.
 - **Resulting Context** shows what changes when the pattern takes hold.
-- **Failure Modes** names common ways application can drift and how to recover.
+- **Known Uses** identifies settings where the pattern or underlying configuration has appeared in practice.
 - **Key Characteristics** summarizes the pattern's operating signature.
+- **Failure Modes** names common ways application can drift and how to recover.
+- **Related Patterns** shows how the Move connects to other patterns in this language and related pattern languages.
 - **Practical Resources** points to supporting lenses and practices where included.
 
 The Leadership Lenses are intentionally kept in exercise format rather than rewritten as peer patterns, preserving their direct use in preparation, facilitation, and coaching.
 
-The remainder of the paper presents the Three Guiding Moves in turn. The Conclusion considers how they function together, their practical significance and boundaries, and directions for future development. The appendix contains the Three Leadership Lenses in exercise format.
+The remainder of this paper is organized as follows: Three Guiding Moves presents Establish the Circle, Integrate the Conversation, and Reconcile the Intention in turn. The Conclusion considers how the Moves function together, their practical significance and boundaries, and directions for future development. The appendix presents the Three Leadership Lenses in exercise format.
