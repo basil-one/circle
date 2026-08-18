@@ -40,4 +40,4 @@ Each Move follows a recurring section rhythm so readers can quickly scan from si
 
 The Leadership Lenses are intentionally kept in exercise format rather than rewritten as peer patterns, preserving their direct use in preparation, facilitation, and coaching.
 
-The remainder of this paper is organized as follows: Three Guiding Moves presents Establish the Circle, Integrate the Conversation, and Reconcile the Intention in turn. The Conclusion considers how the Moves function together, their practical significance and boundaries, and directions for future development. The appendix presents the Three Leadership Lenses in exercise format.
+The remainder of this paper is organized as follows: the Three Guiding Moves section presents Establish the Circle, Integrate the Conversation, and Reconcile the Intention in turn. The Conclusion considers how the Moves function together, their practical significance and boundaries, and directions for future development. The appendix presents the Three Leadership Lenses in exercise format.
