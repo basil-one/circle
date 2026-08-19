@@ -969,13 +969,10 @@ class CirclePDFBuilder:
         back_matter_label: str,
         back_matter_anchor: str,
         include_back_matter_in_toc: bool,
-        origin_title: str,
-        origin_anchor: str,
-        origin_image: str,
-        origin_main_markdown: str,
-        origin_cta_text: str,
-        origin_cta_url: str,
-        origin_cta_label: str,
+        conclusion_title: str,
+        conclusion_anchor: str,
+        conclusion_image: str,
+        conclusion_main_markdown: str,
     ) -> Tuple[str, List[Dict[str, str]]]:
         """Build the combined paper body for pandoc.
 
@@ -1010,13 +1007,10 @@ class CirclePDFBuilder:
         back_matter_markdown = textwrap.dedent(back_matter_markdown).strip()
         back_matter_label = str(back_matter_label).strip()
         back_matter_anchor = str(back_matter_anchor).strip()
-        origin_title = str(origin_title).strip()
-        origin_anchor = self._latex_id(str(origin_anchor).strip(), default='origin')
-        origin_image = str(origin_image).strip()
-        origin_main_markdown = textwrap.dedent(origin_main_markdown).strip()
-        origin_cta_text = str(origin_cta_text).strip()
-        origin_cta_url = str(origin_cta_url).strip()
-        origin_cta_label = str(origin_cta_label).strip()
+        conclusion_title = str(conclusion_title).strip()
+        conclusion_anchor = self._latex_id(str(conclusion_anchor).strip(), default='conclusion')
+        conclusion_image = str(conclusion_image).strip()
+        conclusion_main_markdown = textwrap.dedent(conclusion_main_markdown).strip()
 
         if intro_markdown:
             # Ensure the intro anchor cannot collide with later section/pattern anchors.
@@ -1128,13 +1122,13 @@ class CirclePDFBuilder:
         appendix_sections = [s for s in planned_sections if bool(s.get('is_appendix'))]
         planned_sections = core_sections + appendix_sections
 
-        # Reserve origin anchor and include it in TOC as part of the core paper.
-        origin_anchor_base = origin_anchor
+        # Reserve conclusion anchor and include it in TOC as part of the core paper.
+        conclusion_anchor_base = conclusion_anchor
         suffix = 2
-        while origin_anchor in used_anchors:
-            origin_anchor = f"{origin_anchor_base}-{suffix}"
+        while conclusion_anchor in used_anchors:
+            conclusion_anchor = f"{conclusion_anchor_base}-{suffix}"
             suffix += 1
-        used_anchors.add(origin_anchor)
+        used_anchors.add(conclusion_anchor)
 
         # Optionally add back matter (e.g., References/Acknowledgements) as the last body section.
         if back_matter_markdown:
@@ -1151,8 +1145,8 @@ class CirclePDFBuilder:
 
         # Assemble TOC in presentation order: core patterns -> back matter -> appendix -> conclusion.
         toc_items.extend(toc_core_items)
-        if origin_title:
-            toc_items.append({'kind': 'section', 'label': origin_title, 'anchor': origin_anchor})
+        if conclusion_title:
+            toc_items.append({'kind': 'section', 'label': conclusion_title, 'anchor': conclusion_anchor})
         if back_matter_markdown and include_back_matter_in_toc and back_matter_label:
             toc_items.append({'kind': 'backmatter', 'label': back_matter_label, 'anchor': back_matter_anchor})
         toc_items.extend(toc_appendix_items)
@@ -1214,31 +1208,25 @@ class CirclePDFBuilder:
                 chunks.append(body)
                 page_break_needed = True
 
-        # Origin sits in the core argument flow, before references.
-        if origin_image:
+        # Conclusion sits in the core content flow, before references.
+        if conclusion_image:
             chunks.append(
                 self._latex_full_width_image_page(
-                    origin_image,
-                    anchor=origin_anchor,
+                    conclusion_image,
+                    anchor=conclusion_anchor,
                     prepend_page_break=page_break_needed,
                 )
             )
             page_break_needed = False
         else:
-            chunks.append(self._latex_hypertarget_block(origin_anchor, prepend_page_break=page_break_needed))
+            chunks.append(self._latex_hypertarget_block(conclusion_anchor, prepend_page_break=page_break_needed))
             page_break_needed = False
 
-        if origin_title:
-            chunks.append(f"## {origin_title}")
-
-        if origin_main_markdown:
-            origin_clean = self._filter_jekyll_syntax(origin_main_markdown)
-            origin_clean = self._normalize_relative_links(origin_clean)
-            origin_clean = self._rewrite_pdf_internal_links(origin_clean, permalink_to_anchor)
-            chunks.append(origin_clean)
-
-        if origin_cta_text and origin_cta_url and origin_cta_label:
-            chunks.append(f"**{origin_cta_text}**\n\n[{origin_cta_label}]({origin_cta_url})")
+        if conclusion_main_markdown:
+            conclusion_clean = self._filter_jekyll_syntax(conclusion_main_markdown)
+            conclusion_clean = self._normalize_relative_links(conclusion_clean)
+            conclusion_clean = self._rewrite_pdf_internal_links(conclusion_clean, permalink_to_anchor)
+            chunks.append(conclusion_clean)
 
         page_break_needed = True
 
@@ -1433,9 +1421,6 @@ class CirclePDFBuilder:
                 raise ValueError("Missing required config value: framing.images[1]")
 
             conclusion_image = self._require_dict_str(conclusion, 'image', context='conclusion')
-            conclusion_cta = self._require_dict_str(conclusion, 'cta_text', context='conclusion')
-            conclusion_url = self._require_dict_str(conclusion, 'cta_url', context='conclusion')
-            conclusion_label = self._require_dict_str(conclusion, 'cta_label', context='conclusion')
 
             args = [
                 'pandoc',
@@ -1461,9 +1446,6 @@ class CirclePDFBuilder:
                 '-V', 'conclusion_anchor=' + conclusion_anchor,
                 '-V', 'conclusion_image=' + conclusion_image,
                 '-V', 'conclusion_main=' + conclusion_main,
-                '-V', 'conclusion_cta=' + conclusion_cta,
-                '-V', 'conclusion_url=' + conclusion_url,
-                '-V', 'conclusion_label=' + conclusion_label,
                 '--output', str(output_path),
             ]
 
@@ -1528,16 +1510,13 @@ class CirclePDFBuilder:
             conclusion = self.config.get('conclusion')
             if not isinstance(conclusion, dict):
                 raise ValueError("Config section 'conclusion' must be a mapping/object")
-            origin_title, origin_anchor = self._get_conclusion_meta()
-            origin_image = self._require_dict_str(conclusion, 'image', context='conclusion')
-            origin_main_markdown = self._get_markdown_content(
+            conclusion_title, conclusion_anchor = self._get_conclusion_meta()
+            conclusion_image = self._require_dict_str(conclusion, 'image', context='conclusion')
+            conclusion_main_markdown = self._get_markdown_content(
                 conclusion,
                 inline_key='main_text',
                 file_key='main_text_file',
             )
-            origin_cta_text = self._require_dict_str(conclusion, 'cta_text', context='conclusion')
-            origin_cta_url = self._require_dict_str(conclusion, 'cta_url', context='conclusion')
-            origin_cta_label = self._require_dict_str(conclusion, 'cta_label', context='conclusion')
 
             markdown_content, toc_items = self._build_markdown_for_pandoc(
                 pattern_sections,
@@ -1552,13 +1531,10 @@ class CirclePDFBuilder:
                 back_matter_label=back_matter_label,
                 back_matter_anchor=back_matter_anchor,
                 include_back_matter_in_toc=include_back_matter_in_toc,
-                origin_title=origin_title,
-                origin_anchor=origin_anchor,
-                origin_image=origin_image,
-                origin_main_markdown=origin_main_markdown,
-                origin_cta_text=origin_cta_text,
-                origin_cta_url=origin_cta_url,
-                origin_cta_label=origin_cta_label,
+                conclusion_title=conclusion_title,
+                conclusion_anchor=conclusion_anchor,
+                conclusion_image=conclusion_image,
+                conclusion_main_markdown=conclusion_main_markdown,
             )
             markdown_content = self._replace_unicode_arrows(markdown_content)
             short_toc = self._build_short_toc_latex(toc_items)

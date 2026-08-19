@@ -61,10 +61,7 @@ sections:
         intro_image: images/lens-paradigm.png
 
 conclusion:
-  title: Origin and Ongoing Evolution
-  anchor: origin
-  image: images/origin.png
+  title: Conclusion
+  anchor: conclusion
+  image: images/conclusion.png
   main_text_file: content/plop.paper.conclusion.md
-  cta_text: "Read the Origin Story:"
-  cta_url: https://circle.basil.one/origin/
-  cta_label: https://circle.basil.one/origin
