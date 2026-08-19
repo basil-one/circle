@@ -1,16 +1,16 @@
 ## Introduction
 
-In complex, fast-changing organizational environments, change often crosses teams, roles, and areas of expertise. Participants may care about the same outcome while holding different interpretations of what is happening and what the situation requires. Linear management approaches can coordinate activity, and broadcast communication can increase awareness, but neither necessarily creates shared understanding. Attention fragments, conversations occur in parallel, and decisions may not develop into durable commitments.
+In complex, fast-changing organizational environments, change often crosses teams, roles, and areas of expertise. Participants may care about the same outcome while holding different interpretations of what is happening and what the situation requires. Linear management approaches can coordinate activity, and broadcast communication can increase awareness, but neither alone necessarily creates shared understanding. Attention fragments, conversations occur in parallel, and decisions may not develop into durable commitments.
 
 Circle3™ is a compact pattern language developed in response to this recurring challenge. It did not begin as a framework designed in advance. The Three Guiding Moves™ emerged from repeated experience in change efforts where pressure fragmented attention, meaning, and coordination, and coherence had to be rebuilt from lived conditions. Across the cases that shaped the language, one observation kept repeating: people were not refusing change. They were trying to stay intact inside it.
 
-Circle3 includes Three Guiding Moves™ (patterns) and Three Leadership Lenses™ (reflective exercises) presented in the appendix. The Moves describe repeatable configurations that help groups make change clearer and more aligned; the Lenses provide practical perceptual supports for facilitators applying the Moves.
+Circle3 includes Three Guiding Moves (patterns) and Three Leadership Lenses™ (reflective exercises) presented in the appendix. The Moves describe repeatable configurations that help groups build shared understanding and coordinate action; the Lenses provide practical perceptual supports for facilitators applying the Moves.
 
 ### Audience and boundaries
 
 Circle3 is aimed at leaders, facilitators, and change agents working across teams and roles—especially when a change effort is widely discussed but shared understanding and durable commitments are not forming.
 
-Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is more precise: create enough coherence that decisions and commitments hold beyond a single meeting.
+Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is more precise: to create enough coherence that decisions and commitments hold beyond a single meeting.
 
 ### How to read and use the language
 
@@ -20,7 +20,7 @@ A typical progression is:
 2. **Integrate the Conversation** — keep conversation generative under tension and time pressure
 3. **Reconcile the Intention** — anchor alignment through an artifact and iterative conversation
 
-The Lenses are presented here as **perceptual supports** for facilitators and change leaders. They are not additional core Moves; they are practical reflections that help leaders notice interpretive differences, relational energy, and the paradigm shaping how people respond while practicing the Moves.
+The Lenses are presented here as perceptual supports for facilitators and change leaders. They are not additional core Moves; they are practical reflections that help leaders notice interpretive differences, relational energy, and the paradigm shaping how people respond while practicing the Moves.
 
 ### Pattern format
 
