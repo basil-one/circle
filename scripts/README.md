@@ -131,14 +131,16 @@ citation requirements in the PDF only, add rules under top-level `citations` in
 ```yaml
 citations:
   - url: https://fearlesschangepatterns.com   # matches a markdown link target
-    annotation: "[Manns & Rising 2005]"        # appended right after the match
+    annotation: "[3]"                          # appended right after the match; must match the numbered References entry
   - text: "**affect labeling**"                # or match literal text instead
-    annotation: "[Lieberman et al. 2007]"
+    annotation: "[2]"
     first_only: true                           # only annotate the first occurrence
 ```
 
 Each rule matches either `url` (a link target, trailing slash-insensitive) or
 `text` (literal, matched as-is — include markdown emphasis like `**...**` if
 needed), and appends `annotation` immediately after the match. `first_only`
-(default `false`) limits annotation to the first match only. Keep this list in
-sync with the References list in `content/plop.paper.back-matter.md`.
+(default `false`) limits annotation to the first match only. Annotations use
+ACM-style bracketed numeric citations (e.g. `[3]`) matching the numbered
+References list. Keep this list in sync with `content/plop.paper.back-matter.md`,
+including citation numbers if the reference order changes.

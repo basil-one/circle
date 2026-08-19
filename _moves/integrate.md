@@ -74,7 +74,7 @@ Ideas can expand faster than the group can connect and prioritize them. Too litt
   - Mechanism: alternating expansion and convergence helps the group hold divergence without losing direction.
   - Effect: ideas become connected, prioritized, and actionable.
 - Surface stuck emotion and tension using **affect labeling** followed by **dynamic silence**.
-  - Mechanism: labeling reduces emotional escalation; silence creates reflective space for reorientation.
+  - Mechanism: affect labeling can reduce emotional reactivity and create reflective space for reorientation; the silence that follows gives the group room to reorient.
   - Effect: defensive energy converts into usable shared attention.
 - Guide explicit release of outdated assumptions or priorities and confirm next commitments.
   - Mechanism: deliberate closure prevents legacy positions from silently governing decisions.

@@ -1,14 +1,12 @@
 # References
 
-Hawkins, D. R. (1995). *Power vs. force: The hidden determinants of human behavior*. Hay House.
-
-Lieberman, M. D., Eisenberger, N. I., Crockett, M. J., Tom, S. M., Pfeifer, J. H., & Way, B. M. (2007). Putting feelings into words: Affect labeling disrupts amygdala activity in response to affective stimuli. *Psychological Science, 18*(5), 421–428. <https://doi.org/10.1111/j.1467-9280.2007.01916.x>
-
-Manns, M. L., & Rising, L. (2005). *Fearless change: Patterns for introducing new ideas*. Addison-Wesley Professional.
-
-Snowden, D. J., & Boone, M. E. (2007). A leader's framework for decision making. *Harvard Business Review, 85*(11), 68–76.
-
-Whitelaw, G. (2020). *Resonate: Zen and the way of making a difference*. Wonderwell.
+1. David R. Hawkins. 2002. *Power vs. Force: The Hidden Determinants of Human Behavior* (rev. ed.). Hay House, Carlsbad, CA.
+2. Matthew D. Lieberman, Naomi I. Eisenberger, Molly J. Crockett, Sabrina M. Tom, Jennifer H. Pfeifer, and Baldwin M. Way. 2007. Putting Feelings into Words: Affect Labeling Disrupts Amygdala Activity in Response to Affective Stimuli. *Psychological Science* 18, 5 (2007), 421–428.\
+   https://doi.org/10.1111/j.1467-9280.2007.01916.x
+3. Mary Lynn Manns and Linda Rising. 2005. *Fearless Change: Patterns for Introducing New Ideas*. Addison-Wesley Professional, Boston, MA.
+4. David J. Snowden and Mary E. Boone. 2007. A Leader's Framework for Decision Making. *Harvard Business Review* 85, 11 (2007), 68–76.
+5. Chris Voss and Tahl Raz. 2016. *Never Split the Difference: Negotiating As If Your Life Depended On It*. HarperBusiness, New York, NY.
+6. Ginny Whitelaw. 2020. *Resonate: Zen and the Way of Making a Difference*. Wonderwell, New York, NY.
 
 # Acknowledgements
 
@@ -16,7 +14,3 @@ Whitelaw, G. (2020). *Resonate: Zen and the way of making a difference*. Wonderw
 - Images: Images were created using AI-based image tools and curated/edited by the author for this paper.
 - Practice influences: Ginny Whitelaw and the Zen Leadership community were a practical influence on the energy lens and facilitation stance.
   - <https://zenleader.global>
-- Negotiation influences: Chris Voss’ work was a practical influence.
-  - <https://www.youtube.com/watch?v=guZa7mQV1l0>
-- Coaching influences: Doug Knoll’s work on difficult conversations was a practical influence.
-  - <https://www.youtube.com/watch?v=rL_m78zdXMQ>
