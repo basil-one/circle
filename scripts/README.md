@@ -117,5 +117,28 @@ Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG
 - `body`: `introduction_file` + `back_matter_file` (+ labels/anchors/include flags)
 - `sections`: ordered pattern sections with `intro_image` and `patterns[]` entries
 - `conclusion`: final page (image + main text file + CTA)
+- `citations` (optional): PDF-only in-text citation markers appended after a matched link `url` or literal `text` in pattern/lens bodies (see below)
 
 Inline markdown in YAML is not supported; use `*_file` keys.
+
+### In-text citation markers (`citations`)
+
+`_moves/*.md` and `_lenses/*.md` are shared between the website and the PDF, so
+they should stay free of paper-specific citation formatting. To satisfy academic
+citation requirements in the PDF only, add rules under top-level `citations` in
+`plop.paper.config.yaml`:
+
+```yaml
+citations:
+  - url: https://fearlesschangepatterns.com   # matches a markdown link target
+    annotation: "[Manns & Rising 2005]"        # appended right after the match
+  - text: "**affect labeling**"                # or match literal text instead
+    annotation: "[Lieberman et al. 2007]"
+    first_only: true                           # only annotate the first occurrence
+```
+
+Each rule matches either `url` (a link target, trailing slash-insensitive) or
+`text` (literal, matched as-is — include markdown emphasis like `**...**` if
+needed), and appends `annotation` immediately after the match. `first_only`
+(default `false`) limits annotation to the first match only. Keep this list in
+sync with the References list in `content/plop.paper.back-matter.md`.

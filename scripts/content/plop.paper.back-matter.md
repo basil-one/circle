@@ -1,15 +1,14 @@
 # References
 
-- Snowden, D. “Cynefin Framework.” (video)
-  - <https://www.youtube.com/watch?v=N7oz366X0-8>
-- Whitelaw, G. Focus Energy Balance Indicator (FEBI®).
-  - <https://zenleader.global/resources/febi-assessment>
-- Zen Leadership (patterns and community).
-  - <https://zenleader.global>
-- Rising, L., and Manns, M. Fearless Change (pattern language).
-  - <https://fearlesschangepatterns.com>
-- Lieberman, M. D., et al. “Putting Feelings into Words: Affect Labeling Disrupts Amygdala Activity.” Psychological Science, 2007.
-  - PubMed: <https://pubmed.ncbi.nlm.nih.gov/17576282/>
+Hawkins, D. R. (1995). *Power vs. force: The hidden determinants of human behavior*. Hay House.
+
+Lieberman, M. D., Eisenberger, N. I., Crockett, M. J., Tom, S. M., Pfeifer, J. H., & Way, B. M. (2007). Putting feelings into words: Affect labeling disrupts amygdala activity in response to affective stimuli. *Psychological Science, 18*(5), 421–428. <https://doi.org/10.1111/j.1467-9280.2007.01916.x>
+
+Manns, M. L., & Rising, L. (2005). *Fearless change: Patterns for introducing new ideas*. Addison-Wesley Professional.
+
+Snowden, D. J., & Boone, M. E. (2007). A leader's framework for decision making. *Harvard Business Review, 85*(11), 68–76.
+
+Whitelaw, G. (2020). *Resonate: Zen and the way of making a difference*. Wonderwell.
 
 # Acknowledgements
 

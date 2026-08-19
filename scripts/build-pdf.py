@@ -651,9 +651,79 @@ class CirclePDFBuilder:
         
         # Remove extra blank lines (more than 2 in a row)
         content = re.sub(r'\n\n\n+', '\n\n', content)
+
+        # PDF-only: append citation markers (e.g. "[Snowden & Boone 2007]") configured
+        # in plop.paper.config.yaml, without editing the shared web/PDF source files.
+        content = self._apply_citation_annotations(content)
         
         return content.strip()
-    
+
+    def _get_citation_annotations(self) -> List[Dict[str, Any]]:
+        """Return configured citation annotation rules (optional, PDF-only).
+
+        Each rule matches either a link target ('url') or literal text ('text')
+        in pattern/lens bodies and appends an 'annotation' (e.g. "[Author Year]")
+        right after the match. This lets the PDF carry in-text citations for
+        sources originally linked as videos/landing pages, without touching the
+        shared _moves/_lenses markdown files used by the website.
+        """
+        raw = self.config.get('citations')
+        if raw is None:
+            return []
+        if not isinstance(raw, list):
+            raise ValueError("Config section 'citations' must be a list")
+
+        rules: List[Dict[str, Any]] = []
+        for idx, item in enumerate(raw):
+            if not isinstance(item, dict):
+                raise ValueError(f"citations[{idx}] must be a mapping/object")
+
+            annotation = self._require_dict_str(item, 'annotation', context=f"citations[{idx}]")
+            url = str(item.get('url') or '').strip()
+            text = str(item.get('text') or '').strip()
+            if not url and not text:
+                raise ValueError(f"citations[{idx}] must include either 'url' or 'text'")
+
+            first_only = self._parse_bool(item.get('first_only'), default=False)
+            rules.append({'url': url, 'text': text, 'annotation': annotation, 'first_only': first_only})
+
+        return rules
+
+    def _apply_citation_annotations(self, content: str) -> str:
+        """Append configured citation markers after matched links or text."""
+        rules = self._get_citation_annotations()
+        if not rules or not content:
+            return content
+
+        link_pattern = re.compile(r'(?<!!)\[([^\]]+)\]\(([^)\s]+)\)')
+
+        for rule in rules:
+            annotation = rule['annotation']
+            first_only = rule['first_only']
+
+            if rule['url']:
+                target = rule['url'].rstrip('/')
+                seen = 0
+
+                def replace_link(match: re.Match, _target=target, _annotation=annotation) -> str:
+                    nonlocal seen
+                    url = match.group(2).strip().rstrip('/')
+                    if url != _target:
+                        return match.group(0)
+                    if first_only and seen:
+                        return match.group(0)
+                    seen += 1
+                    return f"{match.group(0)} {_annotation}"
+
+                content = link_pattern.sub(replace_link, content)
+
+            elif rule['text']:
+                text_pattern = re.compile(re.escape(rule['text']))
+                count = 1 if first_only else 0
+                content = text_pattern.sub(lambda m, _annotation=annotation: f"{m.group(0)} {_annotation}", content, count=count)
+
+        return content
+
     def _read_and_clean_pattern(self, pattern_file: str) -> Tuple[Dict[str, Any], str]:
         """Read a pattern markdown file, parse frontmatter, and clean the body."""
         full_path = self.root_dir / pattern_file

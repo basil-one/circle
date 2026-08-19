@@ -36,7 +36,26 @@ body:
   back_matter_anchor: references
   back_matter_file: content/plop.paper.back-matter.md
   include_back_matter_in_toc: true
-  
+
+# PDF-only in-text citation markers, matched by link URL or literal text and
+# appended right after the match. This lets the PDF carry academic in-text
+# citations (matching the References list) without editing _moves/_lenses,
+# which are shared with the website.
+citations:
+  - url: https://www.youtube.com/watch?v=N7oz366X0-8
+    annotation: "[Snowden & Boone 2007]"
+  - url: https://zenleader.global/resources/febi-assessment
+    annotation: "[Whitelaw 2020]"
+  - url: https://zenleader.global
+    annotation: "[Whitelaw 2020]"
+  - url: https://fearlesschangepatterns.com
+    annotation: "[Manns & Rising 2005]"
+  - url: https://www.goodreads.com/en/book/show/19795.Power_vs_Force
+    annotation: "[Hawkins 1995]"
+  - text: "**affect labeling**"
+    annotation: "[Lieberman et al. 2007]"
+    first_only: true
+
 sections:
   - title: Three Guiding Moves
     include_in_toc: true
