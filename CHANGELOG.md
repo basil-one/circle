@@ -8,6 +8,17 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-08-19
+
+### Changed
+- Revised the abstract and introduction for clarity, moving past the workshop-submission framing toward a more general presentation of Circle3™.
+- Replaced the paper's short "Origin and Ongoing Evolution" section with a fuller Conclusion covering how the Three Guiding Moves work together, their applicability and boundaries, and future directions.
+- Reformatted the back matter's references as a numbered list and added matching PDF-only in-text citation markers (e.g. `[1]`).
+- Refined the affect labeling / dynamic silence guidance in Integrate the Conversation for clarity.
+
+### Removed
+- Removed the workshop feedback-request section from the introduction and the paper's Origin Story CTA/image, no longer relevant past the workshop-submission stage.
+
 ## [0.1.6] - 2026-08-16
 
 ### Changed
@@ -92,7 +103,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/basil-one/circle/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/basil-one/circle/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/basil-one/circle/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/basil-one/circle/compare/v0.1.3...v0.1.4
