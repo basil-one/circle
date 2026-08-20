@@ -8,6 +8,11 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-08-20
+
+### Fixed
+- Corrected the publication details for two references in the paper's back matter: added the missing page number for the Snowden & Boone (2007) citation and corrected the publisher/location for Whitelaw (2020).
+
 ## [0.1.7] - 2026-08-19
 
 ### Changed
@@ -103,7 +108,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/basil-one/circle/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/basil-one/circle/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/basil-one/circle/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/basil-one/circle/compare/v0.1.4...v0.1.5
