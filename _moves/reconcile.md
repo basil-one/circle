@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Reconcile the Intention
-description: Guide a group through iterative conversations anchored on a visible alignment artifact that captures shared intentions and principles.
+description: Guide a group through recurring conversations around a visible representation of intention so differing interpretations can become shared understanding and coordinated action.
 permalink: /moves/reconcile/
 css_id: reconcile
 ---
