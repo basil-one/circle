@@ -16,9 +16,9 @@ Circle3 is not a replacement for governance, program management, organizational 
 
 A typical progression is:
 
-1. **Establish the Circle** — form a recurring nucleus where coherence can develop
-2. **Integrate the Conversation** — keep conversation generative under tension and time pressure
-3. **Reconcile the Intention** — anchor alignment through an artifact and iterative conversation
+1. **Establish the Circle** — create a recurring nucleus where shared understanding can form
+2. **Integrate the Conversation** — work differences and tension into shared insight and coordinated action
+3. **Reconcile the Intention** — reconcile shared meaning through recurring conversation around a visible artifact
 
 The Lenses are presented here as perceptual supports for facilitators and change leaders. They are not additional core Moves; they are practical reflections that help leaders notice interpretive differences, relational energy, and the paradigm shaping how people respond while practicing the Moves.
 
@@ -29,7 +29,7 @@ Each Move follows a recurring section rhythm so readers can quickly scan from si
 - **Story** grounds the pattern in lived change work.
 - **Context** defines the baseline conditions where the pattern becomes useful.
 - **Problem** names the recurring coordination challenge.
-- **Forces** surfaces the tensions that make the problem hard to resolve.
+- **Forces** surface the tensions that make the problem hard to resolve.
 - **Solution** describes actions, mechanisms, and expected effects.
 - **Resulting Context** shows what changes when the pattern takes hold.
 - **Known Uses** identifies settings where the pattern or underlying configuration has appeared in practice.

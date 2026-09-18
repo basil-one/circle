@@ -16,7 +16,7 @@ css_id: reconcile
 
 ## Summary
 
-Guide a group through structured, iterative conversations anchored on a **visible alignment artifact** (a charter, principles document, or other codified intention). The focus is on the **conversation itself**, surfacing ambiguity, reconciling perspectives, and creating shared understanding. Over time, this strengthens culture, clarifies roles, and aligns actions within and beyond the group.
+Guide a group through recurring conversations around a visible representation of the intention. The conversation surfaces differing interpretations, tests them against experience, and develops shared understanding; the artifact carries that understanding forward between conversations. Over time, this strengthens culture, clarifies roles, and supports coordinated action within and beyond the group.
 
 ## Story
 
@@ -32,13 +32,13 @@ The result: **a culture of iterative alignment and clarity**, not just a documen
 
 ## Context
 
-You are leading change where intent exists but is interpreted inconsistently across participants and stakeholders.
-
-Existing principles or charters are not functioning as living alignment tools, so decisions drift, collaboration fragments, and ambiguity persists under pressure.
+You are leading change where an existing intention—expressed through principles, a charter, a working agreement, or another shared direction—must be interpreted and acted on by multiple participants and stakeholders.
 
 ## Problem
 
-How do you help a group align when:
+The group has a stated intention but no reliable way to continually reconcile how that intention is interpreted, understood, and acted on across people, roles, and changing situations.
+
+**This breakdown appears when:**
 
 - **Principles are unclear or inconsistently understood**, making it difficult for participants to interpret priorities consistently and coordinate decisions and action.
 - **Key voices are isolated or not sufficiently aware of one another**, so participants may hold valid perspectives without those perspectives being reconciled into shared understanding.
@@ -70,7 +70,11 @@ Codifying principles helps preserve and communicate culture and intent, while ch
 
 **Reconcile the Intention.**
 
-**Core principle**: intention becomes actionable when conversation and artifact evolve together through repeated examination, affirmation, and adaptation.
+Bring the group into recurring conversation around a visible representation of the intention so that differing interpretations can be surfaced, tested against experience, reconciled, and carried forward into action.
+
+Conversation and artifact evolve together: the conversation creates shared understanding, while the artifact makes that understanding visible and available for continued use.
+
+**Do this by:**
 
 - Establish or refresh a **visible alignment artifact** (charter, principles, or working agreement).
   - Mechanism: a shared reference externalizes assumptions so they can be examined collectively.
@@ -92,15 +96,11 @@ The **conversation is the value**, and the artifact carries that value forward b
 
 ## Resulting Context
 
-When this move is sustained, alignment develops through a visible progression.
+When this move takes hold, the group has a shared and sufficiently stable understanding of the intention that participants can explain it, apply it in their roles, and use it to coordinate decisions across boundaries.
 
-- Ambiguity is surfaced and addressed through recurring dialogue.
-- Recurring dialogue develops shared language around intent, priorities, and principles.
-- Shared language improves decisions and strengthens coordination across roles and boundaries.
-- The artifact becomes a **living, iterative reference** that carries shared understanding forward between conversations.
-- The group can revisit and adapt the artifact as experience, priorities, and circumstances change.
+The artifact becomes a trusted reference point that carries shared understanding between conversations without becoming a rigid substitute for them. When experience, priorities, or circumstances change, the group has a reliable way to return to the intention, test it against what has been learned, and adapt together.
 
-As this progression repeats, alignment becomes more durable without becoming rigid. Leadership gains a more reliable reference for decisions, teams can revisit performance and impact against clearer intent, and stakeholders have a shared point of reference for adapting together.
+Alignment becomes more durable without becoming fixed. Leadership gains a clearer reference for decisions, teams can evaluate performance and impact against shared intent, and stakeholders have a common basis for continued coordination and adaptation.
 
 ## Known Uses
 

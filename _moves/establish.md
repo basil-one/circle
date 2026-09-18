@@ -16,9 +16,7 @@ css_id: establish
 
 ## Summary
 
-Create a small, recurring gathering where a few participants reason together about a change initiative. They represent multiple perspectives and are guided by a skilled facilitator.
-
-The Circle surfaces tensions, builds shared understanding, and gradually connects isolated champions. Over time, it becomes a nucleus of alignment, fostering coherence and momentum across the organization.
+Create a small, recurring conversational nucleus where participants representing different perspectives reason together about a change initiative. Guided by an integrative facilitator, the Circle develops shared understanding, connects isolated champions, and becomes a nucleus of alignment and coordinated momentum.
 
 ## Story
 
@@ -46,11 +44,13 @@ But it all began with one move:
 
 ## Context
 
-You are leading change in an environment where many initiatives compete for attention and people are interpreting the same situation differently.
+You are leading change that crosses roles, teams, or areas of expertise and requires people with different perspectives to develop enough shared understanding to move together.
 
 ## Problem
 
-How do you create coherence and momentum for change when:
+The people and perspectives needed for coherent change are distributed across roles, teams, or parts of the system, but there is no recurring place where they can develop shared understanding and coordinated momentum together.
+
+**This breakdown appears when:**
 
 - **People hold different interpretations of the change**, making it difficult to reach shared understanding and coordinate action toward the same direction.
 - **Champions are isolated from one another**, limiting their ability to connect, form coalitions, and build enough collective momentum to influence the broader system.
@@ -81,7 +81,9 @@ Organizations reward visible action and execution, while meaningful change often
 
 **Establish the Circle.**
 
-**Core principle**: a small, recurring nucleus makes it possible for shared interpretation to form before broad alignment is expected.
+Create a small, recurring conversational nucleus where people with different perspectives can reason together long enough for shared understanding and coordinated momentum to form.
+
+**Do this by:**
 
 - Form a **three-person nucleus** with at least two subject matter perspectives plus facilitation capability.
   - Mechanism: diversity of perspective plus a small, trusted space prevents early groupthink and allows tensions to surface safely.
@@ -100,14 +102,11 @@ Use this move as an operating container, not a status forum. When drift appears,
 
 ## Resulting Context
 
-When this move is practiced with consistency, a predictable sequence emerges.
+When this move takes hold, the change has a stable conversational nucleus where different perspectives can be brought into relationship and examined together.
 
-- The recurring nucleus stabilizes attention around the change.
-- Stabilized attention allows tensions and assumptions to be examined rather than avoided.
-- Repeated cross-role reasoning builds shared language and shared interpretation.
-- Shared interpretation enables coordinated decisions and more durable commitments.
+Participants develop shared language and shared interpretation, potential champions become connected, and concerns can surface earlier rather than remaining isolated across the organization.
 
-As that sequence repeats, potential champions connect, stakeholders bring concerns earlier, and the Circle becomes a **nucleus of alignment** that can evolve into a broader coalition, community of practice, or formal working group.
+The Circle becomes a nucleus of alignment from which more coordinated decisions and durable commitments can emerge. As the work develops, it can remain a small recurring Circle or evolve into a broader coalition, community of practice, or formal working group.
 
 ## Known Uses
 
@@ -180,7 +179,7 @@ Examples include:
 ## Related Patterns
 
 - [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="establish_to_integrate"} – Integrative facilitation keeps the Circle generative under pressure so diverse voices remain usable for alignment.
-- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Aligning on shared principles or artifacts strengthens the Circle’s output and ensures early insights are codified and actionable.
+- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Recurring conversation around shared principles or artifacts carries emerging understanding forward and helps make it usable for coordinated action.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="establish_to_fearless_change"}
 

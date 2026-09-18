@@ -30,11 +30,13 @@ Over time, participants cleared out ideas and priorities that no longer made sen
 
 ## Context
 
-You are in a change conversation where attention is fragmented, perspectives are unevenly represented, and progress is stalling even though people care about outcomes.
+You are facilitating a change conversation involving multiple perspectives, roles, priorities, and forms of expertise that need to contribute to shared understanding and coordinated action.
 
 ## Problem
 
-How do you guide a conversation when:
+The conversation contains perspectives, information, priorities, and relational energy that are individually meaningful but are not being integrated into a shared understanding the group can act on.
+
+**This breakdown appears when:**
 
 - **Drivers clash while organizers silo their perspectives**, making it difficult to connect urgency and coordination across the system even when each perspective is legitimate on its own.
 - **Visionaries dominate and collaborators disengage**, causing important perspectives and information to disappear from the conversation and eroding the participation needed to turn possibility into shared understanding.
@@ -65,7 +67,9 @@ Ideas can expand faster than the group can connect and prioritize them. Too litt
 
 **Integrate the Conversation.**
 
-**Core principle**: integration happens when facilitation keeps multiple perspectives in play long enough for tension to become insight rather than conflict.
+Keep multiple perspectives in play and actively work with the tension among them until differences can become shared insight, clearer priorities, and coordinated action.
+
+**Do this by:**
 
 - Observe conversational energy and participation patterns in real time.
   - Mechanism: naming who is dominant, quiet, or disconnected reveals where information flow is constrained.
@@ -84,14 +88,11 @@ These shifts require practice and ongoing calibration. When the conversation beg
 
 ## Resulting Context
 
-When this move works, a clear operating sequence appears.
+When this move takes hold, the group can remain coherent while holding divergent perspectives, priorities, and tension. Differences that previously fragmented the conversation can be surfaced and integrated into shared understanding, clearer priorities, decisions, and commitments.
 
-- Participation patterns become visible and facilitation becomes more intentional.
-- Intentional facilitation turns reactive tension into reflective tension.
-- Reflective tension enables integration of diverse perspectives.
-- Integrated perspectives support clearer priorities, decisions, and commitments.
+The group becomes better able to work through tension without either forcing premature agreement or losing direction. Conversation becomes more collaborative, responsive, and adaptive as circumstances change.
 
-Over time, conversations become **more collaborative, responsive, and adaptive**. Strategic initiatives move with less friction, and the Circle strengthens its ability to establish, evolve, and reconcile intention under changing conditions.
+Over time, strategic initiatives move with less friction, and the Circle becomes more capable of establishing, evolving, and reconciling intention under changing conditions.
 
 ## Known Uses
 
