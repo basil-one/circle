@@ -8,6 +8,13 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-09-18
+
+### Changed
+- Refined the language across the three Moves (Establish the Circle, Integrate the Conversation, Reconcile the Intention), restructuring each Problem section around a "This breakdown appears when" framing and each Solution around a "Do this by" framing for clarity and consistency.
+- Reworded Summary, Context, and Resulting Context sections in each Move to focus on shared understanding rather than the prior "coherence"/progression-based phrasing.
+- Updated the paper's abstract and introduction to match the revised Move language (e.g. "shared understanding" instead of "shared perception" in the Move step summaries).
+
 ## [0.1.8] - 2026-08-20
 
 ### Fixed
@@ -108,7 +115,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/basil-one/circle/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/basil-one/circle/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/basil-one/circle/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/basil-one/circle/compare/v0.1.5...v0.1.6
