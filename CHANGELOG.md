@@ -8,6 +8,12 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-09-18
+
+### Changed
+- Refined the Reconcile the Intention page description to emphasize how recurring conversations turn differing interpretations into shared understanding and coordinated action.
+- Updated the paper's abstract closing line to reference "shared understanding" instead of "shared perception," matching the revised Move language.
+
 ## [0.1.9] - 2026-09-18
 
 ### Changed
@@ -115,7 +121,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.9...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.10...HEAD
+[0.1.10]: https://github.com/basil-one/circle/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/basil-one/circle/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/basil-one/circle/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/basil-one/circle/compare/v0.1.6...v0.1.7
