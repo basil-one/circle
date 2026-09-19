@@ -8,7 +8,7 @@ Across the cases that shaped the language, one observation kept repeating: peopl
 
 Circle3 works at this human layer. It includes Three Guiding Moves (patterns) and Three Leadership Lenses™ (reflective exercises) presented in the appendix. The Moves describe repeatable configurations that help groups build shared understanding and coordinate action; the Lenses provide practical perceptual supports for facilitators applying the Moves.
 
-The Three Guiding Moves address different but interdependent aspects of coherence. **Establish the Circle** creates a recurring conversational nucleus in which different perspectives can come into relationship and shared understanding can begin to form. **Integrate the Conversation** helps participants work with the differences, tensions, and competing priorities that arise so they can become shared insight and coordinated action. **Reconcile the Intention** carries emerging understanding forward through recurring conversation around a visible representation of shared intention. The Moves can reinforce, revisit, and lead back into one another as circumstances change; they are not a one-time sequence.
+The Three Guiding Moves address different but interdependent aspects of coherence. **Establish the Circle** creates a recurring space where shared understanding can form; **Integrate the Conversation** works differences and tension into shared insight and coordinated action; and **Reconcile the Intention** carries that understanding forward through a visible representation of shared intention. The Moves can be combined and revisited as circumstances change rather than followed as a one-time sequence.
 
 ### Audience and boundaries
 
