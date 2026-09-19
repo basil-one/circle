@@ -2,23 +2,29 @@
 
 In complex, fast-changing organizational environments, change often crosses teams, roles, and areas of expertise. Participants may care about the same outcome while holding different interpretations of what is happening and what the situation requires. Linear management approaches can coordinate activity, and broadcast communication can increase awareness, but neither alone necessarily creates shared understanding. Attention fragments, conversations occur in parallel, and decisions may not develop into durable commitments.
 
-Circle3™ is a compact pattern language developed in response to this recurring challenge. It did not begin as a framework designed in advance. The practice underlying the language developed over more than a decade of organizational change work across enterprise technology, transformation, leadership, and community settings. The Circle began informally and gradually became a more explicit and named practice through repeated use in complex change environments. Over time, continued application across organizations and industries helped clarify the recurring configurations that became the Three Guiding Moves™ presented here. Across the cases that shaped the language, one observation kept repeating: people were not refusing change. They were trying to stay intact inside it.
+Circle3™ is a compact pattern language developed in response to this recurring challenge. The practice underlying the language emerged through more than a decade of organizational change work across enterprise technology, transformation, leadership, and community settings. Through repeated use, recurring configurations became visible and were gradually clarified into the Three Guiding Moves™ presented here.
 
-Circle3 includes Three Guiding Moves (patterns) and Three Leadership Lenses™ (reflective exercises) presented in the appendix. The Moves describe repeatable configurations that help groups build shared understanding and coordinate action; the Lenses provide practical perceptual supports for facilitators applying the Moves.
+Across the cases that shaped the language, one observation kept repeating: people were not refusing change. They were trying to stay intact inside it. As familiar interpretations, relationships, priorities, and ways of working shift, people need enough coherence to remain oriented, connected, and able to participate constructively in what comes next. This is the **human layer of change**: the shared interpretations, relationships, conversations, and intentions through which people make sense of what is happening and coordinate action.
+
+Circle3 works at this human layer. It includes Three Guiding Moves (patterns) and Three Leadership Lenses™ (reflective exercises) presented in the appendix. The Moves describe repeatable configurations that help groups build shared understanding and coordinate action; the Lenses provide practical perceptual supports for facilitators applying the Moves.
+
+The Three Guiding Moves address different but interdependent aspects of coherence. **Establish the Circle** creates a recurring conversational nucleus in which different perspectives can come into relationship and shared understanding can begin to form. **Integrate the Conversation** helps participants work with the differences, tensions, and competing priorities that arise so they can become shared insight and coordinated action. **Reconcile the Intention** carries emerging understanding forward through recurring conversation around a visible representation of shared intention. The Moves can reinforce, revisit, and lead back into one another as circumstances change; they are not a one-time sequence.
 
 ### Audience and boundaries
 
 Circle3 is aimed at leaders, facilitators, and change agents working across teams and roles—especially when a change effort is widely discussed but shared understanding and durable commitments are not forming.
 
-Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is more precise: to create enough coherence that decisions and commitments hold beyond a single meeting.
+Circle3 is not a replacement for governance, program management, organizational design, or incident response. Its purpose is more precise: to create enough coherence at the human layer that decisions and commitments can hold beyond a single meeting.
 
 ### How to read and use the language
 
-A typical progression is:
+One common progression is:
 
 1. **Establish the Circle** — create a recurring nucleus where shared understanding can form
 2. **Integrate the Conversation** — work differences and tension into shared insight and coordinated action
 3. **Reconcile the Intention** — reconcile shared meaning through recurring conversation around a visible artifact
+
+This progression is not prescriptive. As action changes conditions and new information emerges, practitioners may return to any of the Moves, combine them, or use them in a different order.
 
 The Lenses are presented here as perceptual supports for facilitators and change leaders. They are not additional core Moves; they are practical reflections that help leaders notice interpretive differences, relational energy, and the paradigm shaping how people respond while practicing the Moves.
 
@@ -40,4 +46,4 @@ Each Move follows a recurring section rhythm so readers can quickly scan from si
 
 The Leadership Lenses are intentionally kept in exercise format rather than rewritten as peer patterns, preserving their direct use in preparation, facilitation, and coaching.
 
-The remainder of this paper is organized as follows: the Three Guiding Moves section presents Establish the Circle, Integrate the Conversation, and Reconcile the Intention in turn. The Conclusion considers how the Moves function together, their practical significance and boundaries, and directions for future development. The appendix presents the Three Leadership Lenses in exercise format.
+The remainder of this paper is organized as follows: the Three Guiding Moves section presents Establish the Circle, Integrate the Conversation, and Reconcile the Intention in turn. The Discussion considers how the Moves function together as a pattern language, the human layer at which Circle3 operates, its practical boundaries, the role of facilitation, and directions for continued development. The Conclusion summarizes the contribution and its central implication for leading change in complex environments. The appendix presents the Three Leadership Lenses in exercise format.

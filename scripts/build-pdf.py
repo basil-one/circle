@@ -391,6 +391,12 @@ class CirclePDFBuilder:
         anchor = self._latex_id(raw_anchor, default='conclusion')
         return title, anchor
 
+    def _get_discussion_meta(self) -> Tuple[str, str]:
+        title = self._require_config_str('discussion', 'title')
+        raw_anchor = self._require_config_str('discussion', 'anchor')
+        anchor = self._latex_id(raw_anchor, default='discussion')
+        return title, anchor
+
     def _parse_bool(self, value: Any, *, default: bool = False) -> bool:
         """Parse a YAML scalar into a boolean.
 
@@ -1039,6 +1045,10 @@ class CirclePDFBuilder:
         back_matter_label: str,
         back_matter_anchor: str,
         include_back_matter_in_toc: bool,
+        discussion_title: str,
+        discussion_anchor: str,
+        discussion_image: str,
+        discussion_main_markdown: str,
         conclusion_title: str,
         conclusion_anchor: str,
         conclusion_image: str,
@@ -1077,6 +1087,10 @@ class CirclePDFBuilder:
         back_matter_markdown = textwrap.dedent(back_matter_markdown).strip()
         back_matter_label = str(back_matter_label).strip()
         back_matter_anchor = str(back_matter_anchor).strip()
+        discussion_title = str(discussion_title).strip()
+        discussion_anchor = self._latex_id(str(discussion_anchor).strip(), default='discussion')
+        discussion_image = str(discussion_image).strip()
+        discussion_main_markdown = textwrap.dedent(discussion_main_markdown).strip()
         conclusion_title = str(conclusion_title).strip()
         conclusion_anchor = self._latex_id(str(conclusion_anchor).strip(), default='conclusion')
         conclusion_image = str(conclusion_image).strip()
@@ -1192,6 +1206,14 @@ class CirclePDFBuilder:
         appendix_sections = [s for s in planned_sections if bool(s.get('is_appendix'))]
         planned_sections = core_sections + appendix_sections
 
+        # Reserve the discussion anchor (rendered between the Moves and the Conclusion).
+        discussion_anchor_base = discussion_anchor
+        suffix = 2
+        while discussion_anchor in used_anchors:
+            discussion_anchor = f"{discussion_anchor_base}-{suffix}"
+            suffix += 1
+        used_anchors.add(discussion_anchor)
+
         # Reserve conclusion anchor and include it in TOC as part of the core paper.
         conclusion_anchor_base = conclusion_anchor
         suffix = 2
@@ -1213,8 +1235,10 @@ class CirclePDFBuilder:
                 # Back matter should appear in the TOC but not be emphasized like the main content sections.
                 pass
 
-        # Assemble TOC in presentation order: core patterns -> back matter -> appendix -> conclusion.
+        # Assemble TOC in presentation order: core patterns -> discussion -> conclusion -> back matter -> appendix.
         toc_items.extend(toc_core_items)
+        if discussion_title:
+            toc_items.append({'kind': 'section', 'label': discussion_title, 'anchor': discussion_anchor})
         if conclusion_title:
             toc_items.append({'kind': 'section', 'label': conclusion_title, 'anchor': conclusion_anchor})
         if back_matter_markdown and include_back_matter_in_toc and back_matter_label:
@@ -1277,6 +1301,27 @@ class CirclePDFBuilder:
                 body = self._rewrite_pdf_internal_links(body, permalink_to_anchor)
                 chunks.append(body)
                 page_break_needed = True
+
+        # Discussion sits between the Moves and the Conclusion in the core content flow.
+        if discussion_image:
+            chunks.append(
+                self._latex_full_width_image_page(
+                    discussion_image,
+                    anchor=discussion_anchor,
+                    prepend_page_break=page_break_needed,
+                )
+            )
+            page_break_needed = False
+        else:
+            chunks.append(self._latex_hypertarget_block(discussion_anchor, prepend_page_break=page_break_needed))
+            page_break_needed = False
+
+        if discussion_main_markdown:
+            discussion_clean = self._filter_jekyll_syntax(discussion_main_markdown)
+            discussion_clean = self._normalize_relative_links(discussion_clean)
+            discussion_clean = self._rewrite_pdf_internal_links(discussion_clean, permalink_to_anchor)
+            chunks.append(discussion_clean)
+            page_break_needed = True
 
         # Conclusion sits in the core content flow, before references.
         if conclusion_image:
@@ -1490,7 +1535,7 @@ class CirclePDFBuilder:
             if not framing_image_2:
                 raise ValueError("Missing required config value: framing.images[1]")
 
-            conclusion_image = self._require_dict_str(conclusion, 'image', context='conclusion')
+            conclusion_image = str(conclusion.get('image') or '').strip()
 
             args = [
                 'pandoc',
@@ -1581,9 +1626,20 @@ class CirclePDFBuilder:
             if not isinstance(conclusion, dict):
                 raise ValueError("Config section 'conclusion' must be a mapping/object")
             conclusion_title, conclusion_anchor = self._get_conclusion_meta()
-            conclusion_image = self._require_dict_str(conclusion, 'image', context='conclusion')
+            conclusion_image = str(conclusion.get('image') or '').strip()
             conclusion_main_markdown = self._get_markdown_content(
                 conclusion,
+                inline_key='main_text',
+                file_key='main_text_file',
+            )
+
+            discussion = self.config.get('discussion')
+            if not isinstance(discussion, dict):
+                raise ValueError("Config section 'discussion' must be a mapping/object")
+            discussion_title, discussion_anchor = self._get_discussion_meta()
+            discussion_image = self._require_dict_str(discussion, 'image', context='discussion')
+            discussion_main_markdown = self._get_markdown_content(
+                discussion,
                 inline_key='main_text',
                 file_key='main_text_file',
             )
@@ -1601,6 +1657,10 @@ class CirclePDFBuilder:
                 back_matter_label=back_matter_label,
                 back_matter_anchor=back_matter_anchor,
                 include_back_matter_in_toc=include_back_matter_in_toc,
+                discussion_title=discussion_title,
+                discussion_anchor=discussion_anchor,
+                discussion_image=discussion_image,
+                discussion_main_markdown=discussion_main_markdown,
                 conclusion_title=conclusion_title,
                 conclusion_anchor=conclusion_anchor,
                 conclusion_image=conclusion_image,
