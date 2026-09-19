@@ -8,6 +8,16 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-19
+
+### Added
+- Added a new **Discussion** section to the paper, between the Three Guiding Moves and the Conclusion, covering how the Moves function together as a pattern language, the "human layer of change" framing, how Circle3 relates to governance and other formal change practices, the role of facilitation, and directions for future work.
+
+### Changed
+- Rewrote the paper's Conclusion into a shorter closing statement, moving its fuller "how the Moves work together / boundaries / future directions" content into the new Discussion section.
+- Expanded the introduction to introduce the "human layer of change" framing, summarize how the Three Guiding Moves address different but interdependent aspects of coherence, and clarify that the Moves' progression isn't prescriptive.
+- Added Aikido training as an additional acknowledged practice influence in the paper's back matter.
+
 ## [0.1.10] - 2026-09-18
 
 ### Changed
@@ -121,7 +131,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.10...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.11...HEAD
+[0.1.11]: https://github.com/basil-one/circle/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/basil-one/circle/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/basil-one/circle/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/basil-one/circle/compare/v0.1.7...v0.1.8
