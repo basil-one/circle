@@ -86,10 +86,11 @@ sections:
 discussion:
   title: Discussion
   anchor: discussion
-  image: images/conclusion.png
+  image: images/discussion.png
   main_text_file: content/plop.paper.discussion.md
 
 conclusion:
   title: Conclusion
   anchor: conclusion
+  image: images/conclusion.png
   main_text_file: content/plop.paper.conclusion.md
