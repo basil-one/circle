@@ -20,27 +20,21 @@ Create a small, recurring conversational nucleus where participants representing
 
 ## Story
 
-A large enterprise organization was attempting to introduce a new initiative affecting multiple teams. Leaders wanted faster progress while maintaining safety and governance. Practitioners were overwhelmed with competing priorities. Stakeholders held conflicting interpretations of what the change meant.
+Alex was passionate about a change that crossed several teams. The more Alex tried to move it forward, the further away it seemed. Meetings kept happening, people expressed interest, but nothing was taking hold.
 
-Conversations about the initiative occurred everywhere: project meetings, hallway conversations, and internal messaging channels, but rarely in a place designed for shared understanding.
+Alex began to wonder whether people were even seeing the same situation.
 
-As a result, awareness was uneven, desire was fragmented, and potential champions remained isolated.
+Rather than propose another plan, Alex invited a few people with different perspectives to try an experiment: four weekly conversations around a shared intention, without deciding the solution in advance.
 
-A change leader introduced a simple practice: a weekly gathering called the **Circle**.
+The first gathering was difficult. One person questioned the premise. Another described constraints Alex hadn't understood. Alex felt the urge to defend the change but instead listened and asked what others were seeing.
 
-At first, only three people attended: a technical practitioner, a second subject matter expert from another perspective, and a facilitator skilled in guiding reflective conversation.
+The conversations didn't immediately get easier. More tensions surfaced. But people began connecting obstacles that had previously seemed unrelated.
 
-The sponsor was aware of the effort but only loosely involved.
+"Oh, that explains why your team couldn't move."
 
-Week by week, the group reasoned together about the change. They surfaced tensions, listened to concerns, and gradually invited others when it made sense.
+After four sessions, the group hadn't resolved everything. But they had developed a clearer understanding of what was blocking progress—and wanted to continue.
 
-Over time the Circle became the place where people came to make sense of the change. Champions began connecting with each other. Shared language emerged.
-
-Gradually, small islands of coherence began forming across the organization.
-
-But it all began with one move:
-
-**Establish the Circle.**
+For the first time, the change Alex had imagined felt less like a distant possibility and more like something taking shape among them.
 
 ## Context
 
@@ -98,6 +92,8 @@ Create a small, recurring conversational nucleus where people with different per
   - Mechanism: visible sponsorship provides legitimacy while selective participation protects conversational quality.
   - Effect: insights can spread outward without collapsing the core space.
 
+A bounded experiment can lower the barrier to starting: try four weekly conversations, then decide together whether the Circle should continue, adapt, or conclude.
+
 Use this move as an operating container, not a status forum. When drift appears, use the Failure Modes below as a diagnostic and coaching aid.
 
 ## Resulting Context
@@ -110,18 +106,19 @@ The Circle becomes a nucleus of alignment from which more coordinated decisions 
 
 ## Known Uses
 
-The story above comes from enterprise change work, but the core move (creating a small, recurring space for collective sense-making) shows up in many domains.
+### Enterprise technology transformation
 
-This pattern appears in practice in organizational, community, and personal settings where change requires ongoing collective sense-making rather than one-time communication.
+Circles played an instrumental role in unlocking major technology changes that had stalled through conventional approaches. In a global education technology organization, recurring conversations across continents helped engineers and operations teams surface impediments and develop shared understanding, contributing to an observability transformation that reduced multi-team investigations from days to minutes.
 
-Examples include:
+In a large enterprise software business, cloud migration efforts had stalled repeatedly over several years. Circles brought architects, engineers, and managers into sustained conversation, allowing them to identify impediments and build a shared center of gravity for action. This was instrumental in unlocking the transition to Kubernetes and GitOps, creating business agility that helped the business protect its established market share and compete in new markets.
 
-- Agile, DevOps, and organizational transformation efforts within enterprise IT organizations, where recurring Circles connected isolated champions across teams.
-- Financial-services technology organizations navigating competing priorities, resource constraints, and complex stakeholder environments.
-- Learning communities such as the Mindset and Agile Dojo, where Circle gatherings supported reflection, peer learning, and cross-functional relationship building.
-- Governance settings such as homeowner association and condominium boards, where recurring conversations helped stakeholders build shared understanding before decisions.
-- Community dialogue and relational practice environments exploring collective reflection, belonging, and relational coherence.
-- Informal family and friendship systems where a recurring conversational container helped participants navigate ongoing tensions and change.
+### Transformation Dojo and InnerSource communities
+
+Instructor-led training alone was not translating into the adoption of new practices. Circles connected practitioners and change champions who already understood parts of the problem but lacked a shared place to work through it. Participants began co-authoring—and sometimes leading—the development of learning journeys grounded in their actual organizational conditions. These communities helped drive the mindset and capability shifts needed for broader technical and organizational transformation.
+
+### Community governance
+
+In a residential community facing longstanding disputes and guarded relationships, Circles opened dialogue among board members and people affected by governance decisions. These conversations helped resolve multi-year conflicts, substantially improve budgeting, and create opportunities for residents to influence the policies and decisions shaping their community. The shift was from adversarial, procedural governance toward greater shared understanding and participation.
 
 ## Key Characteristics
 
