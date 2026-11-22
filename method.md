@@ -10,7 +10,7 @@ css_id: method
 
 ![Circle3](/images/method.png)
 
-*Circle3™ offers three guiding moves for leading difficult change by building shared understanding at the human layer.*
+*Circle3™ offers three guiding moves for leading difficult change.*
 
 Change begins in a small working center—formal or informal—where a few people are responsible for making it real in practice.
 
@@ -48,9 +48,12 @@ Less needs to be re-explained.
 
 ## The Moves and Lenses
 
-Circle3 works through three guiding Moves that help people build shared understanding and coordinate action. Complementary Leadership Lenses are reflective exercises that help facilitators notice what is happening when conversations become difficult or stuck.
+Circle3 works through three guiding Moves and supporting Leadership Lenses:
 
-The Moves guide action. The Lenses support perception.
+- **The Moves** — what people do together to build shared understanding and coordinate action  
+- **The Lenses** — reflective exercises that help people notice what shapes the conversation  
+
+One guides action. The other supports perception.
 
 👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
 
