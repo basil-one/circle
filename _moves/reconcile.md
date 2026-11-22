@@ -107,11 +107,17 @@ Alignment becomes more durable without becoming fixed. Leadership gains a cleare
 
 ## Known Uses
 
-**Leadership and organizational alignment.** Groups facing strategic and organizational change returned to charters, principles, and working agreements as shared references. Rather than settling for sign-off, participants challenged the wording, surfaced objections, and worked out what the intention meant in their own roles. Co-authoring these references created a shared center of focus for decisions across teams and helped prevent apparent agreement from dissolving after meetings.
+### Leadership and organizational alignment
 
-**Enterprise Dojo and InnerSource learning communities.** Shared missions, principles, and learning paths took hold as practitioners connected them to the realities of their work. Through recurring dialogue, participants interpreted, challenged, and helped shape those visible references rather than passively accepting prescribed training. The result was a learning practice that could adapt to local needs while keeping a coherent direction across departments.
+Groups facing strategic and organizational change returned to charters, principles, and working agreements as shared references. Rather than settling for sign-off, participants challenged the wording, surfaced objections, and worked out what the intention meant in their own roles. Co-authoring these references created a shared center of focus for decisions across teams and helped prevent apparent agreement from dissolving after meetings.
 
-**Community governance.** Boards and residents used shared agreements and governing principles to work through differing interpretations of longstanding issues. Returning to a visible reference, and allowing those affected to help shape its meaning, supported clearer decisions, improved budgets, and progress on disputes that had previously fragmented the community.
+### Enterprise Dojo and InnerSource learning communities
+
+Shared missions, principles, and learning paths took hold as practitioners connected them to the realities of their work. Through recurring dialogue, participants interpreted, challenged, and helped shape those visible references rather than passively accepting prescribed training. The result was a learning practice that could adapt to local needs while keeping a coherent direction across departments.
+
+### Community governance
+
+Boards and residents used shared agreements and governing principles to work through differing interpretations of longstanding issues. Returning to a visible reference, and allowing those affected to help shape its meaning, supported clearer decisions, improved budgets, and progress on disputes that had previously fragmented the community.
 
 ## Key Characteristics
 
