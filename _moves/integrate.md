@@ -104,11 +104,17 @@ Over time, strategic initiatives move with less friction, and the Circle becomes
 
 ## Known Uses
 
-**Enterprise transformation and platform engineering.** In cross-functional technology change, architects, engineers, managers, and delivery teams often interpreted the same impediments differently. Integrative facilitation interrupted unproductive exchanges, surfaced tensions and missing perspectives, and helped groups focus on what was actually blocking progress. This was instrumental in unlocking modernization and cloud operations changes that had stalled despite repeated planning efforts. The missing ingredient was often not another technical plan, but integrating what different people knew.
+### Enterprise transformation and platform engineering
 
-**Enterprise Dojo and InnerSource learning communities.** Circle conversations worked with the obstacles participants brought from their own departments, rather than simply delivering a fixed curriculum. Facilitators alternated between listening, challenging assumptions, inviting quieter perspectives, and bringing attention back to a shared concern. This helped practitioners translate Agile, InnerSource, and technical learning into changes they could adopt and lead in their own environments, contributing to wider shifts in mindset and capability.
+In cross-functional technology change, architects, engineers, managers, and delivery teams often interpreted the same impediments differently. Integrative facilitation interrupted unproductive exchanges, surfaced tensions and missing perspectives, and helped groups focus on what was actually blocking progress. This was instrumental in unlocking modernization and cloud operations changes that had stalled despite repeated planning efforts. The missing ingredient was often not another technical plan, but integrating what different people knew.
 
-**Community governance.** In residential governance settings, long-running disputes had left people guarded and conversations polarized. Integrative dialogue created opportunities to name tensions, hear from residents affected by decisions, and move beyond entrenched positions. This helped restore relationships and make progress on issues—including budgets and unresolved disputes—that formal proceedings alone had not settled.
+### Enterprise Dojo and InnerSource learning communities
+
+Circle conversations worked with the obstacles participants brought from their own departments, rather than simply delivering a fixed curriculum. Facilitators alternated between listening, challenging assumptions, inviting quieter perspectives, and bringing attention back to a shared concern. This helped practitioners translate Agile, InnerSource, and technical learning into changes they could adopt and lead in their own environments, contributing to wider shifts in mindset and capability.
+
+### Community governance
+
+In residential governance settings, long-running disputes had left people guarded and conversations polarized. Integrative dialogue created opportunities to name tensions, hear from residents affected by decisions, and move beyond entrenched positions. This helped restore relationships and make progress on issues—including budgets and unresolved disputes—that formal proceedings alone had not settled.
 
 ## Key Characteristics
 
