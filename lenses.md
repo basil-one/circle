@@ -3,12 +3,12 @@ layout: default
 permalink: /lenses/
 css_id: lens
 title: Three Leadership Lenses for Coherence
-description: Three leadership lenses in the Circle3 pattern language that shape how you perceive interpretation, energy, and readiness in complex systems.
+description: Three reflective Leadership Lenses that support clearer perception of interpretation, energy, and readiness during difficult change.
 ---
 
 # Three Leadership Lenses for Coherence
 
-*A set of perception patterns within Circle3™ for noticing what is shaping a situation in complex systems by* **Michael Basil**
+*Three reflective lenses for noticing what shapes a situation in complex systems by* **Michael Basil**
 
 ![Three Leadership Lenses for Coherence](/images/lenses.png)
 

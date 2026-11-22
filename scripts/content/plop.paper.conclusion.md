@@ -1,5 +1,5 @@
 ## Conclusion
 
-Circle3 is a compact pattern language for helping people create and restore coherence in complex change. Through **Establish the Circle**, **Integrate the Conversation**, and **Reconcile the Intention**, groups create recurring space for shared understanding, work productively with differences and tension, and carry emerging alignment forward into coordinated action.
+In difficult change, plans and formal agreements are not enough when people lack shared understanding; ambiguity can also leave them without a common direction. Circle3 offers three guiding moves for working with these challenges within the human layer of change. **Establish the Circle** creates recurring space for shared understanding, **Integrate the Conversation** helps people work through differences and tension, and **Reconcile the Intention** carries emerging understanding into coordinated action.
 
-The language begins from a simple observation: people navigating change need enough coherence to remain oriented, connected, and able to act together as circumstances evolve. Circle3 provides recurring patterns for strengthening that capacity at the human layer. Coherence, in this sense, is not a final state to be achieved once, but a capacity to return, integrate what has changed, and move again.
+Coherence is not a final state achieved once. As conditions change, people can return to the conversation, integrate new perspectives, and renew their capacity to move together.

@@ -1,14 +1,14 @@
 ---
 layout: default
 title: Three Guiding Moves for Coherence
-description: Three guiding moves in the Circle3 pattern language that help groups navigate continuous change by building coherence, creating clarity, and aligning collective action.
+description: Three guiding moves for leading difficult change by building shared understanding and coordinating action.
 permalink: /moves/
 css_id: moves
 ---
 
 # Three Guiding Moves for Coherence
 
-*A Pattern Set within Circle3™ for Coordinating Action in Continuous Change by* **Michael Basil**
+*Three moves for coordinating action in continuous change by* **Michael Basil**
 
 ![Three Guiding Moves for Coherence](/images/moves.png)
 

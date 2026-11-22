@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Origin Story
-description: The lived evolution of Circle3—how recurring patterns in change, fragmentation, and coherence gradually formed into a pattern language.
+description: The lived evolution of Circle3—from recurring experiences of change, fragmentation, and coherence to three guiding moves.
 permalink: /origin/
 css_id: origin
 ---
