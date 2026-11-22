@@ -8,7 +8,7 @@ css_id: moves
 
 # Three Guiding Moves for Coherence
 
-*Three Guiding Moves for Leading Difficult Change by* **Michael Basil**
+*Three moves for coordinating action in continuous change by* **Michael Basil**
 
 ![Three Guiding Moves for Coherence](/images/moves.png)
 
