@@ -20,15 +20,18 @@ Guide a group through recurring conversations around a visible representation of
 
 ## Story
 
-A department led a major initiative spanning multiple teams. They had a charter and principles on paper, but in practice, people held different interpretations. Misalignment caused duplicated effort, missed opportunities, and occasional friction.
 
-A change leader introduced a **series of conversations** centered on a visible artifact: a living charter. Over several sessions, key participants revisited principles, clarified roles, and reconciled differences.
+Alex was helping lead an initiative involving several teams. Meetings were busy and often appeared productive. Ideas were exchanged, priorities discussed, and people generally left believing they were aligned.
 
-Some social leaders were quiet at first, others vocal. Each engaged through successive iterations until they could affirm the final artifact: “This captures our intent, and here’s why and how it helps in my role.”
+But afterward, progress fragmented. Teams interpreted decisions differently, promising ideas disappeared, and considerable effort produced little movement. Everyone seemed to be rowing, but the boat was going in circles.
 
-As alignment grew, collaboration improved. Conversations with other teams became smoother. Decisions were clearer. The artifact became a **reference point**, visible to others, guiding interaction, supporting management decisions, and even providing context for automated systems downstream.
+Alex brought a draft of the initiative's guiding principles into the next conversation. Instead of asking whether everyone agreed, Alex invited them to challenge what was written.
 
-The result: **a culture of iterative alignment and clarity**, not just a document, but a living conversation that strengthens collective action.
+"Where doesn't this reflect what you're seeing? What would you change?"
+
+The first responses were polite. Then someone questioned a principle others had assumed was settled. Another explained why a commitment wouldn't work in their part of the organization.
+
+People began revising the language together, testing what the words meant in practice. It was no longer a document to approve and set aside. The group was beginning to create a shared center of focus—an intention they could help shape, explain, and use to coordinate their efforts.
 
 ## Context
 
@@ -104,18 +107,14 @@ Alignment becomes more durable without becoming fixed. Leadership gains a cleare
 
 ## Known Uses
 
-Although the story above comes from an enterprise initiative, the underlying move of iterative alignment through recurring conversations anchored on a shared, visible artifact appears in many domains.
 
-This pattern appears in practice in settings where groups rely on recurring conversations around a shared artifact to create alignment and coordinated action.
+Alex's story is illustrative. The applications below draw on practice across different settings; the organizations and participants are not identified.
 
-Examples include:
+**Enterprise technology change.** In efforts involving DevOps, systems thinking, and changes in technology practice, teams returned to principles, agreements, and shared definitions to examine what they meant in day-to-day decisions. Repeated conversation helped make different interpretations visible and keep a stated intention connected to the realities of the work.
 
-- Enterprise technology organizations seeking shared language around DevOps, systems thinking, and cultural transformation.
-- Leadership teams aligning around strategic priorities, decision-making frameworks, or measures of success.
-- Agile and organizational transformation efforts using charters, principles, working agreements, or operating models to guide change.
-- Governance environments where boards or committees use documented agreements to guide decisions and stakeholder engagement.
-- Learning communities that periodically revisit principles, practices, and expectations as participation grows and evolves.
-- Emerging community experiments that use shared values, agreements, or purpose statements as living artifacts for ongoing alignment.
+**Leadership and organizational alignment.** Charters, working agreements, and guiding principles provided a shared focus for groups facing competing priorities and changing conditions. Rather than treating approval as proof of alignment, participants revisited wording, challenged assumptions, and tested what the intention would require of them in their own roles.
+
+**Learning communities and governance.** Groups used shared agreements or principles as living references for participation and decision-making. Returning to an artifact in conversation made room to reconcile changing interpretations while retaining a stable point of reference.
 
 ## Key Characteristics
 
