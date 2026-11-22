@@ -42,16 +42,10 @@ You are leading change that crosses roles, teams, or areas of expertise and requ
 
 ## Problem
 
-The people and perspectives needed for coherent change are distributed across roles, teams, or parts of the system, but there is no recurring place where they can develop shared understanding and coordinated momentum together.
 
-**This breakdown appears when:**
+The people and perspectives needed for coherent change are distributed across teams and levels of authority, but they have no recurring place to reason together. Potential champions remain isolated, lived constraints remain unseen, and competing initiatives fragment attention. Activity continues without enough shared understanding to coordinate progress.
 
-- **People hold different interpretations of the change**, making it difficult to reach shared understanding and coordinate action toward the same direction.
-- **Champions are isolated from one another**, limiting their ability to connect, form coalitions, and build enough collective momentum to influence the broader system.
-- **Leadership is structurally distant from lived experience**, creating gaps between decisions about the change and the realities of those doing the work, so decisions can miss what only direct experience reveals.
-- **The organization is saturated with competing initiatives**, fragmenting attention and making it difficult to sustain enough focus on the deeper causes of the situation rather than reacting to surface symptoms.
-
-Typical responses rarely help: large meetings often become performative rather than reflective, and broadcast communication increases awareness but rarely creates commitment.
+Large meetings often become performative rather than reflective, while broadcast communication can increase awareness without building shared commitment.
 
 ## Forces
 
@@ -131,6 +125,12 @@ In a residential community facing longstanding disputes and guarded relationship
 
 ## Failure Modes
 
+### No One Shows Up
+
+*Description*: A Circle is proposed, but few or no participants engage. The intention may not matter enough to those invited, the conversation may not feel safe, or competing demands prevent participation.
+
+*Mitigation*: Speak with potential participants individually to learn what would make the conversation worthwhile. Narrow the intention, start with a few willing people, and offer a bounded experiment. If there is no genuine interest, reconsider whether a Circle is the right intervention now.
+
 ### The Circle Becomes a Status Meeting
 
 *Description*: Conversations focus on reporting progress rather than reasoning together, turning reflection into routine updates.  
@@ -183,7 +183,7 @@ In a residential community facing longstanding disputes and guarded relationship
 - *Ask For Help*: Engage key participants early to strengthen the nucleus and expand reach.
 - *Study Group*: Form a small learning or reflective group to support iterative reasoning.
 - *Go-To Person*: Identify people who can unblock issues and bring critical perspectives to the early Circle.
-- *Future Commitment*: Encourage participants to make small commitments that sustain engagement over time.
+- *Future Commitment*: Invite a modest, time-bounded commitment so participants can test whether the Circle is useful.
 
 ## Explore in Your Context
 
