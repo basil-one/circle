@@ -107,14 +107,13 @@ Alignment becomes more durable without becoming fixed. Leadership gains a cleare
 
 ## Known Uses
 
+Alex's story is illustrative. The following Known Uses are drawn from the author's direct practice in enterprise, learning, and community settings.
 
-Alex's story is illustrative. The applications below draw on practice across different settings; the organizations and participants are not identified.
+**Leadership and organizational alignment.** Groups working through strategic and organizational change used charters, principles, and working agreements as shared references for recurring dialogue. Participants tested language against their own experience, surfaced objections, and clarified what the stated intention required in practice. Reconciliation built a shared center of focus that could guide decisions across roles and teams, rather than producing an agreement that dissolved after the meeting.
 
-**Enterprise technology change.** In efforts involving DevOps, systems thinking, and changes in technology practice, teams returned to principles, agreements, and shared definitions to examine what they meant in day-to-day decisions. Repeated conversation helped make different interpretations visible and keep a stated intention connected to the realities of the work.
+**Enterprise Dojo and InnerSource learning communities.** Shared missions, principles, and learning paths became useful when people could return to them in conversation and connect them to current challenges. Dialogue around these visible references helped participants align interpretation with practice, refine their approaches, and carry a coherent intention into their home teams. This supported communities that learned and adapted as participation and circumstances changed.
 
-**Leadership and organizational alignment.** Charters, working agreements, and guiding principles provided a shared focus for groups facing competing priorities and changing conditions. Rather than treating approval as proof of alignment, participants revisited wording, challenged assumptions, and tested what the intention would require of them in their own roles.
-
-**Learning communities and governance.** Groups used shared agreements or principles as living references for participation and decision-making. Returning to an artifact in conversation made room to reconcile changing interpretations while retaining a stable point of reference.
+**Community governance.** Boards and community groups returned to shared agreements and principles when members held different interpretations of the same issue. Working through those differences against a visible reference helped turn formal agreement into a basis for coordinated decisions and action.
 
 ## Key Characteristics
 
