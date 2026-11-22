@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 offers three guiding moves for leading difficult change by building shared understanding at the human layer.
+description: Circle3 offers three guiding moves for leading difficult change by developing shared understanding within the human layer of change.
 permalink: /method/
 css_id: method
 ---
@@ -46,7 +46,7 @@ Less needs to be re-explained.
 - They can decide when and how to engage  
 - It becomes easier to support what is forming without breaking it apart  
 
-## The Moves and Lenses
+## Tools for Practice
 
 Circle3 works through three guiding Moves and supporting Leadership Lenses:
 
