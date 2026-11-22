@@ -103,14 +103,13 @@ The Circle becomes a nucleus of alignment from which more coordinated decisions 
 
 ## Known Uses
 
+Alex's story is illustrative. The following Known Uses are drawn from the author's direct practice in enterprise, learning, and community settings.
 
-Alex's story is illustrative. The applications below draw on practice across different settings; the organizations and participants are not identified.
+**Enterprise technology transformation.** Circles played an instrumental role in major technology changes that had struggled to gain traction through conventional planning and coordination. In a global education technology organization, recurring conversations connected engineering and operations colleagues across continents, exposed impediments, and helped them build a shared picture of complex systems. The work supported an observability transformation in which multi-day, multi-team investigations were reduced to minutes. In a large enterprise cloud transformation, Circles brought architects, engineers, and managers into conversation around obstacles that had stalled earlier migration efforts. Developing a common understanding and coordinated direction helped unlock a transition toward Kubernetes-based operations and GitOps.
 
-**Enterprise technology change.** In Agile, DevOps, and broader technology transformation work, recurring Circles brought practitioners and change champions with different perspectives into sustained conversation. Rather than assuming a predefined program could anticipate every impediment, participants could surface constraints, connect what was happening across teams, and discover possibilities for action. Such work accompanied consequential changes in technology platforms, operating practices, and organizational direction, including modernization and cloud-related initiatives. The Circle was a place to uncover and work through impediments, not a claim that conversation alone delivered those outcomes.
+**Enterprise Dojo and InnerSource learning communities.** Recurring Circles brought people from different teams and departments together around the challenges they were actually facing. The conversations shaped learning journeys around real working conditions, connected isolated practitioners, and helped participants carry new approaches into their home groups. These communities became vehicles for broader changes in mindset and practice, not simply places to attend training.
 
-**Learning communities.** In Mindset and Agile Dojo settings, recurring reflective conversations helped participants relate learning to the conditions of their actual work. Instead of adopting a fixed learning journey in the abstract, participants could surface obstacles and shape learning and practice around what their context required.
-
-**Community governance.** In residential and community governance settings, recurring conversations created room for different experiences and concerns to be understood before decisions were pursued. The value lay in developing enough shared understanding to act together, not in replacing the formal responsibility to decide.
+**Community governance.** In residential and community governance, Circles gave people with different responsibilities and interpretations a place to surface concerns and establish a shared understanding before attempting decisions. They helped participants find a workable center of focus where formal procedures alone had not produced one.
 
 ## Key Characteristics
 
