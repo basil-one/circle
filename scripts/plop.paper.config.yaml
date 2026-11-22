@@ -3,13 +3,12 @@ output:
   directory: assets/pdfs
 
 metadata:
-  title: Circle3 - Make Change Clear and Aligned
+  title: Circle3 - Three Guiding Moves for Leading Difficult Change
   author: Michael Basil
   date: June 2026
   email: michael@basil.one
   url: https://circle.basil.one
   keywords:
-    - pattern language
     - change leadership
     - organizational change
     - complexity
@@ -17,7 +16,7 @@ metadata:
 
 framing:
   title: Circle3
-  subtitle: A Pattern Language for Leading Change in Complex Environments
+  subtitle: Three Guiding Moves for Leading Difficult Change
   images:
     - images/index.png
     - images/method.png
