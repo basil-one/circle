@@ -1,7 +1,7 @@
 ---
 layout: default
 title: What is Circle3?
-description: Circle3 is a pattern language for leading change in complex, fast-moving environments.
+description: Circle3 offers three guiding moves for leading difficult change by building shared understanding at the human layer.
 permalink: /method/
 css_id: method
 ---
@@ -10,7 +10,7 @@ css_id: method
 
 ![Circle3](/images/method.png)
 
-*Circle3™ is a pattern language for leading change.*
+*Circle3™ offers three guiding moves for leading difficult change by building shared understanding at the human layer.*
 
 Change begins in a small working center—formal or informal—where a few people are responsible for making it real in practice.
 
@@ -46,15 +46,11 @@ Less needs to be re-explained.
 - They can decide when and how to engage  
 - It becomes easier to support what is forming without breaking it apart  
 
-## The pattern sets
+## The Moves and Lenses
 
-Circle3 works through two connected pattern sets:
+Circle3 works through three guiding Moves that help people build shared understanding and coordinate action. Complementary Leadership Lenses are reflective exercises that help facilitators notice what is happening when conversations become difficult or stuck.
 
-- **The Moves** — what people do together to create coherence in action  
-- **The Lenses** — how people see what is happening more clearly  
-
-One shapes action.  
-The other enhances perception.
+The Moves guide action. The Lenses support perception.
 
 👉 [Explore the moves](/moves/){: data-ga-event="learn_more" data-ga-label="method_to_moves"}
 
