@@ -104,8 +104,6 @@ The Circle becomes a nucleus of alignment from which more coordinated decisions 
 
 ## Known Uses
 
-These examples come from direct practice.
-
 **Enterprise technology transformation.** Circles played an instrumental role in unlocking major technology changes that had stalled through conventional approaches. In a global education technology organization, recurring conversations across continents helped engineers and operations teams surface impediments and develop shared understanding, contributing to an observability transformation that reduced multi-team investigations from days to minutes.
 
 In a large enterprise software business, cloud migration efforts had stalled repeatedly over several years. Circles brought architects, engineers, and managers into sustained conversation, allowing them to identify impediments and build a shared center of gravity for action. This was instrumental in unlocking the transition to Kubernetes and GitOps, creating business agility that helped the business protect its established market share and compete in new markets.
