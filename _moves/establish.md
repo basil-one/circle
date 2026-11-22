@@ -92,6 +92,8 @@ Create a small, recurring conversational nucleus where people with different per
   - Mechanism: visible sponsorship provides legitimacy while selective participation protects conversational quality.
   - Effect: insights can spread outward without collapsing the core space.
 
+A bounded experiment can lower the barrier to starting: try four weekly conversations, then decide together whether the Circle should continue, adapt, or conclude.
+
 Use this move as an operating container, not a status forum. When drift appears, use the Failure Modes below as a diagnostic and coaching aid.
 
 ## Resulting Context
@@ -110,7 +112,7 @@ Circles played an instrumental role in unlocking major technology changes that h
 
 In a large enterprise software business, cloud migration efforts had stalled repeatedly over several years. Circles brought architects, engineers, and managers into sustained conversation, allowing them to identify impediments and build a shared center of gravity for action. This was instrumental in unlocking the transition to Kubernetes and GitOps, creating business agility that helped the business protect its established market share and compete in new markets.
 
-### Enterprise Dojo and InnerSource learning communities
+### Transformation Dojo and InnerSource communities
 
 Instructor-led training alone was not translating into the adoption of new practices. Circles connected practitioners and change champions who already understood parts of the problem but lacked a shared place to work through it. Participants began co-authoring—and sometimes leading—the development of learning journeys grounded in their actual organizational conditions. These communities helped drive the mindset and capability shifts needed for broader technical and organizational transformation.
 
