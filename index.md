@@ -3,7 +3,7 @@ layout: default
 permalink: /
 css_id: home
 title: Make Change Clear and Aligned
-description: Circle3 offers three guiding moves for leading difficult change by building shared understanding at the human layer.
+description: Circle3 offers three guiding moves for leading difficult change by developing shared understanding within the human layer of change.
 ---
 
 # Frustrated by change that won’t take hold?
