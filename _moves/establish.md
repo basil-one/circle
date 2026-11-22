@@ -20,20 +20,21 @@ Create a small, recurring conversational nucleus where participants representing
 
 ## Story
 
+Alex was passionate about a change that crossed several teams. The more Alex tried to move it forward, the further away it seemed. Meetings kept happening, people expressed interest, but nothing was taking hold.
 
-Alex was passionate about a change that involved several teams. The opportunity was clear, and Alex had spent considerable effort building support. Yet each conversation seemed to leave the change no closer to becoming real. Sometimes it felt further away.
+Alex began to wonder whether people were even seeing the same situation.
 
-There were meetings, plans, and plenty of activity. People expressed interest, but progress remained elusive.
+Rather than propose another plan, Alex invited a few people with different perspectives to try an experiment: four weekly conversations around a shared intention, without deciding the solution in advance.
 
-Alex began to wonder whether everyone was actually seeing the same situation. Perhaps the problem wasn't a lack of commitment. Perhaps people were starting from different understandings of what was happening.
+The first gathering was difficult. One person questioned the premise. Another described constraints Alex hadn't understood. Alex felt the urge to defend the change but instead listened and asked what others were seeing.
 
-Rather than explain the destination again, Alex invited a few people with different perspectives into a recurring conversation. There was a clear intention, but no predetermined path to an answer.
+The conversations didn't immediately get easier. More tensions surfaced. But people began connecting obstacles that had previously seemed unrelated.
 
-At first, the conversation was tentative. Then someone described a constraint another participant hadn't considered. Another connected it to something happening in their own team.
+"Oh, that explains why your team couldn't move."
 
-"Oh, that makes sense."
+After four sessions, the group hadn't resolved everything. But they had developed a clearer understanding of what was blocking progress—and wanted to continue.
 
-Nothing had been resolved. But Alex could sense a shift. The change was no longer moving further out of reach. As perspectives began to connect, it started moving toward something the group could actually make real.
+For the first time, the change Alex had imagined felt less like a distant possibility and more like something taking shape among them.
 
 ## Context
 
@@ -103,13 +104,15 @@ The Circle becomes a nucleus of alignment from which more coordinated decisions 
 
 ## Known Uses
 
-Alex's story is illustrative. The following Known Uses are drawn from the author's direct practice in enterprise, learning, and community settings.
+These examples come from direct practice.
 
-**Enterprise technology transformation.** Circles played an instrumental role in major technology changes that had struggled to gain traction through conventional planning and coordination. In a global education technology organization, recurring conversations connected engineering and operations colleagues across continents, exposed impediments, and helped them build a shared picture of complex systems. The work supported an observability transformation in which multi-day, multi-team investigations were reduced to minutes. In a large enterprise cloud transformation, Circles brought architects, engineers, and managers into conversation around obstacles that had stalled earlier migration efforts. Developing a common understanding and coordinated direction helped unlock a transition toward Kubernetes-based operations and GitOps.
+**Enterprise technology transformation.** Circles played an instrumental role in unlocking major technology changes that had stalled through conventional approaches. In a global education technology organization, recurring conversations across continents helped engineers and operations teams surface impediments and develop shared understanding, contributing to an observability transformation that reduced multi-team investigations from days to minutes.
 
-**Enterprise Dojo and InnerSource learning communities.** Recurring Circles brought people from different teams and departments together around the challenges they were actually facing. The conversations shaped learning journeys around real working conditions, connected isolated practitioners, and helped participants carry new approaches into their home groups. These communities became vehicles for broader changes in mindset and practice, not simply places to attend training.
+In a large enterprise software business, cloud migration efforts had stalled repeatedly over several years. Circles brought architects, engineers, and managers into sustained conversation, allowing them to identify impediments and build a shared center of gravity for action. This was instrumental in unlocking the transition to Kubernetes and GitOps, creating business agility that helped the business protect its established market share and compete in new markets.
 
-**Community governance.** In residential and community governance, Circles gave people with different responsibilities and interpretations a place to surface concerns and establish a shared understanding before attempting decisions. They helped participants find a workable center of focus where formal procedures alone had not produced one.
+**Enterprise Dojo and InnerSource learning communities.** Instructor-led training alone was not translating into the adoption of new practices. Circles connected practitioners and change champions who already understood parts of the problem but lacked a shared place to work through it. Participants began co-authoring—and sometimes leading—the development of learning journeys grounded in their actual organizational conditions. These communities helped drive the mindset and capability shifts needed for broader technical and organizational transformation.
+
+**Community governance.** In a residential community facing longstanding disputes and guarded relationships, Circles opened dialogue among board members and people affected by governance decisions. These conversations helped resolve multi-year conflicts, substantially improve budgeting, and create opportunities for residents to influence the policies and decisions shaping their community. The shift was from adversarial, procedural governance toward greater shared understanding and participation.
 
 ## Key Characteristics
 
