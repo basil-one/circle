@@ -8,7 +8,7 @@ description: Three reflective Leadership Lenses that support clearer perception 
 
 # Three Leadership Lenses for Coherence
 
-*Three reflective lenses for noticing what shapes a situation in complex systems by* **Michael Basil**
+*Three reflective lenses for clearer perception by* **Michael Basil**
 
 ![Three Leadership Lenses for Coherence](/images/lenses.png)
 
