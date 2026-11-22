@@ -1,8 +1,10 @@
 ## Introduction
 
-Change often stalls because organizations mistake agreement on plans, processes, and documentation for shared understanding. People may share the same goals while holding different interpretations, intentions, and constraints that impede progress. Plans and formal structures can coordinate work, but they do not by themselves reconcile what people believe is happening or what action the situation requires.
+Change often stalls when agreement on plans, processes, and documentation is mistaken for shared understanding. People may share the same goals while holding different interpretations, intentions, and constraints that impede progress. Plans and formal structures can coordinate work, but they do not by themselves reconcile what people believe is happening or what action the situation requires.
 
-Circle3™ offers **three guiding moves for leading difficult change**. The practice emerged through more than a decade of organizational change work across enterprise technology, transformation, leadership, and community settings. It starts with a small group gathered around a shared challenge or intention. Through recurring, facilitated conversations, different perspectives are integrated, impediments surface, and shared understanding can develop into coordinated action.
+Circle3™ offers **three guiding moves for leading difficult change**. The practice emerged through more than a decade of organizational change work across enterprise technology, transformation, leadership, and community settings. One common starting point is a small group gathered around a shared challenge or intention. Through recurring, facilitated conversations, different perspectives can be integrated, impediments can surface, and shared understanding can develop into coordinated action.
+
+Across the situations that shaped Circle3, one observation kept repeating: people were not refusing change. They were trying to stay intact inside it.
 
 Circle3 works at the **human layer of change**: the interpretations, relationships, conversations, and intentions through which people make sense of what is happening and act together. The purpose is not to introduce another meeting or organizational structure, but to develop enough coherence for people to move together. A Circle may help seed a community of practice, guild, or other collaborative structure, or help an existing group get unstuck.
 
