@@ -18,7 +18,7 @@ css_id: integrate
 
 Guide attention, surface perspectives, and shift tension so insight flows. Without integration, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
 
-This Move can be used independently in an existing conversation or alongside the other Moves. Integration helps groups establish, evolve, reconcile, or conclude shared work as conditions change.
+Integrate the Conversation works within a Circle or in other change conversations. It helps groups work through tension, develop shared understanding, and adapt their direction as conditions change.
 
 ## Story
 
@@ -151,7 +151,7 @@ In residential governance settings, long-running disputes had left people guarde
 
 ## Related Patterns
 
-- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"} – When integrative dialogue needs a recurring home, a Circle can provide continuity without being a prerequisite for using this Move.
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"} – When integrative dialogue would benefit from a recurring home, establishing a Circle provides continuity and space for shared understanding to develop.
 - [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="integrate_to_reconcile"} – When a group needs a shared reference for decisions, reconciliation can carry insights from conversation into an evolving intention.
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
