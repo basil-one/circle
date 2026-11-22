@@ -105,14 +105,13 @@ Over time, strategic initiatives move with less friction, and the Circle becomes
 
 ## Known Uses
 
+Alex's story is illustrative. The following Known Uses are drawn from the author's direct practice in enterprise, learning, and community settings.
 
-Alex's story is illustrative. The applications below draw on practice across different settings; the organizations and participants are not identified.
+**Enterprise transformation and platform engineering.** In cross-functional change efforts, architects, engineers, managers, and delivery teams brought different interpretations of the same impediments into conversation. Integrative facilitation helped groups pause unproductive exchanges, notice missing perspectives, make underlying tensions discussable, and reconnect attention to the shared challenge. This was instrumental in moving long-stalled modernization and cloud operations work forward: the barrier was not always a missing plan or technical capability, but an inability to integrate what different people knew.
 
-**Enterprise transformation and planning.** In conversations spanning leadership, technical, and delivery perspectives, participants faced competing priorities, uneven participation, and tension that could not be resolved by asking for updates or pushing for a decision. Facilitated pauses, check-ins, and invitations to hear from different participants made underlying concerns discussable, allowing the group to reconsider what was blocking progress.
+**Enterprise Dojo and InnerSource learning communities.** Circle conversations followed the real questions and obstacles participants brought with them, rather than a fixed presentation. Facilitators shifted between listening, probing, inviting other perspectives, and bringing the group back to focus. That practice helped participants work through barriers to collaboration and apply Agile, InnerSource, and technical learning in their own organizational contexts.
 
-**Agile, DevOps, and systems-thinking workshops.** People brought different expertise, incentives, and interpretations to the same initiative. Moving between reflection, broader inquiry, and focused action helped connect information that had remained separated across functions. The facilitation responded to what was happening in the conversation rather than following a fixed script.
-
-**Learning and community conversations.** In peer learning and reflective dialogue, check-ins and deliberate invitations to participate helped groups notice when attention had scattered or voices had gone missing. The aim was not equal speaking time for its own sake, but to make relevant perspectives available for shared understanding.
+**Learning and community dialogue.** When conversation became dominated, distracted, or stuck, checking in and deliberately inviting participation helped recover the perspectives the group needed. The shift was not simply toward more equal airtime; it restored the group's capacity to work with tension and develop shared insight.
 
 ## Key Characteristics
 
