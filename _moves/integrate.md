@@ -12,11 +12,11 @@ css_id: integrate
 
 ![Integrate the Conversation](/images/move-integrate.png)
 
-*For facilitators, team leads, or change agents when everyone wants progress, but energy and focus are stuck in fragmented conversations.*
+*For facilitators, team leads, or change agents when people want progress, but conversations are stuck or going in circles.*
 
 ## Summary
 
-Guide a conversation when different perspectives and tensions are preventing shared understanding. An integrative facilitator notices participation and energy, makes room for missing perspectives, and helps the group turn differences into insight, clearer choices, and coordinated action.
+Guide a conversation when people are talking past one another, caught in unproductive patterns, or unable to work through differences. An integrative facilitator notices participation and energy, makes room for missing perspectives, and helps the group develop shared insight, clearer choices, and coordinated action.
 
 This Move works within a Circle or in other change conversations.
 
@@ -24,7 +24,7 @@ This Move works within a Circle or in other change conversations.
 
 Alex was shepherding a change that refused to move forward. Meetings produced plenty of discussion, but little progress. Some people pushed for decisions, others raised complications, and a few had grown quiet.
 
-During one conversation, Alex felt it in the gut: something wasn't sitting right. The room felt unsettled and distracted, yet the discussion kept moving as though nothing were wrong.
+During one conversation, Alex had a nagging, gut-level sense that something wasn't right. The room felt unsettled and distracted, yet the discussion kept moving as though nothing were wrong.
 
 Instead of pushing the agenda forward, Alex interrupted the pattern.
 
@@ -34,7 +34,7 @@ At first, nobody answered. Someone said, "I think we're fine," but Alex let the 
 
 Eventually, one participant acknowledged feeling rushed toward a decision. Another raised a dependency that hadn't been understood. Alex invited the first person to choose whose perspective the group might hear next.
 
-As the conversation moved around the room, attention returned. The group hadn't reached a decision, but a tension that had remained unspoken was finally available to work with.
+As the conversation moved around the room, attention returned. The group hadn't reached a decision. But with the tension finally named, they could begin working through it together.
 
 ## Context
 
@@ -154,7 +154,7 @@ In residential governance settings, long-running disputes had left people guarde
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
-These patterns help facilitators recognize different forms of energy in a conversation and respond to what the group needs.
+These patterns offer ways to notice and work with different forms of energy in conversation.
 
 - *Driver*: When discussion needs focus and movement toward a decision.
 - *Organizer*: When the group needs structure, clarity, or coordination.

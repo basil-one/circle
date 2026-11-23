@@ -20,9 +20,9 @@ Circle3 does not replace governance, program management, organizational design, 
 
 One common progression is:
 
-1. **Establish the Circle** — create a recurring nucleus where shared understanding can form
-2. **Integrate the Conversation** — work differences and tension into shared insight and coordinated action
-3. **Reconcile the Intention** — revisit shared meaning through recurring conversation around a visible artifact
+1. **Establish the Circle** — create a recurring space for shared understanding
+2. **Integrate the Conversation** — help people work through stuck conversations
+3. **Reconcile the Intention** — make shared intention usable in decisions and action
 
 This progression is not prescriptive. As conditions change, practitioners may return to any Move, combine them, or use them in a different order.
 
@@ -32,6 +32,7 @@ The Three Leadership Lenses in the appendix are supporting reflective exercises,
 
 Each Move uses a recurring set of sections:
 
+- **Summary** states the Move's purpose and central action.
 - **Story** introduces a recognizable situation.
 - **Context** identifies conditions where the Move applies.
 - **Problem** names the recurring challenge.
