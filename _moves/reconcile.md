@@ -23,7 +23,7 @@ Guide people in developing shared understanding around a visible expression of i
 
 Alex was helping lead an initiative involving several teams. Meetings were busy and often appeared productive. Ideas were exchanged, priorities discussed, and people generally left believing they were aligned.
 
-But afterward, progress fragmented. Teams interpreted decisions differently, promising ideas disappeared, and considerable effort produced little movement. Everyone appeared to be rowing, but the oars barely touched the water. For all the activity, the boat was going nowhere.
+But afterward, progress fragmented. Teams interpreted decisions differently, and promising ideas disappeared. Everyone appeared to be rowing, but the oars barely touched the water. For all the activity, the boat was going nowhere.
 
 Alex brought a draft of the initiative's guiding principles into the next conversation. Instead of asking whether everyone agreed, Alex invited them to challenge what was written.
 
