@@ -39,17 +39,7 @@ You are leading change where an existing intention—expressed through principle
 
 ## Problem
 
-The group has a stated intention but no reliable way to continually reconcile how that intention is interpreted, understood, and acted on across people, roles, and changing situations.
-
-**This breakdown appears when:**
-
-- **Principles are unclear or inconsistently understood**, making it difficult for participants to interpret priorities consistently and coordinate decisions and action.
-- **Key voices are isolated or not sufficiently aware of one another**, so participants may hold valid perspectives without those perspectives being reconciled into shared understanding.
-- **Cultural norms drift away from formal charters**, creating a gap between stated intention and lived practice and weakening the artifact as a guide for decisions and interaction.
-- **Leadership focuses on outputs rather than fostering shared understanding**, allowing visible progress to occur while different interpretations and unresolved ambiguity persist underneath.
-- **The organization lacks mechanisms to revisit performance, success metrics, or impact regularly**, allowing the original intention to become disconnected from what the group is learning, what success now means, and what the situation requires.
-
-Conventional meetings or status updates rarely surface these forms of misalignment or create the conditions for resolving them. Without structured, recurring conversation, ambiguity persists, decisions remain reactive, and opportunities for coordinated impact are lost.
+A group appears aligned around shared principles or an intention, but people may understand them differently or never fully embrace them. The words are accepted without becoming a meaningful guide for decisions and behavior. As circumstances change, the apparent agreement falls apart and coordinated action fragments.
 
 ## Forces
 
@@ -163,15 +153,16 @@ Boards and residents used shared agreements and governing principles to work thr
 
 ## Related Patterns
 
-- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – Alignment artifacts rely on a functioning Circle for recurring review, discussion, and surfacing key tensions.
-- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="reconcile_to_integrate"} – Integrative facilitation helps the conversation surface diverse perspectives and tensions so the artifact can reflect meaningful, actionable alignment.
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="reconcile_to_establish"} – When reconciling an intention needs a stable place for recurring dialogue, establishing a Circle can provide one.
+- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="reconcile_to_integrate"} – When differing interpretations or tension prevent the group from revising its intention together, integrative facilitation can help surface what is missing.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="reconcile_to_fearless_change"}
 
-- *Evolving Vision*: Periodically revisit vision and priorities to maintain alignment over time.
-- *Concrete Action Plan*: Define concrete next steps that anchor aligned intentions in observable outputs.
-- *Small Successes*: Celebrate iterative progress to reinforce alignment and build credibility.
-- *Big Jolt*: Showcase alignment achievements visibly to create momentum and influence adoption.
+These patterns help when a shared intention needs to stay relevant and lead to action.
+
+- *Evolving Vision*: When changing conditions call for revisiting the direction the group is pursuing.
+- *Concrete Action Plan*: When shared intention is clear but has not yet translated into specific action.
+- *Small Successes*: When shared intention begins to translate into action, make early progress visible to strengthen confidence and momentum.
 
 ## Explore in Your Context
 

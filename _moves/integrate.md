@@ -18,7 +18,7 @@ css_id: integrate
 
 Guide attention, surface perspectives, and shift tension so insight flows. Without integration, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
 
-This pattern is **both independent and foundational**, nourishing the effectiveness of the Circle itself. It enables subsequent moves like *Reconcile the Intention* and creates the conditions to **establish, evolve, or adjourn a Circle**, forming a more collaborative and responsive conversation system.
+Integrate the Conversation works within a Circle or in other change conversations. It helps groups work through tension, develop shared understanding, and adapt their direction as conditions change.
 
 ## Story
 
@@ -42,16 +42,7 @@ You are facilitating a change conversation involving multiple perspectives, role
 
 ## Problem
 
-The conversation contains perspectives, information, priorities, and relational energy that are individually meaningful but are not being integrated into a shared understanding the group can act on.
-
-**This breakdown appears when:**
-
-- **Drivers clash while organizers silo their perspectives**, making it difficult to connect urgency and coordination across the system even when each perspective is legitimate on its own.
-- **Visionaries dominate and collaborators disengage**, causing important perspectives and information to disappear from the conversation and eroding the participation needed to turn possibility into shared understanding.
-- **Ideas accumulate but fail to integrate, and outdated priorities persist**, so the conversation keeps generating possibilities without producing coherent priorities or decisions that fit the current situation.
-- **Tension or frustration blocks aligned action**, consuming emotional and relational energy that could otherwise support sense-making, integration, and movement.
-
-Without integration, discussions remain fragmented, performative, and unproductive, preventing aligned action and learning.
+People enter a conversation with different experiences, priorities, and interpretations, but struggle to make sense of them together. Some push for decisions while others withdraw, leaving important tensions unspoken. Discussion continues, yet the group cannot turn its differing perspectives into coordinated action.
 
 ## Forces
 
@@ -85,9 +76,9 @@ Keep multiple perspectives in play and actively work with the tension among them
 - Apply targeted integration moves: ground abstractions, widen siloed viewpoints, and introduce focus when drift appears.
   - Mechanism: alternating expansion and convergence helps the group hold divergence without losing direction.
   - Effect: ideas become connected, prioritized, and actionable.
-- Surface stuck emotion and tension using **affect labeling** followed by **dynamic silence**.
-  - Mechanism: affect labeling can reduce emotional reactivity and create reflective space for reorientation; the silence that follows gives the group room to reorient.
-  - Effect: defensive energy converts into usable shared attention.
+- Surface unspoken tension through an appropriate intervention, such as a check-in, affect labeling, or deliberate silence.
+  - Mechanism: checking how the conversation is landing, naming a tension tentatively, or allowing silence can create reflective space without imposing an interpretation.
+  - Effect: concerns that were shaping the interaction become discussable, restoring attention that the group can use.
 - Guide explicit release of outdated assumptions or priorities and confirm next commitments.
   - Mechanism: deliberate closure prevents legacy positions from silently governing decisions.
   - Effect: the group can move forward with clearer commitments and less hidden friction.
@@ -159,22 +150,26 @@ In residential governance settings, long-running disputes had left people guarde
 
 ## Related Patterns
 
-- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"} – Integrative conversations sustain the nucleus so the Circle has a stable home for working with group energy.
-- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="integrate_to_reconcile"} – Integrative facilitation helps alignment exercises surface all perspectives so artifacts stay meaningful and actionable.
+- [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"} – When integrative dialogue would benefit from a recurring home, establishing a Circle provides continuity and space for shared understanding to develop.
+- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="integrate_to_reconcile"} – When a group needs a shared reference for decisions, reconciliation can carry insights from conversation into an evolving intention.
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
-- *Driver*: Brings focus, urgency, and movement toward decisions and action.
-- *Organizer*: Creates structure, clarity, and coordination across people and work.
-- *Collaborator*: Builds connection, inclusion, and shared understanding across perspectives.
-- *Visionary*: Expands possibility, introduces new ideas, and challenges current thinking.
+These patterns help facilitators recognize different forms of energy in a conversation and respond to what the group needs.
+
+- *Driver*: When discussion needs focus and movement toward a decision.
+- *Organizer*: When the group needs structure, clarity, or coordination.
+- *Collaborator*: When relationships, participation, or mutual understanding need attention.
+- *Visionary*: When the group is stuck in existing assumptions and needs to explore possibilities.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="integrate_to_fearless_change"}
 
-- *Time for Reflection*: Use structured pauses to observe group energy and recalibrate.
-- *Plant the Seeds*: Introduce ideas strategically to encourage participation and contribution.
-- *Personal Touch*: Engage individuals meaningfully to surface otherwise silent perspectives.
-- *Just Do It*: Small iterative interventions maintain momentum without overplanning.
+These patterns offer complementary ways to make participation and reflection possible.
+
+- *Time for Reflection*: When a conversation is moving too quickly to notice what is happening, create space to reflect.
+- *Plant the Seeds*: When an idea or perspective isn't ready for direct consideration, introduce it gradually and allow interest to develop.
+- *Personal Touch*: When an important perspective remains unheard, engage the person individually to understand what may be preventing participation.
+- *Just Do It*: When a small facilitation experiment can help the group move forward, try it rather than waiting for a complete plan.
 
 ## Practical Resources
 
