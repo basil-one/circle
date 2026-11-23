@@ -8,6 +8,19 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-23
+
+### Changed
+- Incorporated PLoP 2026 shepherding and Writers' Workshop feedback across the paper, clarifying the human-layer problem and adopting **Three Guiding Moves for Leading Difficult Change** without describing Circle3 as a pattern language.
+- Revised the short Alex stories and grounded Known Uses; tightened Problems and Forces, clarified practical mechanisms and effects, and improved Failure Modes (including **No One Shows Up**).
+- Clarified how the three Moves work independently and reinforce each other without a fixed sequence. **Reconcile the Intention** now explicitly supports live dialogue, asynchronous review, or both, with usable shared understanding as the outcome.
+- Refined the Leadership Lenses as supporting reflective exercises, primarily for **Integrate the Conversation**; clarified influences and attribution without making measurement claims.
+- Updated the Discussion, Conclusion, references/acknowledgements, and the Circle3 website's introduction to the Moves to match the revised paper.
+- Added **integrative facilitation** as a fifth keyword and dated the revised paper **November 2026**.
+
+### Notes
+- Publishes the post-workshop editorial revision using the existing PDF layout. ACM publication-format conversion remains separate future work.
+
 ## [0.1.11] - 2026-09-19
 
 ### Added
@@ -131,7 +144,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.1.11...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/basil-one/circle/compare/v0.1.11...v0.2.0
 [0.1.11]: https://github.com/basil-one/circle/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/basil-one/circle/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/basil-one/circle/compare/v0.1.8...v0.1.9
