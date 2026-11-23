@@ -171,7 +171,7 @@ This pattern becomes meaningful when applied to your own alignment challenges, n
 If it resonates with your work, consider:
 
 - Where do principles or charters exist on paper but aren’t functioning as living alignment tools?
-- Which key voices haven’t yet affirmed a shared understanding of intent?
+- Which participants haven't yet had a chance to question the intention or test how it applies in their work?
 - What artifact could anchor recurring conversation rather than sit as a one-time document?
 
 If you’d like to deepen this work:
