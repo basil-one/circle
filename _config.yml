@@ -14,7 +14,7 @@ action_links:
 analytics:
   ga_measurement_id: G-4EZ2K11GYN
 footer:
-  copyright: "© 2026 Michael Basil. All rights reserved."
+  copyright: "© 2026 Michael Basil · Original Circle3 practice content CC BY-SA 4.0"
 
 collections:
   moves:
@@ -35,3 +35,4 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
+  - LICENSES
