@@ -12,9 +12,9 @@
 
 - **PLoP 2026 Shepherding and Writers' Workshop:** I thank Sae Adachi for shepherding this paper and Ava Vranic for moderating the PLoP 2026 Group 2 (Pine) Writers' Workshop. I am grateful to Ted M. Young, Mary Tedeschi, Mary Lynn Manns, Ceci Fernandes, and Mircea Lungu for their thoughtful questions, perspectives, and feedback.
 - **Special thanks:** I offer special thanks to Mary Lynn Manns for introducing me to the PLoP community, encouraging me to submit this paper, and offering generous guidance and support before, during, and after the workshop.
-- Drafting and editing: This paper was drafted and edited with assistance from AI-based tools. The author reviewed and finalized the text.
-- Images: Images were created using AI-based image tools and curated/edited by the author for this paper.
-- Practice influences:
+- **Drafting and editing:** This paper was drafted and edited with assistance from AI-based tools. The author reviewed and finalized the text.
+- **Images:** Images were created using AI-based image tools and curated/edited by the author for this paper.
+- **Practice influences:**
   - Chris Voss's work on tactical empathy and dynamic silence has influenced the author's approach to navigating tension and creating space for understanding.
   - Ginny Whitelaw and the Zen Leadership community influenced the Energy Awareness Reflection and the author's approach to integrative facilitation.
     - <https://zenleader.global>
