@@ -155,7 +155,7 @@ In residential governance settings, long-running disputes had left people guarde
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
-The four Zen Leadership patterns help facilitators recognize different forms of energy in a conversation and shift their own approach to support what the group needs.
+These patterns help facilitators recognize different forms of energy in a conversation and respond to what the group needs.
 
 - *Driver*: When discussion needs focus and movement toward a decision.
 - *Organizer*: When the group needs structure, clarity, or coordination.
