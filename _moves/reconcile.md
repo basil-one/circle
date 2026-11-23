@@ -39,8 +39,7 @@ You are leading change where an existing intention—expressed through principle
 
 ## Problem
 
-
-People may agree to the same principles, charter, or shared intention while interpreting them differently in practice. Key perspectives remain disconnected, and stated principles can drift from lived behavior. Without recurring conversation to test interpretations against experience, changing conditions, and what success means, apparent alignment dissolves into fragmented decisions and action.
+People agree to shared principles or an intention but understand them differently in practice. As circumstances change, the gap between what the group says and what people actually do grows. Without revisiting what their intention means together, decisions fragment and apparent alignment falls apart.
 
 ## Forces
 
@@ -159,9 +158,10 @@ Boards and residents used shared agreements and governing principles to work thr
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="reconcile_to_fearless_change"}
 
-- *Evolving Vision*: Periodically revisit vision and priorities to maintain alignment over time.
-- *Concrete Action Plan*: Define concrete next steps that anchor aligned intentions in observable outputs.
-- *Small Successes*: Celebrate iterative progress to reinforce alignment and build credibility.
+These patterns help when a shared intention needs to stay relevant and lead to action.
+
+- *Evolving Vision*: When changing conditions call for revisiting the direction the group is pursuing.
+- *Concrete Action Plan*: When shared intention is clear but has not yet translated into specific action.
 
 ## Explore in Your Context
 
