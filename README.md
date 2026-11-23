@@ -12,4 +12,4 @@ The site will be available at http://localhost:4000.
 
 ## License
 
-Unless otherwise noted, this repository (including site code, build scripts, written content, and patterns) is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0). See [LICENSE.md](LICENSE.md).
+See the [licensing policy](LICENSE.md) for scope and terms. Original website software is MIT-licensed. Published original Circle3 moves, lenses, method descriptions, and practice resources are CC BY-SA 4.0; other writing is all rights reserved unless otherwise noted. Existing CC BY-SA grants remain in effect. The downloadable PDF's license notice should be verified separately.
