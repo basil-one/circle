@@ -85,8 +85,6 @@ Create a small, recurring conversational nucleus where people with different per
 
 A bounded experiment can lower the barrier to starting: try four weekly conversations, then decide together whether the Circle should continue, adapt, or conclude.
 
-Use this move as an operating container, not a status forum. When drift appears, use the Failure Modes below as a diagnostic and coaching aid.
-
 ## Resulting Context
 
 When this move takes hold, people who once saw disconnected parts of the change begin to understand how their perspectives and constraints fit together.
