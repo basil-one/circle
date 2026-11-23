@@ -10,6 +10,10 @@ This repository contains the source for a static single page site.
 
 The site will be available at http://localhost:4000.
 
-## License
+## Licensing
 
-Unless otherwise noted, this repository (including site code, build scripts, written content, and patterns) is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0). See [LICENSE.md](LICENSE.md).
+- **Original Circle3 moves, method descriptions, and other original practice writing:** © Michael Basil, licensed under [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) (CC BY-SA 4.0), unless otherwise noted.
+- **Site code and build scripts:** [MIT License](LICENSE).
+- **Circle3 paper PDF:** intended to be CC BY-SA 4.0 as a self-published work. The downloadable PDF must carry its own copyright and license notice; verify the release artifact before considering that step complete.
+
+Third-party content and dependencies retain their own rights. The MIT license does not supersede those rights.
