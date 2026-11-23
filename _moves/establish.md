@@ -113,7 +113,8 @@ In a residential community facing longstanding disputes and guarded relationship
 
 ## Key Characteristics
 
-- Begins with a three-person nucleus representing at least two relevant perspectives.
+- Begins with a three-person nucleus.
+- Brings together at least two relevant perspectives.
 - Includes integrative facilitation.
 - Meets weekly with a small, consistent core.
 - Reasons together about a shared intention rather than reporting status.
