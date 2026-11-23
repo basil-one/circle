@@ -16,6 +16,8 @@ Change begins in a small working center—formal or informal—where a few peopl
 
 That center always exists in some form, even if it is not recognized.
 
+The Circle is a fundamental home for this work, whether or not it is named or formalized. Each Move can also be used independently, without first establishing a formal Circle.
+
 ## When things fragment
 
 When that center is not aligned in what it sees, everything else fragments.
