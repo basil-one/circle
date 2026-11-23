@@ -20,7 +20,7 @@ This can lead to friction, misunderstanding, and frustration—even when intenti
 
 This reflection helps make those underlying interpretive differences visible.
 
-Within Circle3, this reflection primarily supports Integrate the Conversation by helping facilitators notice when people interpret the same situation differently. It can also help reveal what needs attention before a group decides how to proceed.
+Within Circle3, this reflection primarily supports [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="lenses_sense_to_moves_integrate"} by helping facilitators notice when people interpret the same situation differently. It can also help reveal what needs attention before a group decides how to proceed.
 
 ## Framing
 
