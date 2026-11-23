@@ -14,7 +14,7 @@
 - Images: Images were created using AI-based image tools and curated/edited by the author for this paper.
 - Practice influences:
   - Chris Voss's work on tactical empathy and dynamic silence has influenced the author's approach to navigating tension and creating space for understanding.
-  - Ginny Whitelaw and the Zen Leadership community were a practical influence on the energy lens and facilitation stance.
+  - Ginny Whitelaw and the Zen Leadership community influenced the Energy Awareness Reflection and the author's approach to integrative facilitation.
     - <https://zenleader.global>
   - Aikido training at Tenshinkan Dojo at the Japanese Culture Center in Chicago has been an embodied practice influence on the author's integrative facilitation stance, particularly in working with tension, maintaining center, and meeting energy without simply opposing it.
     - <https://japaneseculturecenter.com/classes/aikido>
