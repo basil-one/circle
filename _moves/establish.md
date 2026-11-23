@@ -173,8 +173,8 @@ In a residential community facing longstanding disputes and guarded relationship
 
 ## Related Patterns
 
-- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="establish_to_integrate"} – Integrative facilitation keeps the Circle generative under pressure so diverse voices remain usable for alignment.
-- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – Recurring conversation around shared principles or artifacts carries emerging understanding forward and helps make it usable for coordinated action.
+- [Integrate the Conversation](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="establish_to_integrate"} – When differing perspectives or tension begin to stall the Circle, integrative facilitation helps participants work through them.
+- [Reconcile the Intention](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="establish_to_reconcile"} – When emerging understanding needs to guide decisions beyond the Circle, reconciling a visible intention helps carry it forward.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="establish_to_fearless_change"}
 
