@@ -18,7 +18,7 @@ Original site code, templates, styles, scripts, and build tooling are licensed u
 
 The original Circle3 moves, lenses, method descriptions, and practice resources published on this site are licensed under [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) (CC BY-SA 4.0). The complete terms are in `LICENSES/CC-BY-SA-4.0.md`.
 
-The independently published Circle3 paper is intended to be shared under CC BY-SA 4.0; confirm the license notice in the downloadable PDF itself. Any separately published proceedings edition remains subject to its own publication terms.
+A separately published paper is governed by the license notice on that paper and any applicable publication agreement; do not infer a license from the website alone.
 
 ## Other material
 
