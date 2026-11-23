@@ -42,7 +42,7 @@ You are leading change that crosses roles, teams, or areas of expertise and requ
 
 ## Problem
 
-Change depends on people scattered across teams and levels of authority, but they have no recurring place to reason together. Potential champions remain isolated, and the constraints people face stay out of view. As competing initiatives pull attention apart, people remain busy without developing enough shared understanding to move together.
+Change requires people across teams and levels of authority to work together, but they see different parts of the situation without understanding how those parts connect. Potential champions remain isolated, important constraints go unseen, and competing initiatives pull attention in different directions. People stay busy, yet struggle to develop enough shared understanding to move change forward.
 
 ## Forces
 
@@ -181,6 +181,7 @@ These patterns can help when a Circle needs willing participants and a manageabl
 
 - *Ask For Help*: When a small nucleus lacks needed perspectives or support, invite someone to contribute.
 - *Study Group*: When people need a low-pressure way to begin learning together, gather around a shared question.
+- *Go-To Person*: When an obstacle calls for knowledge or influence beyond the nucleus, connect with someone who can help unblock it.
 - *Future Commitment*: When people hesitate to join an open-ended effort, invite a specific next commitment.
 
 ## Explore in Your Context
