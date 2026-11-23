@@ -47,6 +47,6 @@ But change doesn’t begin everywhere at once.
 
 ## It starts somewhere
 
-Circle3 creates a place where change can start to align.
+Circle3 gives shared understanding a place to form—and helps people carry it into action.
 
 👉 [Learn more](/method/){: data-ga-event="learn_more" data-ga-label="home_to_method"}
