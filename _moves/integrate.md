@@ -16,9 +16,9 @@ css_id: integrate
 
 ## Summary
 
-Guide attention, surface perspectives, and shift tension so insight flows. Without integration, drivers clash, organizers silo, collaborators disengage, and ideas fail to translate into action. By intentionally observing and shifting energy, a facilitator helps the group integrate perspectives, make decisions, clear outdated priorities, and move toward aligned action.
+Guide a conversation when different perspectives and tensions are preventing shared understanding. An integrative facilitator notices participation and energy, makes room for missing perspectives, and helps the group turn differences into insight, clearer choices, and coordinated action.
 
-Integrate the Conversation works within a Circle or in other change conversations. It helps groups work through tension, develop shared understanding, and adapt their direction as conditions change.
+This Move works within a Circle or in other change conversations.
 
 ## Story
 
@@ -71,7 +71,7 @@ Keep multiple perspectives in play and actively work with the tension among them
 **Do this by:**
 
 - Observe conversational energy and participation patterns in real time.
-  - Mechanism: naming who is dominant, quiet, or disconnected reveals where information flow is constrained.
+  - Mechanism: noticing who is dominating, quiet, or disconnected reveals where information flow is constrained.
   - Effect: the facilitator can intervene with precision instead of reacting globally.
 - Apply targeted integration moves: ground abstractions, widen siloed viewpoints, and introduce focus when drift appears.
   - Mechanism: alternating expansion and convergence helps the group hold divergence without losing direction.
@@ -79,7 +79,7 @@ Keep multiple perspectives in play and actively work with the tension among them
 - Surface unspoken tension through an appropriate intervention, such as a check-in, affect labeling, or deliberate silence.
   - Mechanism: checking how the conversation is landing, naming a tension tentatively, or allowing silence can create reflective space without imposing an interpretation.
   - Effect: concerns that were shaping the interaction become discussable, restoring attention that the group can use.
-- Guide explicit release of outdated assumptions or priorities and confirm next commitments.
+- When the group is ready, help participants release outdated assumptions or priorities and identify next steps or commitments.
   - Mechanism: deliberate closure prevents legacy positions from silently governing decisions.
   - Effect: the group can move forward with clearer commitments and less hidden friction.
 
@@ -87,11 +87,11 @@ These shifts require practice and ongoing calibration. When the conversation beg
 
 ## Resulting Context
 
-When this move takes hold, the group can remain coherent while holding divergent perspectives, priorities, and tension. Differences that previously fragmented the conversation can be surfaced and integrated into shared understanding, clearer priorities, decisions, and commitments.
+When this move takes hold, perspectives and tensions that previously fragmented the conversation become visible and workable.
 
-The group becomes better able to work through tension without either forcing premature agreement or losing direction. Conversation becomes more collaborative, responsive, and adaptive as circumstances change.
+Participants can hear one another more fully, examine differences without rushing toward agreement, and develop shared understanding of what is happening. As attention and participation improve, the group can make clearer decisions and coordinate action.
 
-Over time, strategic initiatives move with less friction, and the Circle becomes more capable of establishing, evolving, and reconciling intention under changing conditions.
+Over time, the group becomes better able to work through tensions and adapt as circumstances change, whether within a Circle or another collaborative setting.
 
 ## Known Uses
 
@@ -109,12 +109,12 @@ In residential governance settings, long-running disputes had left people guarde
 
 ## Key Characteristics
 
-- Focuses on group energy, not just content.
-- Facilitator attuned to patterns, pauses, and dynamics.
-- Acts as a harmonizing force rather than a controlling authority.
-- Supports diverse perspectives and participation styles.
-- Iterative and adaptable within each conversation.
-- Enables the Circle to emerge, evolve, and sustain aligned action.
+- Attends to participation, attention, and tension as well as conversational content.
+- Makes room for missing or quieter perspectives.
+- Shifts between inquiry and focus as the group needs.
+- Works with tension without forcing agreement or allowing the conversation to drift.
+- Supports clearer decisions and commitments when the group is ready.
+- Can be used within or outside a Circle.
 
 ## Failure Modes
 
