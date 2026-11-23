@@ -126,7 +126,7 @@ Boards and residents used shared agreements and governing principles to work thr
 
 *Description*: One meeting creates the appearance of alignment before key voices have fully engaged or important ambiguities have been explored.  
 
-*Mitigation*: Revisit the intention with key participants, test how it applies in their roles, and surface unresolved differences before treating it as a shared guide.
+*Mitigation*: Revisit the intention with key participants, test how it applies in their own contexts, and surface unresolved differences before treating it as a shared guide.
 
 ### Artifact as Output Only
 
@@ -173,7 +173,7 @@ If it resonates with your work, consider:
 
 - Where do principles or charters exist on paper but aren’t functioning as living alignment tools?
 - Which participants haven't yet had a chance to question the intention or test how it applies in their work?
-- What artifact could anchor recurring conversation rather than sit as a one-time document?
+- What artifact could anchor ongoing dialogue or collaborative review rather than sit as a one-time document?
 
 If you’d like to deepen this work:
 
