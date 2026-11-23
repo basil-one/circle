@@ -42,10 +42,7 @@ You are leading change that crosses roles, teams, or areas of expertise and requ
 
 ## Problem
 
-
-The people and perspectives needed for coherent change are distributed across teams and levels of authority, but they have no recurring place to reason together. Potential champions remain isolated, lived constraints remain unseen, and competing initiatives fragment attention. Activity continues without enough shared understanding to coordinate progress.
-
-Large meetings often become performative rather than reflective, while broadcast communication can increase awareness without building shared commitment.
+Change depends on people scattered across teams and levels of authority, but they have no recurring place to reason together. Potential champions remain isolated, and the constraints people face stay out of view. As competing initiatives pull attention apart, people remain busy without developing enough shared understanding to move together.
 
 ## Forces
 
@@ -180,10 +177,11 @@ In a residential community facing longstanding disputes and guarded relationship
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="establish_to_fearless_change"}
 
-- *Ask For Help*: Engage key participants early to strengthen the nucleus and expand reach.
-- *Study Group*: Form a small learning or reflective group to support iterative reasoning.
-- *Go-To Person*: Identify people who can unblock issues and bring critical perspectives to the early Circle.
-- *Future Commitment*: Invite a modest, time-bounded commitment so participants can test whether the Circle is useful.
+These patterns can help when a Circle needs willing participants and a manageable way to begin.
+
+- *Ask For Help*: When a small nucleus lacks needed perspectives or support, invite someone to contribute.
+- *Study Group*: When people need a low-pressure way to begin learning together, gather around a shared question.
+- *Future Commitment*: When people hesitate to join an open-ended effort, invite a specific next commitment.
 
 ## Explore in Your Context
 
