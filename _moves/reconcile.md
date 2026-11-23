@@ -39,7 +39,7 @@ You are leading change where an existing intention—expressed through principle
 
 ## Problem
 
-People agree to shared principles or an intention but understand them differently in practice. As circumstances change, the gap between what the group says and what people actually do grows. Without revisiting what their intention means together, decisions fragment and apparent alignment falls apart.
+A group appears aligned around shared principles or an intention, but people may understand them differently or never fully embrace them. The words are accepted without becoming a meaningful guide for decisions and behavior. As circumstances change, the apparent agreement falls apart and coordinated action fragments.
 
 ## Forces
 
@@ -162,6 +162,7 @@ These patterns help when a shared intention needs to stay relevant and lead to a
 
 - *Evolving Vision*: When changing conditions call for revisiting the direction the group is pursuing.
 - *Concrete Action Plan*: When shared intention is clear but has not yet translated into specific action.
+- *Small Successes*: When shared intention begins to translate into action, make early progress visible to strengthen confidence and momentum.
 
 ## Explore in Your Context
 
