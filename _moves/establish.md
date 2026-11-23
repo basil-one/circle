@@ -16,7 +16,7 @@ css_id: establish
 
 ## Summary
 
-Create a small, recurring conversational nucleus where participants representing different perspectives reason together about a change initiative. Guided by an integrative facilitator, the Circle develops shared understanding, connects isolated champions, and becomes a nucleus of alignment and coordinated momentum.
+Create a small, recurring Circle where people with different perspectives reason together about a change initiative. Guided by an integrative facilitator, the group connects isolated champions, develops shared understanding, and builds momentum for coordinated action.
 
 ## Story
 
@@ -89,11 +89,11 @@ Use this move as an operating container, not a status forum. When drift appears,
 
 ## Resulting Context
 
-When this move takes hold, the change has a stable conversational nucleus where different perspectives can be brought into relationship and examined together.
+When this move takes hold, people who once saw disconnected parts of the change begin to understand how their perspectives and constraints fit together.
 
-Participants develop shared language and shared interpretation, potential champions become connected, and concerns can surface earlier rather than remaining isolated across the organization.
+Potential champions connect, shared language develops, and impediments surface early enough to influence decisions. The Circle becomes a center from which coordinated action and durable commitments can emerge.
 
-The Circle becomes a nucleus of alignment from which more coordinated decisions and durable commitments can emerge. As the work develops, it can remain a small recurring Circle or evolve into a broader coalition, community of practice, or formal working group.
+As circumstances change, the Circle may continue as a small recurring group, evolve into a broader coalition or community of practice, or adjourn when its purpose has been fulfilled.
 
 ## Known Uses
 
@@ -113,20 +113,20 @@ In a residential community facing longstanding disputes and guarded relationship
 
 ## Key Characteristics
 
-- Begins with three people
-- Includes at least two subject matter perspectives
-- Includes an integrative facilitator
-- Meets weekly
-- Operates initially informally
-- Invites participation as needed
+- Begins with a three-person nucleus representing at least two relevant perspectives.
+- Includes integrative facilitation.
+- Meets weekly with a small, consistent core.
+- Reasons together about a shared intention rather than reporting status.
+- Invites additional perspectives as needed without losing the core.
+- Begins informally and can evolve or adjourn as circumstances change.
 
 ## Failure Modes
 
 ### No One Shows Up
 
-*Description*: A Circle is proposed, but few or no participants engage. The intention may not matter enough to those invited, the conversation may not feel safe, or competing demands prevent participation.
+*Description*: Few people engage; the intention may not feel worthwhile, participation may feel risky, or competing demands take priority.
 
-*Mitigation*: Speak with potential participants individually to learn what would make the conversation worthwhile. Narrow the intention, start with a few willing people, and offer a bounded experiment. If there is no genuine interest, reconsider whether a Circle is the right intervention now.
+*Mitigation*: Ask prospective participants what would make the Circle worthwhile, sharpen the intention, and offer a bounded experiment; if interest remains absent, reconsider the Circle's timing or fit.
 
 ### The Circle Becomes a Status Meeting
 
