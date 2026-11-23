@@ -18,43 +18,24 @@ css_id: moves
 
 ## Establish the Circle
 
-**When there is no stable nucleus of attention**
+**When people need a shared place to work through change**
 
-Bring together the people actively responsible for driving change.
-
-Not the whole organization.
-
-The change leaders.
-
-This creates a shared space where attention can hold.
+Gather a small group with different, relevant perspectives around a clear intention. A recurring Circle lets them surface impediments, connect what they know, and develop understanding they can act on together.
 
 👉 [Learn more](/moves/establish/){: data-ga-event="learn_more" data-ga-label="moves_index_to_establish"}
 
 ## Integrate the Conversation
 
-**When pressure or fatigue creates fragmentation**
+**When conversations are stuck or going in circles**
 
-Under pressure or fatigue, people respond differently.
-
-Drivers push for movement.  
-Organizers try to stabilize.  
-Collaborators try to reconnect.  
-Visionaries step back and reframe.
-
-This move makes those tendencies visible.
-
-It helps the group see how differently the situation is being experienced so the conversation can integrate instead of breaking apart.
+Notice when people are talking past one another, repeating unproductive patterns, or leaving tensions unspoken. Help them work with those differences so shared insight and clearer next steps can emerge.
 
 👉 [Learn more](/moves/integrate/){: data-ga-event="learn_more" data-ga-label="moves_index_to_integrate"}
 
 ## Reconcile the Intention
 
-**When clarity is forming but action is uneven**
+**When shared intention isn't guiding action**
 
-Turn shared understanding into decisions that reflect what the group actually sees.
-
-Not agreement for its own sake.
-
-But commitments that hold.
+Make principles, a charter, or another expression of shared intention visible and open to challenge. Through live dialogue, asynchronous review, or both, people test and revise what it means in their own contexts so it can guide decisions and coordinated action.
 
 👉 [Learn more](/moves/reconcile/){: data-ga-event="learn_more" data-ga-label="moves_index_to_reconcile"}
