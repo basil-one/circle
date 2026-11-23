@@ -16,7 +16,7 @@ css_id: reconcile
 
 ## Summary
 
-Guide a group through recurring conversations around a visible representation of the intention. The conversation surfaces differing interpretations, tests them against experience, and develops shared understanding; the artifact carries that understanding forward between conversations. Over time, this strengthens culture, clarifies roles, and supports coordinated action within and beyond the group.
+Guide people through recurring conversations around a visible expression of shared intention, such as principles, a charter, or a working agreement. As participants question and test its meaning in practice, they develop shared understanding that can guide decisions across teams and roles. The artifact carries that understanding forward and can evolve as circumstances change.
 
 ## Story
 
@@ -78,9 +78,9 @@ Conversation and artifact evolve together: the conversation creates shared under
 - Run iterative dialogue cycles: clarify language, test practical implications, invite critique, and revise.
   - Mechanism: repeatedly testing the intention against different perspectives and practical situations turns abstract agreement into shared, role-level understanding.
   - Effect: participants can understand not only what the intention says, but why it matters and how it applies in practice.
-- Continue until key participants can **affirm the artifact**: "This is right, here is why, and this is how it helps in my role."
-  - Mechanism: explicit affirmation tests whether participants understand the intention, can explain its relevance, and can see how it guides their own work.
-  - Effect: the artifact becomes a living coordination tool rather than a document that merely records agreement.
+- Check whether participants can **explain and apply the intention** in their own context—and identify what remains unresolved.
+  - Mechanism: testing the intention against real choices reveals where understanding is shared and where apparent agreement hides differences.
+  - Effect: the artifact becomes a usable reference for coordinated action rather than a record of sign-off.
 - Share the artifact with relevant internal and external stakeholders.
   - Mechanism: visibility creates a common reference for decisions, interfaces, and accountability across organizational boundaries.
   - Effect: collaboration becomes more predictable because participants can orient to the same visible intention.
@@ -89,11 +89,11 @@ The **conversation is the value**, and the artifact carries that value forward b
 
 ## Resulting Context
 
-When this move takes hold, the group has a shared and sufficiently stable understanding of the intention that participants can explain it, apply it in their roles, and use it to coordinate decisions across boundaries.
+When this move takes hold, people can explain what the shared intention means in their work and use it to make decisions across boundaries.
 
-The artifact becomes a trusted reference point that carries shared understanding between conversations without becoming a rigid substitute for them. When experience, priorities, or circumstances change, the group has a reliable way to return to the intention, test it against what has been learned, and adapt together.
+The visible artifact becomes a trusted reference, not simply a completed document. Participants use it to test priorities, surface differences, and coordinate their actions.
 
-Alignment becomes more durable without becoming fixed. Leadership gains a clearer reference for decisions, teams can evaluate performance and impact against shared intent, and stakeholders have a common basis for continued coordination and adaptation.
+As circumstances change, they can revisit and revise the intention together, preserving shared direction without freezing it.
 
 ## Known Uses
 
@@ -111,13 +111,13 @@ Boards and residents used shared agreements and governing principles to work thr
 
 ## Key Characteristics
 
-- Focuses on **conversation over documentation**
-- Uses a **visible artifact** as a touchstone for alignment
-- Engages key participants iteratively, not just once
-- Tests intention against practical experience and different perspectives
-- Uses repeated affirmation to strengthen shared understanding
-- Allows the artifact to evolve as circumstances change
-- Provides a shared reference for internal and external coordination
+- Grounds dialogue in a visible expression of intention.
+- Invites different perspectives to question and shape its meaning.
+- Tests intention against practical situations and decisions.
+- Checks that participants can explain and apply it in their work.
+- Makes unresolved differences visible rather than forcing agreement.
+- Revisits the intention as circumstances change.
+- Carries shared understanding into coordination across boundaries.
 
 ## Failure Modes
 
@@ -125,7 +125,7 @@ Boards and residents used shared agreements and governing principles to work thr
 
 *Description*: One meeting creates the appearance of alignment before key voices have fully engaged or important ambiguities have been explored.  
 
-*Mitigation*: Iterate, revisit, and engage key participants multiple times until they can genuinely affirm the artifact and explain how it applies in their role.
+*Mitigation*: Revisit the intention with key participants, test how it applies in their roles, and surface unresolved differences before treating it as a shared guide.
 
 ### Artifact as Output Only
 
