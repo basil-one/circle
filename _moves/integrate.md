@@ -42,8 +42,7 @@ You are facilitating a change conversation involving multiple perspectives, role
 
 ## Problem
 
-
-People bring different experiences, priorities, and interpretations into a conversation, but those perspectives are not becoming shared understanding. Some push for decisions while others disengage; ideas accumulate without converging, outdated priorities persist, and tension remains unspoken. The group struggles to turn discussion into coordinated action.
+People enter a conversation with different experiences, priorities, and interpretations, but struggle to make sense of them together. Some push for decisions while others withdraw, leaving important tensions unspoken. Discussion continues, yet the group cannot turn its differing perspectives into coordinated action.
 
 ## Forces
 
@@ -156,17 +155,19 @@ In residential governance settings, long-running disputes had left people guarde
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
-- *Driver*: Brings focus, urgency, and movement toward decisions and action.
-- *Organizer*: Creates structure, clarity, and coordination across people and work.
-- *Collaborator*: Builds connection, inclusion, and shared understanding across perspectives.
-- *Visionary*: Expands possibility, introduces new ideas, and challenges current thinking.
+These four patterns can help a facilitator notice which kinds of energy or participation are shaping a conversation, and what might be missing.
+
+- *Driver*: When discussion needs focus and movement toward a decision.
+- *Organizer*: When the group needs structure, clarity, or coordination.
+- *Collaborator*: When relationships, participation, or mutual understanding need attention.
+- *Visionary*: When the group is stuck in existing assumptions and needs to explore possibilities.
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="integrate_to_fearless_change"}
 
-- *Time for Reflection*: Use structured pauses to observe group energy and recalibrate.
-- *Plant the Seeds*: Introduce ideas strategically to encourage participation and contribution.
-- *Personal Touch*: Engage individuals meaningfully to surface otherwise silent perspectives.
-- *Just Do It*: Small iterative interventions maintain momentum without overplanning.
+These patterns offer complementary ways to make participation and reflection possible.
+
+- *Time for Reflection*: When the pace of discussion leaves too little room to notice and learn.
+- *Personal Touch*: When someone whose perspective matters is not participating, connect with them individually.
 
 ## Practical Resources
 
