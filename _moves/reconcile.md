@@ -16,14 +16,14 @@ css_id: reconcile
 
 ## Summary
 
-Guide people through recurring conversations around a visible expression of shared intention, such as principles, a charter, or a working agreement. As participants question and test its meaning in practice, they develop shared understanding that can guide decisions across teams and roles. The artifact carries that understanding forward and can evolve as circumstances change.
+Guide people in developing shared understanding around a visible expression of intention, such as principles, a charter, or a working agreement. Through iterative review, dialogue, and practical application, participants question and reconcile differing interpretations so the intention can guide decisions and coordinated action. The artifact carries that understanding forward and can evolve as circumstances change.
 
 ## Story
 
 
 Alex was helping lead an initiative involving several teams. Meetings were busy and often appeared productive. Ideas were exchanged, priorities discussed, and people generally left believing they were aligned.
 
-But afterward, progress fragmented. Teams interpreted decisions differently, promising ideas disappeared, and considerable effort produced little movement. Everyone seemed to be rowing, but the boat was going in circles.
+But afterward, progress fragmented. Teams interpreted decisions differently, promising ideas disappeared, and considerable effort produced little movement. Everyone appeared to be rowing, but the oars barely touched the water. For all the activity, the boat was going nowhere.
 
 Alex brought a draft of the initiative's guiding principles into the next conversation. Instead of asking whether everyone agreed, Alex invited them to challenge what was written.
 
@@ -63,20 +63,20 @@ Codifying principles helps preserve and communicate culture and intent, while ch
 
 **Reconcile the Intention.**
 
-Bring the group into recurring conversation around a visible representation of the intention so that differing interpretations can be surfaced, tested against experience, reconciled, and carried forward into action.
+Guide participants through an iterative process around a visible expression of intention so that differing interpretations can be surfaced, tested against experience, reconciled, and carried forward into action.
 
-Conversation and artifact evolve together: the conversation creates shared understanding, while the artifact makes that understanding visible and available for continued use.
+Through live dialogue, asynchronous review, or both, participants question and revise the intention. The artifact makes their evolving understanding visible and available for continued use.
 
 **Do this by:**
 
 - Establish or refresh a **visible alignment artifact** (charter, principles, or working agreement).
   - Mechanism: a shared reference externalizes assumptions so they can be examined collectively.
   - Effect: ambiguity becomes visible and discussable rather than remaining implicit.
-- Convene key participants, including social leaders and subject matter experts, for structured alignment conversations.
+- Engage key participants, including social leaders and subject matter experts, in structured dialogue or collaborative review.
   - Mechanism: bringing influence and expertise together makes different interpretations visible while they can still be explored.
   - Effect: differences can be reconciled before they become execution friction.
-- Run iterative dialogue cycles: clarify language, test practical implications, invite critique, and revise.
-  - Mechanism: repeatedly testing the intention against different perspectives and practical situations turns abstract agreement into shared, role-level understanding.
+- Use iterative review and dialogue: clarify language, test practical implications, invite critique, and revise.
+  - Mechanism: repeatedly testing the intention against different perspectives and practical situations turns abstract agreement into shared understanding people can apply in their own contexts.
   - Effect: participants can understand not only what the intention says, but why it matters and how it applies in practice.
 - Check whether participants can **explain and apply the intention** in their own context—and identify what remains unresolved.
   - Mechanism: testing the intention against real choices reveals where understanding is shared and where apparent agreement hides differences.
@@ -85,13 +85,13 @@ Conversation and artifact evolve together: the conversation creates shared under
   - Mechanism: visibility creates a common reference for decisions, interfaces, and accountability across organizational boundaries.
   - Effect: collaboration becomes more predictable because participants can orient to the same visible intention.
 
-The **conversation is the value**, and the artifact carries that value forward between conversations. The artifact is not the alignment itself; it is the visible, evolving representation of understanding created through the conversation. As circumstances change, the group can return to the conversation, test the artifact against experience, and adapt it. Use Failure Modes to diagnose drift when alignment appears present on paper but weak in practice.
+The value is the shared understanding people develop and apply in their own contexts. Dialogue and iterative review help create that understanding; the artifact carries it forward between exchanges. The artifact is not alignment itself, but a visible, evolving reference that people can question, test against experience, and revise as circumstances change. Use Failure Modes to diagnose drift when alignment appears present on paper but weak in practice.
 
 ## Resulting Context
 
 When this move takes hold, people can explain what the shared intention means in their work and use it to make decisions across boundaries.
 
-The visible artifact becomes a trusted reference, not simply a completed document. Participants use it to test priorities, surface differences, and coordinate their actions.
+The visible artifact becomes a trusted reference for participants, not simply a completed document. Participants use it to test priorities, surface differences, and coordinate their actions.
 
 As circumstances change, they can revisit and revise the intention together, preserving shared direction without freezing it.
 
@@ -111,11 +111,12 @@ Boards and residents used shared agreements and governing principles to work thr
 
 ## Key Characteristics
 
-- Grounds dialogue in a visible expression of intention.
+- Grounds dialogue and collaborative review in a visible expression of intention.
 - Invites different perspectives to question and shape its meaning.
 - Tests intention against practical situations and decisions.
 - Checks that participants can explain and apply it in their work.
 - Makes unresolved differences visible rather than forcing agreement.
+- Supports live dialogue, asynchronous review, or both.
 - Revisits the intention as circumstances change.
 - Carries shared understanding into coordination across boundaries.
 
@@ -129,9 +130,9 @@ Boards and residents used shared agreements and governing principles to work thr
 
 ### Artifact as Output Only
 
-*Description*: The document is completed, but the conversations that create shared understanding never occur or stop once the document exists.  
+*Description*: The document is completed, but participants never meaningfully question, test, or apply its intention.  
 
-*Mitigation*: Center the artifact on recurring discussion, testing, and revision. Treat the conversation as the value and the artifact as the visible carrier of that value.
+*Mitigation*: Keep the artifact open to genuine critique, testing, and revision through live dialogue, asynchronous review, or both. Check that participants can explain and apply the intention in their own contexts.
 
 ### Ignoring Cultural Ambiguity
 
@@ -149,7 +150,7 @@ Boards and residents used shared agreements and governing principles to work thr
 
 *Description*: The artifact becomes rigid or authoritative, making it harder for participants to question, learn from, or adapt the intention as circumstances change.  
 
-*Mitigation*: Maintain the iterative, conversational approach and allow the artifact to evolve as experience reveals what needs to change.
+*Mitigation*: Maintain iterative review and dialogue, and allow the artifact to evolve as experience reveals what needs to change.
 
 ## Related Patterns
 
@@ -158,7 +159,7 @@ Boards and residents used shared agreements and governing principles to work thr
 
 ### [Fearless Change Patterns](https://fearlesschangepatterns.com){: data-ga-event="external_link" data-ga-label="reconcile_to_fearless_change"}
 
-These patterns help when a shared intention needs to stay relevant and lead to action.
+These patterns offer complementary ways to keep shared intention relevant and actionable.
 
 - *Evolving Vision*: When changing conditions call for revisiting the direction the group is pursuing.
 - *Concrete Action Plan*: When shared intention is clear but has not yet translated into specific action.
