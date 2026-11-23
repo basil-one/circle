@@ -124,6 +124,14 @@ What curiosity might already be quietly present?
 
 What might they be noticing now that wasn't visible before?
 
+**If generative is present:**
+
+What new possibilities are becoming visible?
+
+Which assumptions may be loosening?
+
+What might become possible if the group explores this direction?
+
 ## Reflection
 
 As you look across your responses, this reflection is pointing toward a working hypothesis about the paradigm shaping this situation.
