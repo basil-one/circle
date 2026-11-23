@@ -71,7 +71,7 @@ Create a small, recurring conversational nucleus where people with different per
 **Do this by:**
 
 - Form a **three-person nucleus** with at least two subject matter perspectives plus facilitation capability.
-  - Mechanism: diversity of perspective plus a small, trusted space prevents early groupthink and allows tensions to surface safely.
+  - Mechanism: diversity of perspective plus a small, trusted space can help reduce early groupthink and allow tensions to surface safely.
   - Effect: the group can see the same initiative from multiple realities without fragmenting.
 - Include an **integrative facilitator** who can move the room between grounding and expanding, inquiry and action, and listening and integration.
   - Mechanism: active facilitation converts scattered observations into usable shared meaning.
