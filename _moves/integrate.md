@@ -91,7 +91,7 @@ When this move takes hold, perspectives and tensions that previously fragmented 
 
 Participants can hear one another more fully, examine differences without rushing toward agreement, and develop shared understanding of what is happening. As attention and participation improve, the group can make clearer decisions and coordinate action.
 
-Over time, the group becomes better able to work through tensions and adapt as circumstances change, whether within a Circle or another collaborative setting.
+Over time, the group becomes better able to work through tensions and adapt as circumstances change.
 
 ## Known Uses
 
@@ -114,7 +114,6 @@ In residential governance settings, long-running disputes had left people guarde
 - Shifts between inquiry and focus as the group needs.
 - Works with tension without forcing agreement or allowing the conversation to drift.
 - Supports clearer decisions and commitments when the group is ready.
-- Can be used within or outside a Circle.
 
 ## Failure Modes
 
