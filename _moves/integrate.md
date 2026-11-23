@@ -155,7 +155,7 @@ In residential governance settings, long-running disputes had left people guarde
 
 ### [Zen Leadership Patterns](https://zenleader.global){: data-ga-event="external_link" data-ga-label="integrate_to_zen_leadership"}
 
-These four patterns can help a facilitator notice which kinds of energy or participation are shaping a conversation, and what might be missing.
+The four Zen Leadership patterns help facilitators recognize different forms of energy in a conversation and shift their own approach to support what the group needs.
 
 - *Driver*: When discussion needs focus and movement toward a decision.
 - *Organizer*: When the group needs structure, clarity, or coordination.
@@ -166,8 +166,10 @@ These four patterns can help a facilitator notice which kinds of energy or parti
 
 These patterns offer complementary ways to make participation and reflection possible.
 
-- *Time for Reflection*: When the pace of discussion leaves too little room to notice and learn.
-- *Personal Touch*: When someone whose perspective matters is not participating, connect with them individually.
+- *Time for Reflection*: When a conversation is moving too quickly to notice what is happening, create space to reflect.
+- *Plant the Seeds*: When an idea or perspective isn't ready for direct consideration, introduce it gradually and allow interest to develop.
+- *Personal Touch*: When an important perspective remains unheard, engage the person individually to understand what may be preventing participation.
+- *Just Do It*: When a small facilitation experiment can help the group move forward, try it rather than waiting for a complete plan.
 
 ## Practical Resources
 
