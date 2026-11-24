@@ -8,6 +8,8 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-24
+
 ### Added
 - Embedded copyright and CC BY-SA 4.0 licensing information in the Circle3 paper.
 - Added downloadable Paper: Preview and manual Paper: Publish capabilities.
@@ -148,7 +150,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/basil-one/circle/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/basil-one/circle/compare/v0.1.11...v0.2.0
 [0.1.11]: https://github.com/basil-one/circle/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/basil-one/circle/compare/v0.1.9...v0.1.10
