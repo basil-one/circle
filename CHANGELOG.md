@@ -88,7 +88,7 @@ For licensing, see `LICENSE.md`.
 ## [0.1.3] - 2026-08-09
 
 ### Added
-- GitHub Actions workflow ([.github/workflows/release-pdf.yml](.github/workflows/release-pdf.yml)) that builds the paper PDF and attaches it to the GitHub Release when a `v*.*.*` tag is pushed.
+- At the time, pushing a `v*.*.*` tag triggered a workflow to build the paper PDF and attach it to the GitHub Release.
 
 ### Changed
 - The paper download link now points to `https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf` instead of the committed `assets/pdfs/circle3-paper.pdf`, so it always resolves to the latest release.
