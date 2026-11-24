@@ -91,32 +91,19 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 - Output: `assets/pdfs/circle3-paper.pdf`
 - Intermediate markdown (for debugging): `/tmp/plop.paper.config.debug-intermediate.md` (derived from the config filename)
 
-## Publishing (release automation)
-
-Pushing a tag matching `v*.*.*` triggers [.github/workflows/release-pdf.yml](../.github/workflows/release-pdf.yml), which installs the dependencies above, runs this build, and publishes a (non-prerelease) GitHub Release for that tag with two PDF assets attached:
-
-- `circle3-paper.pdf` — stable filename, used by the site's download link (`https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf`), so `/paper/` always resolves to whatever release is currently marked latest without needing an edit each release.
-- `circle3-paper-vX.Y.Z.pdf` — versioned filename, for archival/citation links to a specific release.
-
-Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG.md` plus a static "Includes"/"License" section (keep the pattern/lens list in that workflow step in sync with `_moves/`/`_lenses/` if they change).
-
-`assets/pdfs/circle3-paper.pdf` is a local/CI build artifact only (git-ignored) — it is no longer committed to the repository. Run the build locally to regenerate it, or download it from the latest GitHub Release.
-
 ## Paper Workflows
 
-- **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Automatically
-  builds a downloadable PDF for paper-related pull requests; also available
-  on demand.
-- **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from
-  `main` with the intended version (e.g. `0.2.1`). Updates the changelog,
-  creates the tag, and publishes the PDF.
+- **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Builds a downloadable PDF for paper-related pull requests; also available on demand.
+- **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from `main` with the intended version (e.g. `0.2.1`). Promotes the `Unreleased` changelog entries, creates the tag, and publishes the PDF.
 
-If publication fails after the changelog and tag are pushed, rerun the same
-version to resume. Drafts and releases missing assets can be completed; releases
-already published with both PDFs are protected from replacement. To replace an
-asset deliberately, delete that asset from the GitHub Release before rerunning.
-If branch protection rejects the workflow's atomic push to `main`, an
-administrator must authorize the Actions token or use the reviewed-main process.
+Each release includes:
+
+- [`circle3-paper.pdf`](https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf) — latest PDF, used by the website.
+- `circle3-paper-vX.Y.Z.pdf` — versioned PDF for archival and citation links.
+
+If publication fails, rerun the same version to resume. Completed releases are protected from replacement; deliberately delete an asset before rerunning to replace it. If branch protection blocks publication, resolve the permission issue before retrying.
+
+The [tag-triggered workflow](../.github/workflows/release-pdf.yml) remains available for manually pushed version tags.
 
 ## Inputs
 
