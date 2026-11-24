@@ -126,13 +126,22 @@ the GitHub Actions token to update `main` under the applicable branch
 protection/ruleset, or the publication must be handled through the repository's
 reviewed-main process.
 
+Releases are created as drafts. The workflow uploads only missing assets and
+verifies both `circle3-paper.pdf` and `circle3-paper-vX.Y.Z.pdf` before making
+the release public and marking it latest. The preceding public release stays
+available until this verification succeeds.
+
 If the changelog commit and tag were pushed but release creation or asset upload
 failed, rerun **Publish Paper** from `main` with the same version. It verifies
 that the tag is on `main` and is still the latest stable version, rebuilds from
-that exact tagged revision, and creates or repairs the release and its stable
-and versioned PDF assets. Do not start a later publication until this recovery
-is complete; the workflow blocks a new version while the latest release is
-missing either PDF asset.
+that exact tagged revision, and resumes by creating a missing release, finishing
+a draft, or restoring only missing assets. Existing assets are never
+overwritten. If a published release already has both assets, rerunning fails
+without changing it. To deliberately replace an asset, delete only that asset
+from the GitHub Release, then rerun the same version; only the missing asset
+will be regenerated and uploaded. Do not start a later publication until
+recovery is complete; the workflow blocks a new version while the latest
+release is missing either PDF asset.
 
 ## Inputs
 

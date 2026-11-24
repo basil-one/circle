@@ -114,7 +114,7 @@ def validate_latest_release(tags: list[str]) -> None:
         names = {asset["name"] for asset in release["assets"]}
     except (KeyError, json.JSONDecodeError, TypeError) as error:
         raise ReleaseError(f"Unable to verify assets for latest release {tag}.") from error
-    required = {"circle3-paper.pdf", f"circle3-paper-{tag}.pdf"}
+    required = required_asset_names(tag)
     if not required.issubset(names):
         raise ReleaseError(
             f"Latest release {tag} is missing required PDF assets; repair it before publishing."
@@ -188,9 +188,11 @@ def render_release_notes(version: str, changelog: str) -> str:
         "Reconcile the Intention\n"
         "- Three Leadership Lenses™ (reflective exercises): Sense-Making, Energy Awareness, "
         "Paradigm Awareness\n\n"
-        "## License\n\n"
-        "The notice applies to original content in this paper. Third-party materials retain "
-        "their own rights; see LICENSE.md for repository-wide licensing.\n"
+        '## License\n\nOriginal paper content licensed under <a href="'
+        "https://creativecommons.org/licenses/by-sa/4.0/"
+        '">CC BY-SA 4.0</a>. See <a href="'
+        "https://github.com/basil-one/circle/blob/main/LICENSE.md"
+        '">LICENSE.md</a> for repository-wide licensing.\n'
     )
 
 
@@ -210,48 +212,71 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
     if not pdf_path.is_file() or pdf_path.stat().st_size == 0:
         raise ReleaseError(f"PDF not found or empty: {pdf_path}")
 
+    release = get_release(tag)
+    if release is not None and not release["isDraft"]:
+        existing_assets = set(release["assetNames"])
+        if required_asset_names(tag).issubset(existing_assets):
+            raise ReleaseError(
+                f"Release {tag} is already published with both PDF assets. "
+                "Delete only the asset you intend to replace, then rerun this version."
+            )
+
     versioned_pdf = pdf_path.with_name(f"circle3-paper-{tag}.pdf")
     shutil.copyfile(pdf_path, versioned_pdf)
+    assets = {
+        "circle3-paper.pdf": pdf_path,
+        f"circle3-paper-{tag}.pdf": versioned_pdf,
+    }
     notes = render_release_notes(version, changelog)
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".md") as notes_file:
         notes_file.write(notes)
         notes_file.flush()
-        existing = run_gh(["release", "view", tag, "--json", "tagName"])
-        if existing.returncode:
-            error = (existing.stderr + existing.stdout).lower()
-            if "not found" not in error and "404" not in error:
-                raise ReleaseError(f"Unable to check release {tag}: {existing.stderr.strip()}")
-            result = run_gh(
+
+        if release is None:
+            created = run_gh(
                 [
                     "release",
                     "create",
                     tag,
-                    str(pdf_path),
-                    str(versioned_pdf),
+                    "--draft",
                     "--title",
                     tag,
                     "--notes-file",
                     notes_file.name,
                     "--verify-tag",
-                    "--latest",
                 ]
             )
-        else:
-            upload = run_gh(
-                [
-                    "release",
-                    "upload",
-                    tag,
-                    str(pdf_path),
-                    str(versioned_pdf),
-                    "--clobber",
-                ]
-            )
+            if created.returncode:
+                raise ReleaseError(f"Unable to create draft release {tag}: {created.stderr.strip()}")
+            release = get_release(tag)
+            if release is None:
+                raise ReleaseError(f"Draft release {tag} was created but could not be verified.")
+            if not release["isDraft"]:
+                raise ReleaseError(
+                    f"Release {tag} was not created as a draft; refusing to upload assets."
+                )
+
+        existing_assets = set(release["assetNames"])
+        for asset_name, asset_path in assets.items():
+            if asset_name in existing_assets:
+                continue
+            upload = run_gh(["release", "upload", tag, str(asset_path)])
             if upload.returncode:
                 raise ReleaseError(
-                    f"Unable to upload assets for release {tag}: {upload.stderr.strip()}"
+                    f"Unable to upload missing asset {asset_name} for release {tag}: "
+                    f"{upload.stderr.strip()}"
                 )
-            result = run_gh(
+
+        verified = get_release(tag)
+        if verified is None:
+            raise ReleaseError(f"Release {tag} disappeared before asset verification.")
+        missing_assets = required_asset_names(tag) - set(verified["assetNames"])
+        if missing_assets:
+            missing = ", ".join(sorted(missing_assets))
+            raise ReleaseError(f"Release {tag} is still missing required assets: {missing}.")
+
+        if verified["isDraft"]:
+            action = run_gh(
                 [
                     "release",
                     "edit",
@@ -264,8 +289,42 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
                     "--latest",
                 ]
             )
-        if result.returncode:
-            raise ReleaseError(f"Unable to publish release {tag}: {result.stderr.strip()}")
+        else:
+            action = run_gh(["release", "edit", tag, "--latest"])
+        if action.returncode:
+            raise ReleaseError(
+                f"Both assets are present, but release {tag} could not be published/marked "
+                f"latest: {action.stderr.strip()}"
+            )
+
+        final = get_release(tag)
+        if final is None or final["isDraft"]:
+            raise ReleaseError(f"Release {tag} could not be verified as published.")
+        missing_assets = required_asset_names(tag) - set(final["assetNames"])
+        if missing_assets:
+            missing = ", ".join(sorted(missing_assets))
+            raise ReleaseError(f"Published release {tag} is missing required assets: {missing}.")
+
+
+def required_asset_names(tag: str) -> set[str]:
+    return {"circle3-paper.pdf", f"circle3-paper-{tag}.pdf"}
+
+
+def get_release(tag: str) -> dict[str, object] | None:
+    result = run_gh(["release", "view", tag, "--json", "tagName,isDraft,assets"])
+    if result.returncode:
+        error = (result.stderr + result.stdout).lower()
+        if "release not found" in error or "not found" in error or "404" in error:
+            return None
+        raise ReleaseError(f"Unable to check release {tag}: {result.stderr.strip()}")
+    try:
+        data = json.loads(result.stdout)
+        return {
+            "isDraft": bool(data["isDraft"]),
+            "assetNames": {asset["name"] for asset in data["assets"]},
+        }
+    except (KeyError, json.JSONDecodeError, TypeError) as error:
+        raise ReleaseError(f"Unable to read release state for {tag}.") from error
 
 
 def git_tags() -> list[str]:
