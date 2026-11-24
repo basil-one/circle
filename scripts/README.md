@@ -101,6 +101,8 @@ Each release includes:
 - [`circle3-paper.pdf`](https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf) — latest PDF, used by the website.
 - `circle3-paper-vX.Y.Z.pdf` — versioned PDF for archival and citation links.
 
+Release notes combine version-specific entries from `CHANGELOG.md` with shared content maintained in `scripts/paper_release.py`.
+
 If publication fails, rerun the same version to resume. Completed releases are protected from replacement; deliberately delete an asset before rerunning to replace it. If branch protection blocks publication, resolve the permission issue before retrying.
 
 The [tag-triggered workflow](../.github/workflows/release-pdf.yml) remains available for manually pushed version tags.
