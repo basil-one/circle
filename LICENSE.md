@@ -8,7 +8,7 @@ css_id: license
 
 # Licensing
 
-Circle3™ contains website software, original writing, and practice materials. Different rights apply to each.
+Circle, including the Circle3™ work, contains website software, original writing, and practice materials. Different rights apply to each.
 
 ## Website software
 
