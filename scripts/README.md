@@ -102,48 +102,21 @@ Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG
 
 `assets/pdfs/circle3-paper.pdf` is a local/CI build artifact only (git-ignored) — it is no longer committed to the repository. Run the build locally to regenerate it, or download it from the latest GitHub Release.
 
-## Paper: Preview and Paper: Publish
+## Paper Workflows
 
-The [**Paper: Preview**](../.github/workflows/paper-preview.yml) workflow runs
-for paper-related pull request changes and can also be dispatched from a
-selected branch in the Actions tab. Its
-`circle3-paper-preview` artifact contains `circle3-paper.pdf` and is retained
-for 30 days.
+- **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Automatically
+  builds a downloadable PDF for paper-related pull requests; also available
+  on demand.
+- **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from
+  `main` with the intended version (e.g. `0.2.1`). Updates the changelog,
+  creates the tag, and publishes the PDF.
 
-To publish an approved version, use
-**Actions → [Paper: Publish](../.github/workflows/paper-publish.yml) → Run workflow**,
-select `main`, and enter an explicit stable version such as `0.2.1` (without
-a `v` prefix). The workflow requires human-curated entries under `Unreleased`,
-validates that the version is unique and greater than existing stable versions,
-builds the PDF, promotes the entries with the current UTC date, and atomically
-pushes the changelog commit and matching `vX.Y.Z` tag. It then creates or
-repairs the GitHub Release directly; the workflow does not rely on a tag event
-because GitHub suppresses events created with `GITHUB_TOKEN`. The existing
-tag-triggered release workflow remains available for tags pushed separately.
-Both publication workflows are serialized.
-
-If GitHub rejects the atomic push because `main` is protected, no remote
-changelog commit or tag is created. A repository administrator must authorize
-the GitHub Actions token to update `main` under the applicable branch
-protection/ruleset, or the publication must be handled through the repository's
-reviewed-main process.
-
-Releases are created as drafts. The workflow uploads only missing assets and
-verifies both `circle3-paper.pdf` and `circle3-paper-vX.Y.Z.pdf` before making
-the release public and marking it latest. The preceding public release stays
-available until this verification succeeds.
-
-If the changelog commit and tag were pushed but release creation or asset upload
-failed, rerun **Paper: Publish** from `main` with the same version. It verifies
-that the tag is on `main` and is still the latest stable version, rebuilds from
-that exact tagged revision, and resumes by creating a missing release, finishing
-a draft, or restoring only missing assets. Existing assets are never
-overwritten. If a published release already has both assets, rerunning fails
-without changing it. To deliberately replace an asset, delete only that asset
-from the GitHub Release, then rerun the same version; only the missing asset
-will be regenerated and uploaded. Do not start a later publication until
-recovery is complete; the workflow blocks a new version while the latest
-release is missing either PDF asset.
+If publication fails after the changelog and tag are pushed, rerun the same
+version to resume. Drafts and releases missing assets can be completed; releases
+already published with both PDFs are protected from replacement. To replace an
+asset deliberately, delete that asset from the GitHub Release before rerunning.
+If branch protection rejects the workflow's atomic push to `main`, an
+administrator must authorize the Actions token or use the reviewed-main process.
 
 ## Inputs
 
@@ -157,7 +130,7 @@ release is missing either PDF asset.
 
 - `output`: `filename`, `directory`
 - `metadata`: `title`, `author`, `date`, `url`, `email`, `keywords`
-- `framing`: cover/abstract/TOC labels + cover images + `abstract_file`
+- `framing`: cover/abstract/TOC labels + cover images + `abstract_file` and optional `copyright_notice`
 - `body`: `introduction_file` + `back_matter_file` (+ labels/anchors/include flags)
 - `sections`: ordered pattern sections with `intro_image` and `patterns[]` entries
 - `conclusion`: final page (image + main text file + CTA)

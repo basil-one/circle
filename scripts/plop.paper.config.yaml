@@ -26,6 +26,11 @@ framing:
   abstract_anchor: abstract
   abstract_file: content/plop.paper.abstract.md
   include_abstract_in_toc: true
+  copyright_notice:
+    year: "2026"
+    holder: Michael Basil
+    license_name: CC BY-SA 4.0
+    license_url: https://creativecommons.org/licenses/by-sa/4.0/
 
 body:
   introduction_label: Introduction

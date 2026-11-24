@@ -166,12 +166,14 @@ $endif$
 
 \vspace*{\fill}
 
+$if(copyright_notice)$
 \begin{center}
 {\footnotesize
-© 2026 Michael Basil\\
-Original content licensed under \href{https://creativecommons.org/licenses/by-sa/4.0/}{CC BY-SA 4.0}.
+© $copyright_notice_year$ $copyright_notice_holder$\\
+Original content licensed under \href{$copyright_notice_license_url$}{$copyright_notice_license_name$}.
 }
 \end{center}
+$endif$
 
 \newpage
 
