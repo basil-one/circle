@@ -3,6 +3,7 @@ description: Circle3 offers three guiding moves for leading difficult change by 
 author: Michael Basil
 url: https://circle.basil.one
 baseurl: ""
+repository_url: https://github.com/basil-one/circle
 # Resolves to whichever GitHub Release is currently marked latest.
 paper_pdf_url: https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf
 # Keep plugins list explicit so GitHub Pages matches local builds.
