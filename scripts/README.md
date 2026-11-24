@@ -102,10 +102,43 @@ Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG
 
 `assets/pdfs/circle3-paper.pdf` is a local/CI build artifact only (git-ignored) — it is no longer committed to the repository. Run the build locally to regenerate it, or download it from the latest GitHub Release.
 
+## Paper Preview and publication
+
+The **Paper Preview** workflow runs for paper-related pull request changes and
+can also be dispatched from a selected branch in the Actions tab. Its
+`circle3-paper-preview` artifact contains `circle3-paper.pdf` and is retained
+for 30 days.
+
+To publish an approved version, use **Actions → Publish Paper → Run workflow**,
+select `main`, and enter an explicit stable version such as `0.2.1` (without a
+`v` prefix). The workflow requires human-curated entries under `Unreleased`,
+validates that the version is unique and greater than existing stable versions,
+builds the PDF, promotes the entries with the current UTC date, and atomically
+pushes the changelog commit and matching `vX.Y.Z` tag. It then creates or
+repairs the GitHub Release directly; the workflow does not rely on a tag event
+because GitHub suppresses events created with `GITHUB_TOKEN`. The existing
+tag-triggered release workflow remains available for tags pushed separately.
+Both publication workflows are serialized.
+
+If GitHub rejects the atomic push because `main` is protected, no remote
+changelog commit or tag is created. A repository administrator must authorize
+the GitHub Actions token to update `main` under the applicable branch
+protection/ruleset, or the publication must be handled through the repository's
+reviewed-main process.
+
+If the changelog commit and tag were pushed but release creation or asset upload
+failed, rerun **Publish Paper** from `main` with the same version. It verifies
+that the tag is on `main` and is still the latest stable version, rebuilds from
+that exact tagged revision, and creates or repairs the release and its stable
+and versioned PDF assets. Do not start a later publication until this recovery
+is complete; the workflow blocks a new version while the latest release is
+missing either PDF asset.
+
 ## Inputs
 
 - `scripts/plop.paper.config.yaml` — build config (strict)
 - `scripts/template.tex` — LaTeX template
+- `scripts/paper_release.py` — version validation, changelog promotion, and shared release logic
 - `scripts/content/*.md` — longform markdown blocks referenced by the config
 - `_moves/*.md`, `_lenses/*.md` — pattern sources (web + PDF share these)
 

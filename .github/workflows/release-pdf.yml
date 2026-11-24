@@ -8,12 +8,21 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: paper-publication
+  cancel-in-progress: false
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch release tags
+        run: git fetch --force --tags origin
 
       - name: Install PDF build dependencies
         run: |
@@ -32,51 +41,12 @@ jobs:
       - name: Build PDF
         run: python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 
-      - name: Prepare versioned PDF copy
-        run: cp assets/pdfs/circle3-paper.pdf "assets/pdfs/circle3-paper-${GITHUB_REF_NAME}.pdf"
-
-      - name: Build release notes
+      - name: Create or repair GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.ref_name }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-
-          changed="$(awk -v ver="$version" '
-            /^## \[/ {
-              if (found) exit
-              if (index($0, "[" ver "]") > 0) { found=1; next }
-              next
-            }
-            found { print }
-          ' CHANGELOG.md)"
-
-          {
-            echo "## What changed"
-            echo
-            if [ -n "$changed" ]; then
-              echo "$changed"
-            else
-              echo "See CHANGELOG.md for details."
-            fi
-            echo
-            # Keep this list in sync with _moves/ and _lenses/ if patterns are added/renamed.
-            echo "## Includes"
-            echo
-            echo "- The Circle3™ paper PDF (attached as a release asset)"
-            echo "- Three Guiding Moves™ (patterns): Establish the Circle, Integrate the Conversation, Reconcile the Intention"
-            echo "- Three Leadership Lenses™ (reflective exercises): Sense-Making, Energy Awareness, Paradigm Awareness"
-            echo
-            echo "## License"
-            echo
-            echo "Unless otherwise noted, the written content and patterns in this repository are licensed under CC BY-SA 4.0. See LICENSE.md."
-          } > /tmp/release-notes.md
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body_path: /tmp/release-notes.md
-          prerelease: false
-          make_latest: true
-          files: |
-            assets/pdfs/circle3-paper.pdf
-            assets/pdfs/circle3-paper-${{ github.ref_name }}.pdf
+          VERSION="${VERSION#v}"
+          python3 scripts/paper_release.py release \
+            --version "$VERSION" \
+            --pdf assets/pdfs/circle3-paper.pdf

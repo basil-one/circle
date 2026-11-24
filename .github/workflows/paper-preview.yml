@@ -18,6 +18,7 @@ permissions:
 
 jobs:
   build-preview:
+    name: Paper Preview
     runs-on: ubuntu-latest
     steps:
       - name: Checkout proposed revision
@@ -47,7 +48,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: circle3-paper-preview-${{ github.run_id }}
+          name: circle3-paper-preview
           path: assets/pdfs/circle3-paper.pdf
           if-no-files-found: error
           retention-days: 30
@@ -63,8 +64,4 @@ jobs:
             echo "Built from proposed revision \`$SOURCE_SHA\`."
             echo
             echo "[Download the preview PDF]($ARTIFACT_URL)"
-            echo
-            printf '%s\n' \
-              "This summary is available from the Paper Preview check" \
-              "on the pull request."
           } >> "$GITHUB_STEP_SUMMARY"
