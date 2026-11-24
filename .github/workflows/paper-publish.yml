@@ -1,0 +1,111 @@
+name: "Paper: Publish"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable paper version to publish (X.Y.Z, without a v prefix)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paper-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: "Paper: Publish"
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify main is current and prepare changelog
+        id: state
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main" || {
+            echo "::error::Paper: Publish can only run from main."
+            exit 1
+          }
+          git fetch --force --tags origin
+          git fetch origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
+            printf '%s\n' \
+              "::error::main changed before publication began;" \
+              "rerun from current main."
+            exit 1
+          }
+          if git show-ref --verify --quiet "refs/tags/v$VERSION"; then
+            git merge-base --is-ancestor "refs/tags/v$VERSION" origin/main || {
+              echo "::error::Existing tag is not an ancestor of main."
+              exit 1
+            }
+            git checkout --detach "refs/tags/v$VERSION"
+            python3 scripts/paper_release.py validate-resume \
+              --version "$VERSION"
+            echo "mode=resume" >> "$GITHUB_OUTPUT"
+          else
+            python3 scripts/paper_release.py validate-latest
+            python3 scripts/paper_release.py prepare \
+              --version "$VERSION" \
+              --date "$(date -u +%F)"
+            echo "mode=new" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install PDF build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            texlive-xetex \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            fontconfig \
+            fonts-noto-core \
+            fonts-noto-ui-core
+          fc-cache -f -v
+
+      - name: Build and validate paper PDF
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
+          test -s assets/pdfs/circle3-paper.pdf
+          python3 scripts/paper_release.py notes \
+            --version "$VERSION" \
+            --output /tmp/release-notes.md
+
+      - name: Commit changelog and create version tag
+        if: steps.state.outputs.mode == 'new'
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "Release v$VERSION"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push --atomic origin HEAD:refs/heads/main "refs/tags/v$VERSION"
+
+      - name: Create or repair GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          python3 scripts/paper_release.py release \
+            --version "$VERSION" \
+            --pdf assets/pdfs/circle3-paper.pdf

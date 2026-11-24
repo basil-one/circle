@@ -369,6 +369,43 @@ class CirclePDFBuilder:
             raise ValueError(f"Missing required config value: {context}.{key} (must be a non-empty list)")
         return value
 
+    def _get_copyright_notice(self) -> Dict[str, str] | None:
+        """Return the optional front-matter copyright notice for the PDF."""
+        framing = self.config.get('framing')
+        if not isinstance(framing, dict):
+            raise ValueError("Config section 'framing' must be a mapping/object")
+
+        notice = framing.get('copyright_notice')
+        if notice is None:
+            return None
+        if not isinstance(notice, dict):
+            raise ValueError("Config value 'framing.copyright_notice' must be a mapping/object")
+
+        context = 'framing.copyright_notice'
+        year = self._require_dict_str(notice, 'year', context=context)
+        if not re.fullmatch(r'\d{4}', year):
+            raise ValueError(f"Invalid config value: {context}.year (must be a four-digit year)")
+
+        holder = self._require_dict_str(notice, 'holder', context=context)
+        license_name = self._require_dict_str(notice, 'license_name', context=context)
+        license_url = self._require_dict_str(notice, 'license_url', context=context)
+        parsed_url = urlparse(license_url)
+        if (
+            parsed_url.scheme != 'https'
+            or not parsed_url.hostname
+            or parsed_url.username
+            or parsed_url.password
+            or re.search(r'[{}\\%\s]', license_url)
+        ):
+            raise ValueError(f"Invalid config value: {context}.license_url (must be an HTTPS URL)")
+
+        return {
+            'year': year,
+            'holder': self._escape_latex_text(holder),
+            'license_name': self._escape_latex_text(license_name),
+            'license_url': license_url,
+        }
+
     def _get_framing_labels(self) -> Tuple[str, str]:
         abstract_label = self._require_config_str('framing', 'abstract_label')
         toc_label = self._require_config_str('framing', 'toc_label')
@@ -1507,6 +1544,7 @@ class CirclePDFBuilder:
                 raise ValueError("Config section 'conclusion' must be a mapping/object")
 
             framing_abstract_label, framing_toc_label = self._get_framing_labels()
+            copyright_notice = self._get_copyright_notice()
             conclusion_title, conclusion_anchor = self._get_conclusion_meta()
             
             abstract_anchor = self._latex_id(self._require_config_str('framing', 'abstract_anchor'), default='abstract')
@@ -1566,6 +1604,15 @@ class CirclePDFBuilder:
 
             if keywords_lines:
                 args += ['-V', 'keywords_lines=' + keywords_lines]
+
+            if copyright_notice:
+                args += [
+                    '-V', 'copyright_notice=true',
+                    '-V', 'copyright_notice_year=' + copyright_notice['year'],
+                    '-V', 'copyright_notice_holder=' + copyright_notice['holder'],
+                    '-V', 'copyright_notice_license_name=' + copyright_notice['license_name'],
+                    '-V', 'copyright_notice_license_url=' + copyright_notice['license_url'],
+                ]
             
             logger.info(f"Calling pandoc with custom template")
             logger.info(f"Template: {template_path}")

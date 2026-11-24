@@ -91,21 +91,25 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 - Output: `assets/pdfs/circle3-paper.pdf`
 - Intermediate markdown (for debugging): `/tmp/plop.paper.config.debug-intermediate.md` (derived from the config filename)
 
-## Publishing (release automation)
+## Paper Workflows
 
-Pushing a tag matching `v*.*.*` triggers [.github/workflows/release-pdf.yml](../.github/workflows/release-pdf.yml), which installs the dependencies above, runs this build, and publishes a (non-prerelease) GitHub Release for that tag with two PDF assets attached:
+- **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Builds a downloadable PDF for paper-related pull requests; also available on demand.
+- **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from `main` with the intended version (e.g. `0.2.1`). Promotes the `Unreleased` changelog entries, creates the tag, and publishes the PDF.
 
-- `circle3-paper.pdf` — stable filename, used by the site's download link (`https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf`), so `/paper/` always resolves to whatever release is currently marked latest without needing an edit each release.
-- `circle3-paper-vX.Y.Z.pdf` — versioned filename, for archival/citation links to a specific release.
+Each release includes:
 
-Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG.md` plus a static "Includes"/"License" section (keep the pattern/lens list in that workflow step in sync with `_moves/`/`_lenses/` if they change).
+- [`circle3-paper.pdf`](https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf) — latest PDF, used by the website.
+- `circle3-paper-vX.Y.Z.pdf` — versioned PDF for archival and citation links.
 
-`assets/pdfs/circle3-paper.pdf` is a local/CI build artifact only (git-ignored) — it is no longer committed to the repository. Run the build locally to regenerate it, or download it from the latest GitHub Release.
+Release notes combine version-specific entries from `CHANGELOG.md` with shared content maintained in `scripts/paper_release.py`.
+
+If publication fails, rerun the same version to resume. Completed releases are protected from replacement; deliberately delete an asset before rerunning to replace it. If branch protection blocks publication, resolve the permission issue before retrying.
 
 ## Inputs
 
 - `scripts/plop.paper.config.yaml` — build config (strict)
 - `scripts/template.tex` — LaTeX template
+- `scripts/paper_release.py` — version validation, changelog promotion, and shared release logic
 - `scripts/content/*.md` — longform markdown blocks referenced by the config
 - `_moves/*.md`, `_lenses/*.md` — pattern sources (web + PDF share these)
 
@@ -113,7 +117,7 @@ Release notes are assembled from the matching `## [X.Y.Z]` section of `CHANGELOG
 
 - `output`: `filename`, `directory`
 - `metadata`: `title`, `author`, `date`, `url`, `email`, `keywords`
-- `framing`: cover/abstract/TOC labels + cover images + `abstract_file`
+- `framing`: cover/abstract/TOC labels + cover images + `abstract_file` and optional `copyright_notice`
 - `body`: `introduction_file` + `back_matter_file` (+ labels/anchors/include flags)
 - `sections`: ordered pattern sections with `intro_image` and `patterns[]` entries
 - `conclusion`: final page (image + main text file + CTA)
