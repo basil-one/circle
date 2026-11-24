@@ -10,7 +10,7 @@ css_id: paper
 
 **Three Guiding Moves for Leading Difficult Change**
 
-The Circle3 paper explores three guiding moves—Establish the Circle, Integrate the Conversation, and Reconcile the Intention—for developing shared understanding and coordinating action during difficult change.
+The Circle3™ paper explores three guiding moves—Establish the Circle, Integrate the Conversation, and Reconcile the Intention—for developing shared understanding and coordinating action during difficult change.
 
 ## Download
 
