@@ -39,9 +39,12 @@
       <a href="{{ '/contact/' | relative_url }}">Contact</a>
     </div>
     <div id="copyright">
-      {{ site.footer.copyright | default: '' }} 
-      <a href="{{ '/privacy/' | relative_url }}">Privacy</a> | 
-      <a href="{{ '/license/' | relative_url }}">Licensing</a>
+      {{ site.footer.copyright | default: '' }}
+    </div>
+    <div class="footer-policy-links">
+      <a href="{{ '/privacy/' | relative_url }}">Privacy</a> · 
+      <a href="{{ '/license/' | relative_url }}">Licensing</a> ·
+      <a href="{{ site.repository_url | escape }}">Source</a>
     </div>
   </footer>
 </body>
