@@ -15,6 +15,8 @@ from paper_release import (
     validate_resume,
 )
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 CHANGELOG = """# Changelog
 
@@ -40,6 +42,28 @@ class PaperReleaseTests(unittest.TestCase):
             {"tagName": "v0.2.1", "isDraft": draft, "assets": [{"name": name} for name in assets]}
         )
         return subprocess.CompletedProcess(["gh"], returncode, stdout, stderr)
+
+    def test_domain_first_workflow_names_and_references(self):
+        preview = (ROOT / ".github/workflows/paper-preview.yml").read_text()
+        publish = (ROOT / ".github/workflows/paper-publish.yml").read_text()
+        readme = (ROOT / "scripts/README.md").read_text()
+        self.assertIn('name: "Paper: Preview"', preview)
+        self.assertIn('name: "Paper: Preview"', preview.split("jobs:", 1)[1])
+        self.assertIn('name: "Paper: Publish"', publish)
+        self.assertIn('name: "Paper: Publish"', publish.split("jobs:", 1)[1])
+        self.assertIn("name: circle3-paper-preview", preview)
+        self.assertIn("path: assets/pdfs/circle3-paper.pdf", preview)
+        self.assertIn("pull_request:", preview)
+        self.assertIn("workflow_dispatch:", preview)
+        self.assertIn("contents: read", preview)
+        self.assertIn("workflow_dispatch:", publish)
+        self.assertIn("contents: write", publish)
+        self.assertIn("if: github.ref == 'refs/heads/main'", publish)
+        self.assertIn("group: paper-publication", publish)
+        self.assertIn(".github/workflows/paper-preview.yml", readme)
+        self.assertIn(".github/workflows/paper-publish.yml", readme)
+        self.assertNotIn("publish-paper.yml", readme)
+        self.assertFalse((ROOT / ".github/workflows/publish-paper.yml").exists())
 
     def test_accepts_canonical_semver(self):
         self.assertEqual(parse_version("0.2.1"), (0, 2, 1))

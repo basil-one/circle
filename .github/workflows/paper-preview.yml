@@ -1,4 +1,4 @@
-name: Paper Preview
+name: "Paper: Preview"
 
 on:
   pull_request:
@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 jobs:
-  build-preview:
-    name: Paper Preview
+  preview:
+    name: "Paper: Preview"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout proposed revision
@@ -59,7 +59,7 @@ jobs:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           {
-            echo "## Circle3 Paper Preview"
+            echo "## Circle3 Paper: Preview"
             echo
             echo "Built from proposed revision \`$SOURCE_SHA\`."
             echo

@@ -1,4 +1,4 @@
-name: Publish Paper
+name: "Paper: Publish"
 
 on:
   workflow_dispatch:
@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish-paper:
-    name: Publish Paper
+  publish:
+    name: "Paper: Publish"
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = "refs/heads/main" || {
-            echo "::error::Publish Paper can only run from main."
+            echo "::error::Paper: Publish can only run from main."
             exit 1
           }
           git fetch --force --tags origin

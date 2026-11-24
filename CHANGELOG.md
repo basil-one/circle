@@ -10,7 +10,7 @@ For licensing, see `LICENSE.md`.
 
 ### Added
 - Embedded copyright and CC BY-SA 4.0 licensing information in the Circle3 paper.
-- Added downloadable Paper Preview and manual paper publication capabilities.
+- Added downloadable Paper: Preview and manual Paper: Publish capabilities.
 
 ## [0.2.0] - 2026-11-23
 
