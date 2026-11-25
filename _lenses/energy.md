@@ -134,7 +134,7 @@ One perspective brings useful clarity.
 
 A second perspective adds contrast, and that contrast deepens understanding.
 
-When a reciprocal perspective is added, you can see both what is shared and what is different. New dimensions emerge, and understanding between you becomes clearer and more complete.
+Reciprocal reflection helps reveal what is shared and what is different.
 
 If you choose to share it, you might begin simply with:
 
