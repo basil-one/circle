@@ -152,11 +152,7 @@ One perspective brings useful clarity.
 
 A second perspective adds contrast, and that contrast deepens understanding.
 
-Reciprocal reflection helps reveal:
-
-- where survival paradigms may be operating
-- where neutrality or curiosity may already be present
-- and where different paradigms may be present at the same time
+Reciprocal reflection helps reveal where survival paradigms may be operating, where neutrality or curiosity may already be present, and where different paradigms may be present at the same time.
 
 If you choose to share it, you might begin simply with:
 
