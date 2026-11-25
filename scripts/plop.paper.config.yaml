@@ -46,14 +46,12 @@ body:
 # Reference numbers must match content/plop.paper.back-matter.md.
 citations:
   - url: https://www.youtube.com/watch?v=N7oz366X0-8
-    annotation: "[3]"
-  - url: https://zenleader.global/resources/febi-assessment
-    annotation: "[4]"
-  - url: https://zenleader.global
-    annotation: "[4]"
-  - url: https://fearlesschangepatterns.com
     annotation: "[2]"
-  - url: https://www.goodreads.com/en/book/show/19795.Power_vs_Force
+  - url: https://zenleader.global/resources/febi-assessment
+    annotation: "[3]"
+  - url: https://zenleader.global
+    annotation: "[3]"
+  - url: https://fearlesschangepatterns.com
     annotation: "[1]"
 
 sections:
