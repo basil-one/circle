@@ -87,7 +87,7 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
     def test_template_places_only_configured_notice_in_existing_slot(self):
         template = (ROOT / "scripts/template.tex").read_text()
         notice_block = template.split("$if(copyright_notice)$", 1)[1].split(
-            "$endif$", 1
+            r"\end{center}", 1
         )[0]
         self.assertIn("© $copyright_notice_year$ $copyright_notice_holder$\\\\", notice_block)
         self.assertIn(
@@ -95,7 +95,7 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
             notice_block,
         )
         self.assertIn("$if(copyright_notice_additional_text)$", notice_block)
-        self.assertIn("$copyright_notice_additional_text$", notice_block)
+        self.assertIn("$copyright_notice_additional_text$\n$endif$", notice_block)
         self.assertNotIn("Third-party materials and trademarks remain subject to their respective rights.", template)
         self.assertNotIn("2026 Michael Basil", template)
         self.assertNotIn("creativecommons.org/licenses/by-sa/4.0/", template)
