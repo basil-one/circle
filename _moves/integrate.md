@@ -147,10 +147,6 @@ In residential governance settings, long-running disputes had left people guarde
 
 *Mitigation*: Continuously observe, reflect, and adjust facilitation.
 
-## Practice Influence
-
-Chris Voss and the Black Swan Group's work on labeling and dynamic silence, as presented in [Negotiation 9®](https://www.blackswanltd.com/newsletter/what-is-the-black-swan-groups-negotiation-9-n9), influenced the author's approach to navigating tension and creating space for understanding.
-
 ## Related Patterns
 
 - [Establish the Circle](/moves/establish/){: data-ga-event="learn_more" data-ga-label="integrate_to_establish"} – When integrative dialogue would benefit from a recurring home, establishing a Circle provides continuity and space for shared understanding to develop.
