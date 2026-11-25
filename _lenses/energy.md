@@ -130,17 +130,13 @@ Take a moment to notice:
 
 ## Sharing
 
-One perspective brings useful clarity.
+Reciprocal reflection helps reveal where perceptions of energy align, where they diverge, and how energy may be shaping the interaction.
 
-A second perspective adds contrast, and that contrast deepens understanding.
-
-When a reciprocal perspective is added, you can see both what is shared and what is different. New dimensions emerge, and understanding between you becomes clearer and more complete.
-
-If you choose to share it, you might begin simply with:
+If you choose to share your reflection, you might begin with:
 
 *Would you be open to hearing a reflection I’ve been sitting with?*
 
-And invite the person to complete the same reflection from their side.
+Invite the other person to complete the same reflection from their side.
 
 ## Continue exploring
 

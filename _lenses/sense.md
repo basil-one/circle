@@ -152,21 +152,13 @@ Take a moment to notice:
 
 ## Sharing
 
-One perspective brings useful clarity.
+Reciprocal reflection helps reveal where interpretations align, where they diverge, and where different Cynefin domains are operating in parallel.
 
-A second perspective adds contrast, and that contrast deepens understanding.
-
-When reciprocal reflections are shared, you can begin to see:
-
-- where interpretations of the situation align
-- where they diverge
-- and where different Cynefin domains are operating in parallel
-
-If you choose to share it, you might begin simply with:
+If you choose to share your reflection, you might begin with:
 
 *Would you be open to exploring how we are each interpreting what kind of situation this is?*
 
-And invite the other person, group, or team to complete the same reflection from their side.
+Invite the other person, group, or team to complete the same reflection from their side.
 
 ## Continue exploring
 

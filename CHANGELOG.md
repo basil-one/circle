@@ -8,6 +8,10 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+### Changed
+- Refined facilitation terminology and clarified attribution of practice influences.
+- Tightened the Sharing guidance across the Leadership Lenses.
+
 ## [0.2.1] - 2026-11-24
 
 ### Added
