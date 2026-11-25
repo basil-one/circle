@@ -22,6 +22,6 @@ A separately published paper is governed by the license notice on that paper and
 
 ## Other material
 
-Unless expressly identified as openly licensed, other original writing and website content are © Michael Basil. All rights reserved. Third-party frameworks, trademarks, and materials remain subject to their respective rights. Our Creative Commons license applies only to original content for which we hold the necessary rights and does not grant permission to use trademarks.
+Unless expressly identified as openly licensed, other original writing and website content are © Michael Basil. All rights reserved. Third-party frameworks, trademarks, and materials remain subject to their respective rights. The Creative Commons license applies only to original content for which we hold the necessary rights.
 
 License notices on individual works take precedence over these general descriptions.
