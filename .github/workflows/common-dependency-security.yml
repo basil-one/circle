@@ -1,0 +1,97 @@
+name: "Common: Dependency Security"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: "Common: Dependency Security"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/dependency-review-action@v5
+        id: dependency_review
+        with:
+          fail-on-severity: moderate
+          fail-on-scopes: runtime, development, unknown
+          license-check: false
+      - name: Summarize dependency review
+        if: always()
+        env:
+          REVIEW_OUTCOME: ${{ steps.dependency_review.outcome }}
+        run: |
+          echo "# Common: Dependency Security" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          case "$REVIEW_OUTCOME" in
+            success)
+              printf '%s\n' \
+                "- Dependency review: **passed**." \
+                "  Threshold: moderate+; scopes: runtime/development/unknown." \
+                >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            failure)
+              printf '%s\n' \
+                "- Dependency review: **failed**; see action findings/logs." \
+                "  Threshold: moderate+; scopes: runtime/development/unknown." \
+                >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              printf '%s\n' \
+                "- Dependency review: **not completed**; see earlier logs." \
+                "  Threshold: moderate+; scopes: runtime/development/unknown." \
+                >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac
+
+  dependency-posture:
+    name: Dependabot posture
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      vulnerability-alerts: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Review open Dependabot alerts
+        id: posture
+        run: node scripts/check_common_dependency_posture.mjs
+        env:
+          GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPENDENCY_POSTURE_FILE: ${{ runner.temp }}/dependency-posture.json
+      - name: Upload dependency posture result
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-posture
+          path: ${{ runner.temp }}/dependency-posture.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Summarize dependency posture
+        if: always()
+        env:
+          POSTURE_OUTCOME: ${{ steps.posture.outcome }}
+        run: |
+          case "$POSTURE_OUTCOME" in
+            success)
+                echo "Daily Dependabot alert posture completed; see the report above." >> "$GITHUB_STEP_SUMMARY"
+                ;;
+            failure)
+                echo "Daily dependency posture needs review or could not be measured; see the report and step logs." >> "$GITHUB_STEP_SUMMARY"
+                ;;
+            *)
+                echo "Daily dependency posture was not completed; see step logs." >> "$GITHUB_STEP_SUMMARY"
+                ;;
+          esac

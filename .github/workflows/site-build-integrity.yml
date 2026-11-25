@@ -1,0 +1,49 @@
+name: "Site: Build Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: "Site: Build Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+        env:
+          BUNDLE_FROZEN: 'true'
+      - name: Build site
+        id: build
+        run: bundle exec jekyll build --trace
+        env:
+          JEKYLL_ENV: production
+      - name: Summarize production build
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+        run: |
+          echo "# Site: Build Integrity" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          case "$BUILD_OUTCOME" in
+            success)
+              echo "- Production Jekyll: **passed**." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            failure)
+              echo "- Jekyll: **failed**; see logs." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "- Jekyll not completed; see logs." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac

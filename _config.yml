@@ -33,6 +33,14 @@ exclude:
   - .jekyll-cache
   - .ruby-lsp
   - .devcontainer
+  - node_modules
+  - tests
+  - test-results
+  - playwright-report
+  - performance-reports
+  - package.json
+  - package-lock.json
+  - playwright.config.js
   - Gemfile
   - Gemfile.lock
   - README.md

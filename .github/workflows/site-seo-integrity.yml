@@ -1,0 +1,70 @@
+name: "Site: SEO Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  seo:
+    name: "Site: SEO Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+        env:
+          BUNDLE_FROZEN: 'true'
+      - name: Build site
+        id: build
+        run: bundle exec jekyll build --trace
+        env:
+          JEKYLL_ENV: production
+      - name: Test SEO auditor
+        id: seo_tests
+        run: python3 -m unittest discover -s tests -p 'test_site_seo.py' -v
+      - name: Audit generated site SEO
+        id: seo_audit
+        run: |
+          python3 scripts/check_site_seo.py \
+            --site-dir _site \
+            --config _config.yml \
+            --report "$RUNNER_TEMP/seo-audit-report.md"
+      - name: Add SEO audit report to job summary
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          TEST_OUTCOME: ${{ steps.seo_tests.outcome }}
+          AUDIT_OUTCOME: ${{ steps.seo_audit.outcome }}
+        run: |
+          summary_outcome() {
+            case "$1" in
+              success) printf -- "- %s: **passed**.\n" "$2" ;;
+              failure) printf -- "- %s: **failed**; see logs.\n" "$2" ;;
+              *) printf -- "- %s: **not completed**; see prior logs.\n" "$2" ;;
+            esac
+          }
+          {
+            echo "# Site: SEO Integrity"
+            echo
+            summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
+            summary_outcome "$TEST_OUTCOME" "SEO-auditor unit tests"
+            summary_outcome "$AUDIT_OUTCOME" "Generated-site SEO audit"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$RUNNER_TEMP/seo-audit-report.md" ]; then
+            cat "$RUNNER_TEMP/seo-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- SEO results unavailable." >> "$GITHUB_STEP_SUMMARY"
+            echo "  See audit step logs." >> "$GITHUB_STEP_SUMMARY"
+          fi

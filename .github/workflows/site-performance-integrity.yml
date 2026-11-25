@@ -1,0 +1,169 @@
+name: "Site: Performance Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      caller_event_name:
+        description: Event that started the orchestration workflow
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: site-performance-integrity-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    name: "Site: Performance Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Run performance classifier and history tests
+        id: tests
+        run: npm run test:performance-history && npm run test:performance-skip && npm run test:performance-summary
+      - name: Classify pull request changes for Lighthouse
+        id: classify
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: node scripts/classify_site_performance_skip.mjs
+        env:
+          PERFORMANCE_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PERFORMANCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PERFORMANCE_EVENT_NAME: ${{ inputs.caller_event_name || github.event_name }}
+      - uses: ruby/setup-ruby@v1
+        id: ruby
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+        env:
+          BUNDLE_FROZEN: 'true'
+      - uses: actions/setup-node@v6
+        id: node
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build site
+        id: build
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        run: bundle exec jekyll build --trace
+        env:
+          JEKYLL_ENV: production
+      - name: Install browser test dependencies
+        id: dependencies
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        run: npm ci
+      - name: Install Chromium
+        id: chromium
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        run: npx playwright install --with-deps --no-shell chromium
+      - name: Load prior daily-main summaries
+        id: history
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        run: node scripts/compare_site_performance.mjs --load-history
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PERFORMANCE_HISTORY_PATH: ${{ runner.temp }}/performance-history.json
+      - name: Measure rendered pages
+        id: measure
+        if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
+        run: npm run measure:performance
+        env:
+          PERFORMANCE_RUNNER: ubuntu-24.04
+          PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
+          PERFORMANCE_EVENT_NAME: ${{ inputs.caller_event_name || github.event_name }}
+          PERFORMANCE_SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+      - name: Compare with fixed and rolling baselines
+        id: comparison
+        if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success'
+        run: node scripts/compare_site_performance.mjs
+        env:
+          PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
+          PERFORMANCE_HISTORY_PATH: ${{ runner.temp }}/performance-history.json
+          PERFORMANCE_REFERENCE_PATH: .github/site-performance-reference.json
+          PERFORMANCE_EVENT_NAME: ${{ inputs.caller_event_name || github.event_name }}
+          PERFORMANCE_SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+      - name: Verify missing-route diagnostic
+        id: negative
+        if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success'
+        run: |
+          output="$RUNNER_TEMP/performance-negative.log"
+          if npm run measure:performance -- --negative-test >"$output" 2>&1; then
+            cat "$output"
+            echo "Expected the deliberately missing route check to fail."
+            exit 1
+          fi
+          cat "$output"
+          grep -F 'Expected generated output for performance route /__performance-test-missing-route__/' "$output"
+          echo "Confirmed the expected missing-route diagnostic."
+      - name: Upload Lighthouse reports
+        id: upload
+        if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true')
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-reports
+          path: ${{ runner.temp }}/performance-reports/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload performance summary
+        id: summary_artifact
+        if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true')
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-summary
+          path: |
+            ${{ runner.temp }}/performance-reports/performance-summary.json
+            ${{ runner.temp }}/performance-reports/performance-comparison.json
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Render Performance Integrity summary
+        if: always()
+        env:
+          PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
+          JOB_STATUS: ${{ job.status }}
+          TRIGGER_NAME: ${{ inputs.caller_event_name || github.event_name }}
+          TRIGGER_REF: ${{ github.head_ref || github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SKIP_MEASUREMENT: ${{ steps.classify.outputs.skip_measurement }}
+          SKIP_REASON: ${{ steps.classify.outputs.skip_reason }}
+          CHANGED_PATHS: ${{ steps.classify.outputs.changed_paths }}
+          REPORTS_OUTCOME: ${{ steps.upload.outcome }}
+          REPORTS_URL: ${{ steps.upload.outputs.artifact-url }}
+          SUMMARY_OUTCOME: ${{ steps.summary_artifact.outcome }}
+          SUMMARY_URL: ${{ steps.summary_artifact.outputs.artifact-url }}
+          STEP_TESTS: ${{ steps.tests.outcome }}
+          STEP_CLASSIFY: ${{ steps.classify.outcome }}
+          STEP_RUBY: ${{ steps.ruby.outcome }}
+          STEP_NODE: ${{ steps.node.outcome }}
+          STEP_BUILD: ${{ steps.build.outcome }}
+          STEP_DEPENDENCIES: ${{ steps.dependencies.outcome }}
+          STEP_CHROMIUM: ${{ steps.chromium.outcome }}
+          STEP_HISTORY: ${{ steps.history.outcome }}
+          STEP_MEASURE: ${{ steps.measure.outcome }}
+          STEP_COMPARISON: ${{ steps.comparison.outcome }}
+          STEP_DIAGNOSTIC: ${{ steps.negative.outcome }}
+          STEP_REPORTS: ${{ steps.upload.outcome }}
+          STEP_SUMMARY: ${{ steps.summary_artifact.outcome }}
+        run: |
+          if [ -f scripts/render_site_performance_summary.mjs ]; then
+            node scripts/render_site_performance_summary.mjs
+          else
+            printf '# Site: Performance Integrity\n\n**Measurement failed or incomplete**\n\nThe repository checkout or Summary renderer was unavailable; inspect this workflow run for the failing step. No measurement is reported as successful.\n' > "$GITHUB_STEP_SUMMARY"
+          fi
