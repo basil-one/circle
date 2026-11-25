@@ -134,7 +134,7 @@ One perspective brings useful clarity.
 
 A second perspective adds contrast, and that contrast deepens understanding.
 
-Reciprocal reflection helps reveal what is shared and what is different.
+Reciprocal reflection helps reveal where perceptions of energy align, where they diverge, and how energy may be shaping the interaction.
 
 If you choose to share it, you might begin simply with:
 
