@@ -9,6 +9,7 @@ For licensing, see `LICENSE.md`.
 ## [Unreleased]
 
 ### Changed
+- Clarified intellectual property boundaries, framework attribution, and licensing notices.
 - Refined facilitation terminology and clarified attribution of practice influences.
 - Tightened the Sharing guidance across the Leadership Lenses.
 
