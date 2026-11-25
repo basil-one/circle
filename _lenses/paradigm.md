@@ -148,17 +148,13 @@ Take a moment to notice:
 
 ## Sharing
 
-One perspective brings useful clarity.
+Reciprocal reflection helps reveal where survival paradigms may be operating, where neutrality or curiosity may be present, and where different paradigms coexist.
 
-A second perspective adds contrast, and that contrast deepens understanding.
-
-Reciprocal reflection helps reveal where survival paradigms may be operating, where neutrality or curiosity may already be present, and where different paradigms may be present at the same time.
-
-If you choose to share it, you might begin simply with:
+If you choose to share your reflection, you might begin with:
 
 *Would you be open to exploring what might be shaping our response to this situation?*
 
-And invite the person, group, or team to complete the same reflection from their side.
+Invite the other person, group, or team to complete the same reflection from their side.
 
 ## Continue exploring
 
