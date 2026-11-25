@@ -10,7 +10,7 @@ const markdownImage = /!\s*\[[^\]]*\](?:\s*(?:\([^)]*\)|\[[^\]]*\]))?/;
 const markdownLink = /\[[^\]]+\]\s*(?:\([^)]+\)|\[[^\]]*\])|^\s*\[[^\]]+\]:/;
 const markdownStructure = /^\s{0,3}(?:#{1,6}\s|[>*+-]\s|\d+[.)]\s|```|~~~|\|)|(?:\*\*|__|\*[^*\s][^*]*\*|_[^_\s][^_]*_)/;
 const embeddedMedia = /\b(?:youtube(?:-nocookie)?\.com|youtu\.be|vimeo\.com|soundcloud\.com)\b/i;
-const markup = /<\s*\/?\s*[a-z][^>]*>|<!--|-->|{%|{{|}}|%}/i;
+const markup = /<\s*\/?\s*[a-z][^>]*>|<!--|--!?>|{%|{{|}}|%}/i;
 
 function git(args, cwd) {
   return execFileSync('git', args, {

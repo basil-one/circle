@@ -44,6 +44,22 @@ test('a short single page reports its actual alert posture', async () => {
   assert.equal(result.alerts.length, 1);
 });
 
+test('markdown alert cells escape backslashes and pipes', async () => {
+  const result = await checkDependencyPosture({
+    ...options,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => [{
+        number: 12,
+        dependency: { package: { name: 'pkg\\|injected' } },
+        security_advisory: { severity: 'high' }
+      }]
+    })
+  });
+  assert.equal(result.status, 'review');
+  assert.ok(result.markdown.includes('pkg\\\\\\|injected'));
+});
+
 test('follows next-link cursors even when a page is short', async () => {
   const requestedUrls = [];
   const responses = [

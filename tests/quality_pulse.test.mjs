@@ -232,7 +232,7 @@ test('partial pulse highlights missing coverage and exact run evidence', () => {
     { name: 'Site: Link Integrity', result: evaluateRuns([], date) },
     {
       name: 'Site: SEO Integrity',
-      result: { state: 'unknown', label: 'Unknown / API inaccessible', detail: 'HTTP 403; no result is inferred.' }
+      result: { state: 'unknown', label: 'Unknown / API inaccessible', detail: 'HTTP 403; unsafe\\|cell.' }
     }
   ];
   const summary = renderPulse({
@@ -246,6 +246,7 @@ test('partial pulse highlights missing coverage and exact run evidence', () => {
   assert.match(summary, /Missing/);
   assert.match(summary, /Unknown \/ API inaccessible/);
   assert.match(summary, /actions\/runs\/123/);
+  assert.ok(summary.includes('unsafe\\\\\\|cell.'));
   assert.match(summary, /late or missing runs are not replaced with prior green results/);
 });
 

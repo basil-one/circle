@@ -562,7 +562,7 @@ function renderPulse({
       ? performanceDetail(result)
       : result.detail;
     lines.push(
-      `| ${item.name} | ${result.label} | ${result.run ? runTime(result.run) : 'not measured today'} | ${source} | ${detail.replace(/\|/g, '\\|')} |`
+      `| ${item.name} | ${result.label} | ${result.run ? runTime(result.run) : 'not measured today'} | ${source} | ${detail.replace(/[\\|]/g, '\\$&')} |`
     );
   }
   lines.push('');

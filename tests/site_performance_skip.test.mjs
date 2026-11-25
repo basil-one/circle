@@ -124,6 +124,7 @@ test('runs the full baseline for Markdown structure, links, media, HTML, and Liq
     '[diagram]: https://images.example.test/example.svg',
     '[download](/assets/recording.mp3)',
     '<iframe src="https://example.test/embed"></iframe>',
+    'unusual comment terminator --!>',
     '{% include callout.html %}',
     '{{ site.title }}'
   ];
