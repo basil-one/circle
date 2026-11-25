@@ -2,6 +2,14 @@
 
 This repository contains the source for a static single page site.
 
+## Quality
+
+**Quality is a continuous practice in service of human connection.**
+
+We keep Circle's website and paper dependable, accessible, and easy to use so readers can engage with the work. Automation carries repetitive checks and brings evidence and practical remedies to human judgment. The practice creates capacity rather than maintenance overhead.
+
+Our [quality stance and practice](.github/QUALITY.md) describes the quality domains, safeguards in operation, and direction of the practice.
+
 ## Development
 
 1. Open in GitHub Codespaces (uses the provided dev container), or use Ruby 3.2+ with Bundler locally.
