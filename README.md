@@ -1,6 +1,6 @@
 # circle.basil.one
 
-This repository contains the source for a static single page site.
+Source for [Circle3](https://circle.basil.one), a Jekyll site and paper presenting three guiding moves for leading difficult change.
 
 ## Development
 
@@ -9,6 +9,19 @@ This repository contains the source for a static single page site.
 3. Run locally via terminal: `bundle exec jekyll serve`
 
 The site will be available at http://localhost:4000.
+
+## Intellectual stewardship
+
+We develop original work while recognizing that knowledge emerges through practice, relationships, and the contributions of others.
+
+- **Generosity:** Recognize the people and work that have meaningfully influenced our own.
+- **Integrity:** Represent the origins, authorship, evidence, and limitations of our work accurately, including the role of AI where appropriate.
+- **Independence:** Develop our own synthesis and expression without misappropriating the intellectual identity or protected materials of others.
+- **Reciprocity:** Respect the intellectual property of others as we would want our own respected.
+
+Apply these principles proportionately when creating, adapting, reviewing, and publishing content. Honor the licensing boundaries of each site, distinguish original work from third-party materials, and avoid claiming rights we do not hold.
+
+This project uses AI-assisted drafting, editing, and illustration. The author reviews and finalizes the published work. The paper includes its own AI disclosure.
 
 ## License
 
