@@ -76,7 +76,7 @@ Keep multiple perspectives in play and actively work with the tension among them
 - Apply targeted integration moves: ground abstractions, widen siloed viewpoints, and introduce focus when drift appears.
   - Mechanism: alternating expansion and convergence helps the group hold divergence without losing direction.
   - Effect: ideas become connected, prioritized, and actionable.
-- Surface unspoken tension through an appropriate intervention, such as a check-in, **affect labeling**, or **dynamic silence**.
+- Surface unspoken tension through an appropriate intervention, such as a check-in, affect labeling, or deliberate silence.
   - Mechanism: checking how the conversation is landing, naming a tension tentatively, or allowing silence can create reflective space without imposing an interpretation.
   - Effect: concerns that were shaping the interaction become discussable, restoring attention that the group can use.
 - When the group is ready, help participants release outdated assumptions or priorities and identify next steps or commitments.
@@ -146,6 +146,10 @@ In residential governance settings, long-running disputes had left people guarde
 *Description*: Failure to read group patterns causes interventions to miss the mark.  
 
 *Mitigation*: Continuously observe, reflect, and adjust facilitation.
+
+## Practice Influence
+
+Chris Voss and the Black Swan Group's work on labeling and dynamic silence, as presented in [Negotiation 9®](https://www.blackswanltd.com/newsletter/what-is-the-black-swan-groups-negotiation-9-n9), influenced the author's approach to navigating tension and creating space for understanding.
 
 ## Related Patterns
 
