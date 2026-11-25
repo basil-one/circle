@@ -20,9 +20,9 @@ Within Circle3, this reflection primarily supports [Integrate the Conversation](
 
 ## Framing
 
-The framing below is inspired by [David R. Hawkins' *Map of Consciousness*, introduced in *Power vs. Force*](https://www.goodreads.com/en/book/show/19795.Power_vs_Force), particularly its distinction between states organized around survival and protection and those associated with greater openness and possibility.
+The framing below explores three paradigms through which people may experience, interpret, and respond to a situation.
 
-Circle3 uses this language as a practical support for reflection. It is not intended to measure, rank, or label a person's level of consciousness.
+These paradigms are fluid orientations shaped by circumstances, relationships, and experience, rather than fixed characteristics of a person.
 
 ### Three paradigms
 

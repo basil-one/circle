@@ -26,7 +26,7 @@ Within Circle3, this reflection primarily supports [Integrate the Conversation](
 
 ### Sense-making domains
 
-The framing below is based on the [Cynefin framework developed by Dave Snowden](https://www.youtube.com/watch?v=N7oz366X0-8){: data-ga-event="external_link" data-ga-label="lenses_sense_cynefin_video"}.
+The framing below is based on the [Cynefin® framework developed by Dave Snowden](https://www.youtube.com/watch?v=N7oz366X0-8){: data-ga-event="external_link" data-ga-label="lenses_sense_cynefin_video"}.
 
 Each domain reflects a different way of interpreting and responding to reality.
 

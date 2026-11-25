@@ -24,7 +24,9 @@ Within Circle3, this reflection primarily supports [Integrate the Conversation](
 
 ### Ways energy shows up
 
-The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Ginny Whitelaw](https://zenleader.global/resources/febi-assessment){: data-ga-event="external_link" data-ga-label="lenses_energy_febi"}.
+The framing below is based on the [Focus Energy Balance Indicator (FEBI®) by Ginny Whitelaw](https://zenleader.global/resources/febi-assessment){: data-ga-event="external_link" data-ga-label="lenses_energy_febi"}. 
+
+This reflection is an independent exercise in relational awareness, not a FEBI assessment.
 
 A person may move through all of these depending on the situation or emotional context.
 

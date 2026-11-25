@@ -26,6 +26,7 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
                 "holder": "Michael Basil",
                 "license_name": "CC BY-SA 4.0",
                 "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+                "additional_text": "Third-party rights are not covered by this license.",
             },
         )
 
@@ -72,6 +73,12 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
                 args,
             )
 
+            self.assertIn("copyright_notice_additional_text=Third-party rights are not covered by this license.", args)
+            del self.builder.config["framing"]["copyright_notice"]["additional_text"]
+            with patch.object(BUILD_PDF.subprocess, "run", return_value=success) as run:
+                self.assertTrue(self.builder._call_pandoc("", output))
+            self.assertFalse(any(arg.startswith("copyright_notice_additional_text=") for arg in run.call_args.args[0]))
+
             del self.builder.config["framing"]["copyright_notice"]
             with patch.object(BUILD_PDF.subprocess, "run", return_value=success) as run:
                 self.assertTrue(self.builder._call_pandoc("", output))
@@ -80,13 +87,18 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
     def test_template_places_only_configured_notice_in_existing_slot(self):
         template = (ROOT / "scripts/template.tex").read_text()
         notice_block = template.split("$if(copyright_notice)$", 1)[1].split(
-            "$endif$", 1
+            r"\end{center}", 1
         )[0]
-        self.assertIn("© $copyright_notice_year$ $copyright_notice_holder$\\\\", notice_block)
+        self.assertIn(r"© $copyright_notice_year$ $copyright_notice_holder$\par", notice_block)
         self.assertIn(
             r"\href{$copyright_notice_license_url$}{$copyright_notice_license_name$}",
             notice_block,
         )
+        self.assertIn("$if(copyright_notice_additional_text)$", notice_block)
+        self.assertIn("$copyright_notice_additional_text$\\par\n$endif$", notice_block)
+        self.assertIn(r"\href{$copyright_notice_license_url$}{$copyright_notice_license_name$}.\par", notice_block)
+        self.assertNotIn(r"\newline", notice_block)
+        self.assertNotIn("Third-party rights are not covered by this license.", template)
         self.assertNotIn("2026 Michael Basil", template)
         self.assertNotIn("creativecommons.org/licenses/by-sa/4.0/", template)
 

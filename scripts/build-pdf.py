@@ -399,12 +399,16 @@ class CirclePDFBuilder:
         ):
             raise ValueError(f"Invalid config value: {context}.license_url (must be an HTTPS URL)")
 
-        return {
+        result = {
             'year': year,
             'holder': self._escape_latex_text(holder),
             'license_name': self._escape_latex_text(license_name),
             'license_url': license_url,
         }
+        if 'additional_text' in notice:
+            additional_text = self._require_dict_str(notice, 'additional_text', context=context)
+            result['additional_text'] = self._escape_latex_text(additional_text)
+        return result
 
     def _get_framing_labels(self) -> Tuple[str, str]:
         abstract_label = self._require_config_str('framing', 'abstract_label')
@@ -1613,6 +1617,8 @@ class CirclePDFBuilder:
                     '-V', 'copyright_notice_license_name=' + copyright_notice['license_name'],
                     '-V', 'copyright_notice_license_url=' + copyright_notice['license_url'],
                 ]
+                if 'additional_text' in copyright_notice:
+                    args += ['-V', 'copyright_notice_additional_text=' + copyright_notice['additional_text']]
             
             logger.info(f"Calling pandoc with custom template")
             logger.info(f"Template: {template_path}")

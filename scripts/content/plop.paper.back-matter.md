@@ -1,9 +1,8 @@
 # References
 
-1. David R. Hawkins. 2002. *Power vs. Force: The Hidden Determinants of Human Behavior* (rev. ed.). Hay House, Carlsbad, CA.
-2. Mary Lynn Manns and Linda Rising. 2005. *Fearless Change: Patterns for Introducing New Ideas*. Addison-Wesley Professional, Boston, MA.
-3. David J. Snowden and Mary E. Boone. 2007. A Leader's Framework for Decision Making. *Harvard Business Review* 85, 11 (2007), 68–76, 149.
-4. Ginny Whitelaw. 2020. *Resonate: Zen and the Way of Making a Difference*. Koehler Books, Virginia Beach, VA.
+1. Mary Lynn Manns and Linda Rising. 2005. *Fearless Change: Patterns for Introducing New Ideas*. Addison-Wesley Professional, Boston, MA.
+2. David J. Snowden and Mary E. Boone. 2007. A Leader's Framework for Decision Making. *Harvard Business Review* 85, 11 (2007), 68–76, 149.
+3. Ginny Whitelaw. 2020. *Resonate: Zen and the Way of Making a Difference*. Koehler Books, Virginia Beach, VA.
 
 # Acknowledgements
 
