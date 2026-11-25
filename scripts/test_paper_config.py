@@ -89,13 +89,15 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
         notice_block = template.split("$if(copyright_notice)$", 1)[1].split(
             r"\end{center}", 1
         )[0]
-        self.assertIn("© $copyright_notice_year$ $copyright_notice_holder$\\\\", notice_block)
+        self.assertIn(r"© $copyright_notice_year$ $copyright_notice_holder$\par", notice_block)
         self.assertIn(
             r"\href{$copyright_notice_license_url$}{$copyright_notice_license_name$}",
             notice_block,
         )
         self.assertIn("$if(copyright_notice_additional_text)$", notice_block)
-        self.assertIn("$copyright_notice_additional_text$\n$endif$", notice_block)
+        self.assertIn("$copyright_notice_additional_text$\\par\n$endif$", notice_block)
+        self.assertIn(r"\href{$copyright_notice_license_url$}{$copyright_notice_license_name$}.\par", notice_block)
+        self.assertNotIn(r"\newline", notice_block)
         self.assertNotIn("Third-party materials and trademarks remain subject to their respective rights.", template)
         self.assertNotIn("2026 Michael Basil", template)
         self.assertNotIn("creativecommons.org/licenses/by-sa/4.0/", template)
