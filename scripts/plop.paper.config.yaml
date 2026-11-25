@@ -42,13 +42,8 @@ body:
   back_matter_file: content/plop.paper.back-matter.md
   include_back_matter_in_toc: true
 
-# PDF-only in-text citation markers, matched by link URL or literal text and
-# appended right after the match. This lets the PDF carry academic in-text
-# citations (matching the numbered References list) without editing
-# _moves/_lenses, which are shared with the website. Numbers must match the
-# order of entries in content/plop.paper.back-matter.md (alphabetical by
-# first author surname): [1] Hawkins, [2] Manns & Rising,
-# [3] Snowden & Boone, [4] Whitelaw.
+# Append PDF-only citations after matching URLs or literal text in shared content.
+# Reference numbers must match content/plop.paper.back-matter.md.
 citations:
   - url: https://www.youtube.com/watch?v=N7oz366X0-8
     annotation: "[3]"
