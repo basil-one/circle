@@ -9,7 +9,7 @@ For licensing, see `LICENSE.md`.
 ## [Unreleased]
 
 ### Changed
-- Simplified facilitation terminology in Integrate the Conversation and clarified practice attribution to Chris Voss and the Black Swan Group across the website and paper.
+- Refined facilitation terminology and clarified attribution of practice influences.
 
 ## [0.2.1] - 2026-11-24
 
