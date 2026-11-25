@@ -47,23 +47,19 @@ body:
 # citations (matching the numbered References list) without editing
 # _moves/_lenses, which are shared with the website. Numbers must match the
 # order of entries in content/plop.paper.back-matter.md (alphabetical by
-# first author surname): [1] Hawkins, [2] Lieberman et al., [3] Manns &
-# Rising, [4] Snowden & Boone, [5] Voss & Raz, [6] Whitelaw.
+# first author surname): [1] Hawkins, [2] Manns & Rising,
+# [3] Snowden & Boone, [4] Whitelaw.
 citations:
   - url: https://www.youtube.com/watch?v=N7oz366X0-8
-    annotation: "[4]"
-  - url: https://zenleader.global/resources/febi-assessment
-    annotation: "[6]"
-  - url: https://zenleader.global
-    annotation: "[6]"
-  - url: https://fearlesschangepatterns.com
     annotation: "[3]"
+  - url: https://zenleader.global/resources/febi-assessment
+    annotation: "[4]"
+  - url: https://zenleader.global
+    annotation: "[4]"
+  - url: https://fearlesschangepatterns.com
+    annotation: "[2]"
   - url: https://www.goodreads.com/en/book/show/19795.Power_vs_Force
     annotation: "[1]"
-  - text: "**affect labeling**"
-    annotation: "[2]"
-  - text: "**dynamic silence**"
-    annotation: "[5]"
 
 sections:
   - title: Three Guiding Moves
