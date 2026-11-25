@@ -156,11 +156,7 @@ One perspective brings useful clarity.
 
 A second perspective adds contrast, and that contrast deepens understanding.
 
-Reciprocal reflection helps reveal:
-
-- where interpretations of the situation align
-- where they diverge
-- and where different Cynefin domains are operating in parallel
+Reciprocal reflection helps reveal where interpretations align, where they diverge, and where different Cynefin domains are operating in parallel.
 
 If you choose to share it, you might begin simply with:
 
