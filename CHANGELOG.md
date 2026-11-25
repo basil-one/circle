@@ -8,6 +8,8 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-25
+
 ### Changed
 - Clarified intellectual property boundaries, framework attribution, and licensing notices.
 - Refined facilitation terminology and clarified attribution of practice influences.
@@ -155,7 +157,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/basil-one/circle/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/basil-one/circle/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/basil-one/circle/compare/v0.1.11...v0.2.0
 [0.1.11]: https://github.com/basil-one/circle/compare/v0.1.10...v0.1.11
