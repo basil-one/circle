@@ -26,6 +26,7 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
                 "holder": "Michael Basil",
                 "license_name": "CC BY-SA 4.0",
                 "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+                "additional_text": "Third-party materials and trademarks remain subject to their respective rights.",
             },
         )
 
@@ -72,6 +73,12 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
                 args,
             )
 
+            self.assertIn("copyright_notice_additional_text=Third-party materials and trademarks remain subject to their respective rights.", args)
+            del self.builder.config["framing"]["copyright_notice"]["additional_text"]
+            with patch.object(BUILD_PDF.subprocess, "run", return_value=success) as run:
+                self.assertTrue(self.builder._call_pandoc("", output))
+            self.assertFalse(any(arg.startswith("copyright_notice_additional_text=") for arg in run.call_args.args[0]))
+
             del self.builder.config["framing"]["copyright_notice"]
             with patch.object(BUILD_PDF.subprocess, "run", return_value=success) as run:
                 self.assertTrue(self.builder._call_pandoc("", output))
@@ -87,6 +94,9 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
             r"\href{$copyright_notice_license_url$}{$copyright_notice_license_name$}",
             notice_block,
         )
+        self.assertIn("$if(copyright_notice_additional_text)$", notice_block)
+        self.assertIn("$copyright_notice_additional_text$", notice_block)
+        self.assertNotIn("Third-party materials and trademarks remain subject to their respective rights.", template)
         self.assertNotIn("2026 Michael Basil", template)
         self.assertNotIn("creativecommons.org/licenses/by-sa/4.0/", template)
 
