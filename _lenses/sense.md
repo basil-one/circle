@@ -156,7 +156,7 @@ One perspective brings useful clarity.
 
 A second perspective adds contrast, and that contrast deepens understanding.
 
-When reciprocal reflections are shared, you can begin to see:
+Reciprocal reflection helps reveal:
 
 - where interpretations of the situation align
 - where they diverge
