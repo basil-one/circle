@@ -4,16 +4,6 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
-    outputs:
-      build:
-        description: Same-cycle Paper Build job result
-        value: ${{ jobs.paper-results.outputs.build }}
-      rendering:
-        description: Same-cycle Paper Rendering result
-        value: ${{ jobs.paper-results.outputs.rendering }}
-      rendering_job:
-        description: Same-cycle Paper Rendering job result
-        value: ${{ jobs.paper-results.outputs.rendering_job }}
   workflow_dispatch:
 
 permissions:
@@ -58,70 +48,3 @@ jobs:
             echo
             echo "[Download the preview PDF]($ARTIFACT_URL)"
           } >> "$GITHUB_STEP_SUMMARY"
-
-  paper-rendering:
-    name: "Paper: Rendering Integrity"
-    needs: paper-build
-    if: ${{ always() && !cancelled() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    outputs:
-      status: ${{ steps.rendering.outputs.status }}
-    steps:
-      - name: Require a successful same-cycle build
-        if: ${{ needs.paper-build.result != 'success' }}
-        run: |
-          echo "Rendering verification incomplete: the same-cycle paper build did not succeed."
-          exit 1
-      - name: Checkout intended revision
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-      - name: Download the same-cycle PDF
-        uses: actions/download-artifact@v7
-        with:
-          name: circle3-paper-preview
-          path: assets/pdfs
-      - name: Install Poppler
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y poppler-utils
-      - name: Test real rendering fixtures
-        run: |
-          command -v pdfinfo
-          command -v pdftoppm
-          python3 -m unittest discover -s scripts -p 'test_paper_rendering.py' -v
-      - name: Check rendered paper pages
-        id: rendering
-        run: |
-          set +e
-          python3 scripts/check_paper_rendering.py assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json"
-          result=$?
-          set -e
-          case "$result" in
-            0) echo "status=success" >> "$GITHUB_OUTPUT" ;;
-            1) echo "status=failure" >> "$GITHUB_OUTPUT" ;;
-            *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
-          esac
-          exit "$result"
-      - name: Upload rendering report
-        if: ${{ always() && steps.rendering.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v6
-        with:
-          name: paper-rendering-report
-          path: ${{ runner.temp }}/paper-rendering-report.json
-          if-no-files-found: error
-          retention-days: 30
-
-  paper-results:
-    name: "Paper: Cycle Results"
-    needs: [paper-build, paper-rendering]
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    outputs:
-      build: ${{ needs.paper-build.result }}
-      rendering: ${{ needs.paper-rendering.outputs.status }}
-      rendering_job: ${{ needs.paper-rendering.result }}
-    steps:
-      - run: echo "Paper Build and Rendering outcomes are available to Quality Pulse."

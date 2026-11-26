@@ -9,14 +9,15 @@ import {
 } from './site_performance_policy.mjs';
 
 const dimensions = [
-  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml' },
-  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml' },
-  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml' },
-  { name: 'Common: Code Quality', file: 'common-code-quality.yml' },
-  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml' },
-  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml' },
-  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml' },
-  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml' }
+  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build' },
+  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'link' },
+  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml', job: 'seo' },
+  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'code-quality' },
+  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'dependency-security' },
+  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'rendering' },
+  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
+  { name: 'Paper: Rendering Integrity', file: 'paper-rendering-integrity.yml', job: 'paper-rendering' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -719,29 +720,13 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const jobMap = [
-    ['site-build', 'Site: Build Integrity'],
-    ['link', 'Site: Link Integrity'],
-    ['seo', 'Site: SEO Integrity'],
-    ['code-quality', 'Common: Code Quality'],
-    ['dependency-security', 'Common: Dependency Security'],
-    ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity']
-  ];
-  const results = jobMap.map(([jobId, name]) =>
-    orchestratedJobResult(needs, jobId, name, run)
+  const results = dimensions.map(({ job, name }) =>
+    orchestratedJobResult(needs, job, name, run)
   );
-  const paperNeeds = needs?.paper;
-  const paperOutputs = paperNeeds?.outputs;
-  const paperBuild = paperOutputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
-  const paperRendering = paperOutputs?.rendering;
-  results.push(orchestratedJobResult(
-    { build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run
-  ));
-  const paperRender = orchestratedJobResult(
-    { rendering: { result: paperRendering } }, 'rendering', 'Paper: Rendering Integrity', run
-  );
-  const renderingJob = paperOutputs?.rendering_job;
+  const renderingNeeds = needs?.['paper-rendering'];
+  const paperRendering = renderingNeeds?.outputs?.status;
+  const renderingJob = renderingNeeds?.result;
+  const paperRender = results.find((item) => item.name === 'Paper: Rendering Integrity');
   if (paperRendering === 'failure' && ['failure', 'cancelled'].includes(renderingJob)) {
     paperRender.result.state = 'failed';
     paperRender.result.label = 'Failed';
@@ -749,24 +734,19 @@ async function buildOrchestratedPulse({
     if (renderingJob === 'cancelled') {
       paperRender.result.detail += ' The job was cancelled after the finding; inspect and rerun.';
     }
-  } else if (paperBuild !== 'success') {
-    paperRender.result.state = 'incomplete';
-    paperRender.result.label = 'Incomplete / build unavailable';
-    paperRender.result.detail = 'The same-cycle paper build did not establish a successful PDF; rendering verification cannot pass.';
-  } else if (renderingJob === 'cancelled' || paperNeeds?.result === 'cancelled') {
+  } else if (renderingJob === 'cancelled') {
     paperRender.result.state = 'incomplete';
     paperRender.result.label = 'Incomplete / cancelled';
     paperRender.result.detail = 'Rendering job was cancelled; inspect and rerun.';
   } else if (renderingJob === 'failure' && ['success', 'incomplete', '', undefined].includes(paperRendering)) {
     paperRender.result.state = 'incomplete';
     paperRender.result.label = 'Incomplete / rendering verification';
-    paperRender.result.detail = 'Setup, rendering, or evidence upload did not complete; inspect the rendering job and rerun.';
-  } else if (renderingJob !== 'success' || paperRendering !== 'success' || paperNeeds?.result !== 'success') {
+    paperRender.result.detail = 'PDF generation, fixtures, rendering, or evidence upload did not complete; inspect the rendering job and rerun.';
+  } else if (renderingNeeds && (renderingJob !== 'success' || paperRendering !== 'success')) {
     paperRender.result.state = 'unknown';
     paperRender.result.label = 'Unknown outcome';
     paperRender.result.detail = 'Rendering job and validator outcomes are missing or inconsistent; inspect and rerun.';
   }
-  results.push(paperRender);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -866,11 +846,6 @@ async function buildOrchestratedPulse({
       paper.result.label = 'Unknown / PDF preview unavailable';
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
-  }
-  if (paper.result.state !== 'fresh' && paperRender.result.state === 'fresh') {
-    paperRender.result.state = 'unknown';
-    paperRender.result.label = 'Unknown / PDF preview unavailable';
-    paperRender.result.detail = 'Same-cycle PDF evidence is unavailable; rendering verification cannot be established.';
   }
   if (['success', 'failure', 'incomplete'].includes(paperRendering)) {
     try {
@@ -1052,6 +1027,12 @@ async function buildPulse({
         detail: `${error.message}; no clean dependency result is inferred.`
       };
     }
+  }
+  const paperRender = results.find((item) => item.name === 'Paper: Rendering Integrity');
+  if (['fresh', 'prior'].includes(paperRender.result.state)) {
+    paperRender.result.state = 'unknown';
+    paperRender.result.label = 'Unknown / rendering evidence unavailable';
+    paperRender.result.detail = 'Legacy workflow lookup cannot validate the Rendering report and validator outcome; use the same-cycle Quality Pulse.';
   }
   return renderPulse({ date, generatedAt, results });
 }

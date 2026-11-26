@@ -11,10 +11,11 @@ const children = [
   ['common-dependency-security.yml', 'dependency-security'],
   ['site-rendering-integrity.yml', 'rendering'],
   ['site-performance-integrity.yml', 'performance'],
-  ['paper-build-integrity.yml', 'paper']
+  ['paper-build-integrity.yml', 'paper'],
+  ['paper-rendering-integrity.yml', 'paper-rendering']
 ];
 
-test('one daily workflow owns the schedule and fans out to all eight reusable checks', async () => {
+test('one daily workflow owns the schedule and fans out to all nine reusable checks', async () => {
   const files = await readdir(workflowDirectory);
   const scheduled = [];
   for (const file of files.filter((name) => name.endsWith('.yml'))) {
