@@ -67,7 +67,9 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn('name: "Paper: Build Integrity"', integrity.split("jobs:", 1)[1])
         self.assertNotIn("ref: ${{ github.event.pull_request.head.sha || github.sha }}", integrity)
         self.assertIn("SOURCE_SHA: ${{ steps.checkout.outputs.commit }}", integrity)
-        self.assertIn("python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v", code_quality)
+        self.assertIn(
+            "python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v", code_quality
+        )
         self.assertIn("run: bash scripts/build-paper-pdf.sh", integrity)
         self.assertIn("rm -f assets/pdfs/circle3-paper.pdf", build_script)
         self.assertIn("python3 scripts/build-pdf.py scripts/plop.paper.config.yaml", build_script)
