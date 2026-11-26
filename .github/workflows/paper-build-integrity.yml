@@ -4,6 +4,13 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
+    outputs:
+      build:
+        description: Same-cycle Paper Build job result
+        value: ${{ jobs.paper-results.outputs.build }}
+      content:
+        description: Same-cycle Paper Content job result
+        value: ${{ jobs.paper-results.outputs.content }}
   workflow_dispatch:
 
 permissions:
@@ -48,3 +55,56 @@ jobs:
             echo
             echo "[Download the preview PDF]($ARTIFACT_URL)"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  paper-content:
+    name: "Paper: Content Integrity"
+    needs: paper-build
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      status: ${{ steps.content.outputs.status }}
+    steps:
+      - name: Require a successful same-cycle build
+        if: ${{ needs.paper-build.result != 'success' }}
+        run: |
+          echo "Content verification incomplete: the same-cycle paper build did not succeed."
+          exit 1
+      - name: Checkout intended revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Download the same-cycle PDF
+        uses: actions/download-artifact@v7
+        with:
+          name: circle3-paper-preview
+          path: assets/pdfs
+      - name: Install text extraction tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc poppler-utils
+      - name: Check configured paper content
+        id: content
+        run: |
+          set +e
+          python3 scripts/check_paper_content.py scripts/plop.paper.config.yaml assets/pdfs/circle3-paper.pdf
+          result=$?
+          set -e
+          case "$result" in
+            0) echo "status=success" >> "$GITHUB_OUTPUT" ;;
+            1) echo "status=failure" >> "$GITHUB_OUTPUT" ;;
+            *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
+          esac
+          exit "$result"
+
+  paper-results:
+    name: "Paper: Cycle Results"
+    needs: [paper-build, paper-content]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ needs.paper-build.result }}
+      content: ${{ needs.paper-content.outputs.status }}
+    steps:
+      - run: echo "Paper Build and Content outcomes are available to Quality Pulse."

@@ -31,7 +31,7 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     assert.equal(namedJobs.filter((name) => name === displayName).length, 1, `${file} emits one canonical job`);
 
     const header = jobHeaders.find(([line]) => line === `  ${jobId}:`);
-    const nextHeader = jobHeaders.find(([, , offset]) => offset > header.index);
+    const nextHeader = jobHeaders.find((match) => match.index > header.index);
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
@@ -74,4 +74,9 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
   assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
+  assert.match(paper, /paper-content:\n    name: "Paper: Content Integrity"\n    needs: paper-build/);
+  assert.match(paper, /uses: actions\/download-artifact@v7\n        with:\n          name: circle3-paper-preview/);
+  assert.match(paper, /python3 scripts\/check_paper_content\.py scripts\/plop\.paper\.config\.yaml assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(paper, /build: \$\{\{ needs\.paper-build\.result \}\}/);
+  assert.match(paper, /content: \$\{\{ needs\.paper-content\.outputs\.status \}\}/);
 });

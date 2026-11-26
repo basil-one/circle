@@ -726,12 +726,32 @@ async function buildOrchestratedPulse({
     ['code-quality', 'Common: Code Quality'],
     ['dependency-security', 'Common: Dependency Security'],
     ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity'],
-    ['paper', 'Paper: Build Integrity']
+    ['performance', 'Site: Performance Integrity']
   ];
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
+  const paperNeeds = needs?.paper;
+  const paperOutputs = paperNeeds?.outputs;
+  const paperBuild = paperOutputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
+  const paperContent = paperOutputs?.content;
+  results.push(orchestratedJobResult(
+    { build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run
+  ));
+  const content = orchestratedJobResult(
+    { content: { result: paperContent } }, 'content', 'Paper: Content Integrity', run
+  );
+  if (paperContent === 'incomplete') {
+    content.result.state = 'incomplete';
+    content.result.label = 'Incomplete / content verification';
+    content.result.detail = 'Content verification could not complete; inspect the content job logs and rerun.';
+  }
+  if (paperBuild !== 'success') {
+    content.result.state = 'incomplete';
+    content.result.label = 'Incomplete / build unavailable';
+    content.result.detail = 'The same-cycle paper build did not establish a successful PDF; content verification cannot pass.';
+  }
+  results.push(content);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -831,6 +851,11 @@ async function buildOrchestratedPulse({
       paper.result.label = 'Unknown / PDF preview unavailable';
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
+  }
+  if (paper.result.state !== 'fresh' && content.result.state === 'fresh') {
+    content.result.state = 'unknown';
+    content.result.label = 'Unknown / PDF preview unavailable';
+    content.result.detail = 'Same-cycle PDF evidence is unavailable; content verification cannot be established.';
   }
 
   const markdown = renderPulse({
