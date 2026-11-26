@@ -492,8 +492,8 @@ def main():
     if args.report:
         args.report.write_text(report, encoding="utf-8")
     if args.json_report:
-        bounded_findings = [item[:2000] for item in findings[:499]]
-        if len(findings) > 499:
+        bounded_findings = [item[:2000] for item in findings[:99]]
+        if len(findings) > 99:
             bounded_findings.append(
                 "Additional findings omitted; see the full human-readable report."
             )

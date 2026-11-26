@@ -871,8 +871,8 @@ async function buildOrchestratedPulse({
         fileName: 'paper-link-report.json', includeMetadata: true
       });
       const expected = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[paperLinks];
-      if (report?.status !== expected || !Array.isArray(report.findings) || report.findings.length > 500 ||
-          report.findings.some((finding) => typeof finding !== 'string' || finding.length > 2000) ||
+      if (report?.status !== expected || !Array.isArray(report.findings) || report.findings.length > 100 ||
+          report.findings.some((finding) => typeof finding !== 'string' || !finding.length || finding.length > 2000) ||
           (expected === 'passed' && report.findings.length !== 0) ||
           (expected !== 'passed' && report.findings.length === 0)) {
         throw new Error('link report is malformed or disagrees with the job');
