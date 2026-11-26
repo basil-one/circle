@@ -1436,153 +1436,153 @@ class CirclePDFBuilder:
             logger.warning(f"Error using Pandoc for markdown conversion: {e}")
             return markdown_text
     
+    def _append_optional_pandoc_arguments(
+        self, args: List[str], keywords_lines: str, copyright_notice: Dict[str, str] | None
+    ) -> None:
+        if keywords_lines:
+            args += ['-V', 'keywords_lines=' + keywords_lines]
+        if not copyright_notice:
+            return
+
+        args += [
+            '-V', 'copyright_notice=true',
+            '-V', 'copyright_notice_year=' + copyright_notice['year'],
+            '-V', 'copyright_notice_holder=' + copyright_notice['holder'],
+            '-V', 'copyright_notice_license_name=' + copyright_notice['license_name'],
+            '-V', 'copyright_notice_license_url=' + copyright_notice['license_url'],
+        ]
+        if 'additional_text' in copyright_notice:
+            args += ['-V', 'copyright_notice_additional_text=' + copyright_notice['additional_text']]
+
+    def _build_pandoc_arguments(
+        self, template_path: Path, output_path: Path, short_toc: str
+    ) -> Tuple[List[str], Dict[str, Any], str, str]:
+        title = self._require_config_str('metadata', 'title')
+        author = self._require_config_str('metadata', 'author')
+        date = self._require_config_str('metadata', 'date')
+        metadata = self.config.get('metadata')
+        if not isinstance(metadata, dict):
+            raise ValueError("Config section 'metadata' must be a mapping/object")
+        email = self._require_config_str('metadata', 'email')
+        url = self._require_config_str('metadata', 'url')
+
+        raw_keywords = self._require_dict_list(metadata, 'keywords', context='metadata')
+        keywords_list = [str(keyword).strip() for keyword in raw_keywords if str(keyword).strip()]
+        if not keywords_list:
+            raise ValueError(
+                "Missing required config value: metadata.keywords (must contain at least one keyword)"
+            )
+        keywords_lines = r" \\ ".join(
+            self._escape_latex_text(keyword) for keyword in keywords_list
+        )
+
+        framing = self.config.get('framing')
+        if not isinstance(framing, dict):
+            raise ValueError("Config section 'framing' must be a mapping/object")
+        conclusion = self.config.get('conclusion')
+        if not isinstance(conclusion, dict):
+            raise ValueError("Config section 'conclusion' must be a mapping/object")
+
+        framing_abstract_label, framing_toc_label = self._get_framing_labels()
+        copyright_notice = self._get_copyright_notice()
+        conclusion_title, conclusion_anchor = self._get_conclusion_meta()
+        abstract_anchor = self._latex_id(
+            self._require_config_str('framing', 'abstract_anchor'), default='abstract'
+        )
+
+        framing_abstract = self._markdown_to_latex(
+            self._get_markdown_content(
+                framing, inline_key='abstract', file_key='abstract_file'
+            )
+        )
+        conclusion_main = self._markdown_to_latex(
+            self._get_markdown_content(
+                conclusion, inline_key='main_text', file_key='main_text_file'
+            )
+        )
+        framing_abstract = self._replace_unicode_arrows(framing_abstract)
+        conclusion_main = self._replace_unicode_arrows(conclusion_main)
+
+        framing_title = self._require_dict_str(framing, 'title', context='framing')
+        framing_subtitle = self._require_dict_str(framing, 'subtitle', context='framing')
+        images = self._require_dict_list(framing, 'images', context='framing')
+        if len(images) < 2:
+            raise ValueError("framing.images must include at least 2 images")
+        framing_image_1 = str(images[0]).strip()
+        framing_image_2 = str(images[1]).strip()
+        if not framing_image_1:
+            raise ValueError("Missing required config value: framing.images[0]")
+        if not framing_image_2:
+            raise ValueError("Missing required config value: framing.images[1]")
+        conclusion_image = str(conclusion.get('image') or '').strip()
+
+        args = [
+            'pandoc',
+            '--from', 'markdown',
+            '--to', 'pdf',
+            '--template', str(template_path),
+            '--pdf-engine', self._get_pdf_engine(),
+            '-V', 'title=' + str(title),
+            '-V', 'author=' + str(author),
+            '-V', 'date=' + str(date),
+            '-V', 'email=' + str(email),
+            '-V', 'url=' + str(url),
+            '-V', 'framing_title=' + framing_title,
+            '-V', 'framing_subtitle=' + framing_subtitle,
+            '-V', 'framing_abstract_label=' + framing_abstract_label,
+            '-V', 'framing_toc_label=' + framing_toc_label,
+            '-V', 'framing_abstract_anchor=' + str(abstract_anchor),
+            '-V', 'framing_abstract=' + framing_abstract,
+            '-V', 'framing_image_1=' + framing_image_1,
+            '-V', 'framing_image_2=' + framing_image_2,
+            '-V', 'short_toc=' + (short_toc or ''),
+            '-V', 'conclusion_title=' + conclusion_title,
+            '-V', 'conclusion_anchor=' + conclusion_anchor,
+            '-V', 'conclusion_image=' + conclusion_image,
+            '-V', 'conclusion_main=' + conclusion_main,
+            '--output', str(output_path),
+        ]
+        self._append_optional_pandoc_arguments(args, keywords_lines, copyright_notice)
+        return args, framing, framing_abstract, conclusion_main
+
     def _call_pandoc(self, markdown_content: str, output_path: Path, *, short_toc: str = '') -> bool:
         """Call pandoc with custom template."""
         try:
-            # Get template path
             template_path = self.config_path.parent / 'template.tex'
-            
             if not template_path.exists():
                 logger.error(f"LaTeX template not found: {template_path}")
                 return False
-            
-            # Prepare pandoc arguments
-            title = self._require_config_str('metadata', 'title')
-            author = self._require_config_str('metadata', 'author')
-            date = self._require_config_str('metadata', 'date')
 
-            metadata = self.config.get('metadata')
-            if not isinstance(metadata, dict):
-                raise ValueError("Config section 'metadata' must be a mapping/object")
-            email = self._require_config_str('metadata', 'email')
-            url = self._require_config_str('metadata', 'url')
-
-            # Keywords are required. Use a YAML list in metadata.keywords:
-            #
-            #   keywords:
-            #     - pattern language
-            #     - change leadership
-            #
-            # We pass a LaTeX-ready, line-separated rendering into the template.
-            raw_keywords = self._require_dict_list(metadata, 'keywords', context='metadata')
-            keywords_list = [str(k).strip() for k in raw_keywords if str(k).strip()]
-            if not keywords_list:
-                raise ValueError(
-                    "Missing required config value: metadata.keywords (must contain at least one keyword)"
-                )
-
-            keywords_list_escaped = [self._escape_latex_text(k) for k in keywords_list]
-            keywords_lines = r" \\ ".join(keywords_list_escaped)
-
-            # Extract framing and conclusion config
-            framing = self.config.get('framing')
-            if not isinstance(framing, dict):
-                raise ValueError("Config section 'framing' must be a mapping/object")
-
-            conclusion = self.config.get('conclusion')
-            if not isinstance(conclusion, dict):
-                raise ValueError("Config section 'conclusion' must be a mapping/object")
-
-            framing_abstract_label, framing_toc_label = self._get_framing_labels()
-            copyright_notice = self._get_copyright_notice()
-            conclusion_title, conclusion_anchor = self._get_conclusion_meta()
-            
-            abstract_anchor = self._latex_id(self._require_config_str('framing', 'abstract_anchor'), default='abstract')
-
-            # Convert markdown formatting to LaTeX in config values
-            framing_abstract_md = self._get_markdown_content(framing, inline_key='abstract', file_key='abstract_file')
-            framing_abstract = self._markdown_to_latex(framing_abstract_md)
-
-            conclusion_main_md = self._get_markdown_content(conclusion, inline_key='main_text', file_key='main_text_file')
-            conclusion_main = self._markdown_to_latex(conclusion_main_md)
-
-            # Replace Unicode arrows (e.g. →) with LaTeX-rendered arrows.
-            framing_abstract = self._replace_unicode_arrows(framing_abstract)
-            conclusion_main = self._replace_unicode_arrows(conclusion_main)
-            
-            framing_title = self._require_dict_str(framing, 'title', context='framing')
-            framing_subtitle = self._require_dict_str(framing, 'subtitle', context='framing')
-
-            images = self._require_dict_list(framing, 'images', context='framing')
-            if len(images) < 2:
-                raise ValueError("framing.images must include at least 2 images")
-            framing_image_1 = str(images[0]).strip()
-            framing_image_2 = str(images[1]).strip()
-            if not framing_image_1:
-                raise ValueError("Missing required config value: framing.images[0]")
-            if not framing_image_2:
-                raise ValueError("Missing required config value: framing.images[1]")
-
-            conclusion_image = str(conclusion.get('image') or '').strip()
-
-            args = [
-                'pandoc',
-                '--from', 'markdown',
-                '--to', 'pdf',
-                '--template', str(template_path),
-                '--pdf-engine', self._get_pdf_engine(),
-                '-V', 'title=' + str(title),
-                '-V', 'author=' + str(author),
-                '-V', 'date=' + str(date),
-                '-V', 'email=' + str(email),
-                '-V', 'url=' + str(url),
-                '-V', 'framing_title=' + framing_title,
-                '-V', 'framing_subtitle=' + framing_subtitle,
-                '-V', 'framing_abstract_label=' + framing_abstract_label,
-                '-V', 'framing_toc_label=' + framing_toc_label,
-                '-V', 'framing_abstract_anchor=' + str(abstract_anchor),
-                '-V', 'framing_abstract=' + framing_abstract,
-                '-V', 'framing_image_1=' + framing_image_1,
-                '-V', 'framing_image_2=' + framing_image_2,
-                '-V', 'short_toc=' + (short_toc or ''),
-                '-V', 'conclusion_title=' + conclusion_title,
-                '-V', 'conclusion_anchor=' + conclusion_anchor,
-                '-V', 'conclusion_image=' + conclusion_image,
-                '-V', 'conclusion_main=' + conclusion_main,
-                '--output', str(output_path),
-            ]
-
-            if keywords_lines:
-                args += ['-V', 'keywords_lines=' + keywords_lines]
-
-            if copyright_notice:
-                args += [
-                    '-V', 'copyright_notice=true',
-                    '-V', 'copyright_notice_year=' + copyright_notice['year'],
-                    '-V', 'copyright_notice_holder=' + copyright_notice['holder'],
-                    '-V', 'copyright_notice_license_name=' + copyright_notice['license_name'],
-                    '-V', 'copyright_notice_license_url=' + copyright_notice['license_url'],
-                ]
-                if 'additional_text' in copyright_notice:
-                    args += ['-V', 'copyright_notice_additional_text=' + copyright_notice['additional_text']]
-            
-            logger.info(f"Calling pandoc with custom template")
+            args, framing, abstract, conclusion_main = self._build_pandoc_arguments(
+                template_path, output_path, short_toc
+            )
+            logger.info("Calling pandoc with custom template")
             logger.info(f"Template: {template_path}")
             logger.info(f"Framing title: {framing.get('title', 'MISSING')}")
-            logger.info(f"Abstract length: {len(framing_abstract)} chars")
+            logger.info(f"Abstract length: {len(abstract)} chars")
             logger.info(f"Main text length: {len(conclusion_main)} chars")
             logger.info(f"Output file: {output_path}")
-            
-            # Call pandoc
+
             result = subprocess.run(
                 args,
                 input=markdown_content.encode('utf-8'),
                 capture_output=True,
                 cwd=str(self.root_dir),
             )
-            
             if result.returncode != 0:
                 logger.error(f"Pandoc error: {result.stderr.decode('utf-8')}")
                 return False
-            
+
             logger.info(f"PDF generated successfully: {output_path}")
             return True
-            
         except FileNotFoundError:
-            logger.error("Pandoc is not installed. Install with: brew install pandoc (macOS) or apt install pandoc (Linux)")
+            logger.error(
+                "Pandoc is not installed. Install with: brew install pandoc (macOS) "
+                "or apt install pandoc (Linux)"
+            )
             return False
-        except Exception as e:
-            logger.error(f"Error calling pandoc: {e}")
+        except Exception as error:
+            logger.error(f"Error calling pandoc: {error}")
             return False
     
     def build(self) -> bool:
