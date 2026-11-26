@@ -31,7 +31,7 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     assert.equal(namedJobs.filter((name) => name === displayName).length, 1, `${file} emits one canonical job`);
 
     const header = jobHeaders.find(([line]) => line === `  ${jobId}:`);
-    const nextHeader = jobHeaders.find(([, , offset]) => offset > header.index);
+    const nextHeader = jobHeaders.find((match) => match.index > header.index);
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
@@ -74,4 +74,19 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
   assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
+});
+
+test('Paper Link Integrity tests and audits the same-cycle PDF without rebuilding', async () => {
+  const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
+  const link = paper.split('\n  paper-links:\n')[1].split('\n  paper-results:\n')[0];
+  assert.match(link, /name: "Paper: Link Integrity"/);
+  assert.match(link, /needs: paper-build/);
+  assert.match(link, /actions\/download-artifact@v7[\s\S]*name: circle3-paper-preview/);
+  assert.match(link, /--require-hashes --only-binary=:all: -r scripts\/paper-link\/requirements\.txt/);
+  assert.match(link, /unittest discover -s tests -p test_paper_links\.py/);
+  assert.match(link, /scripts\/check_paper_links\.py/);
+  assert.match(link, /3\) echo "status=uncertain"/);
+  assert.match(link, /name: paper-link-report/);
+  assert.doesNotMatch(link, /build-paper-pdf\.sh|build-pdf\.py/);
+  assert.match(paper, /links: \$\{\{ needs\.paper-links\.outputs\.status \|\| 'incomplete' \}\}/);
 });

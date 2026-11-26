@@ -437,10 +437,13 @@ def main():
             f"# Paper: Link Integrity\n\n**Outcome: incomplete**\n\n- Audit unavailable: {error}\n",
             "incomplete",
         )
+        exit_code = 2
+    else:
+        exit_code = {"passed": 0, "failed": 1, "incomplete": 3}[state]
     if args.report:
         args.report.write_text(report, encoding="utf-8")
     print(report, end="")
-    return {"passed": 0, "failed": 1, "incomplete": 2}[state]
+    return exit_code
 
 
 if __name__ == "__main__":

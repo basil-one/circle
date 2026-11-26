@@ -726,12 +726,26 @@ async function buildOrchestratedPulse({
     ['code-quality', 'Common: Code Quality'],
     ['dependency-security', 'Common: Dependency Security'],
     ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity'],
-    ['paper', 'Paper: Build Integrity']
+    ['performance', 'Site: Performance Integrity']
   ];
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
+  const paperNeeds = needs?.paper;
+  const paperBuild = paperNeeds?.outputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
+  const paperLinks = paperNeeds?.outputs?.links;
+  results.push(paperNeeds
+    ? orchestratedJobResult({ build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run)
+    : orchestratedJobResult(needs, 'paper', 'Paper: Build Integrity', run));
+  const linkResult = orchestratedJobResult(
+    { links: { result: paperLinks } }, 'links', 'Paper: Link Integrity', run
+  );
+  if (['incomplete', 'uncertain'].includes(paperLinks) || paperBuild !== 'success') {
+    linkResult.result.state = 'incomplete';
+    linkResult.result.label = 'Incomplete / link evidence';
+    linkResult.result.detail = 'Link verification or the same-cycle PDF was unavailable; inspect the link job report, retry inaccessible destinations or review them manually.';
+  }
+  results.push(linkResult);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -833,6 +847,27 @@ async function buildOrchestratedPulse({
     }
   }
 
+  if (paper.result.state !== 'fresh' && ['fresh', 'incomplete'].includes(linkResult.result.state)) {
+    linkResult.result.state = 'incomplete';
+    linkResult.result.label = 'Incomplete / PDF preview unavailable';
+    linkResult.result.detail = 'The same-cycle PDF preview could not be verified; inspect the paper build and rerun.';
+  }
+
+  if (paperBuild === 'success' && ['success', 'failure', 'uncertain', 'incomplete'].includes(paperLinks)) {
+    try {
+      linkResult.result.artifactUrl = await fetchArtifactLink({
+        apiUrl, repository, runId, artifactName: 'paper-link-report', token, fetchImpl
+      });
+      linkResult.result.detail += ' Open the linked report for page-level destinations and next steps.';
+    } catch (error) {
+      if (linkResult.result.state === 'fresh') {
+        linkResult.result.state = 'unknown';
+        linkResult.result.label = 'Unknown / link report unavailable';
+      }
+      linkResult.result.detail += ` Link report unavailable (${error.message}); inspect the link job and rerun.`;
+    }
+  }
+
   const markdown = renderPulse({
     date,
     generatedAt,
@@ -841,7 +876,11 @@ async function buildOrchestratedPulse({
   });
   return {
     markdown,
-    successful: results.every((item) => item.result.state === 'fresh')
+    successful: results.every((item) =>
+      item.result.state === 'fresh' ||
+      (item === linkResult && paperLinks === 'uncertain' &&
+        paper.result.state === 'fresh' && Boolean(item.result.artifactUrl))
+    )
   };
 }
 
