@@ -1423,7 +1423,7 @@ test('paper build, content failure, and missing evidence remain distinct', async
       : options.fetchImpl(url)
   });
 
-  test('paper link evidence preserves defects, uncertainty, and independent outcomes', async () => {
+  await test('paper link evidence preserves defects, uncertainty, and independent outcomes', async () => {
     const needs = {
       paper: { result: 'failure' },
       'paper-link': { result: 'success', outputs: { status: 'advisory' } }
