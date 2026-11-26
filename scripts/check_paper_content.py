@@ -103,14 +103,14 @@ def block_text(blocks, pages, destinations):
                     raise ValueError(f"{label}: destination {anchor!r} is out of document order")
                 end = max(start, next_page - 1)
                 break
-        result[label] = (start, end, "\n".join(pages[start - 1 : end]))
+        result[anchor] = (start, end, "\n".join(pages[start - 1 : end]))
     return result
 
 
 def source_errors(blocks, scopes):
     errors = []
     for label, anchor, markdown in blocks:
-        start, end, text = scopes[label]
+        start, end, text = scopes[anchor]
         for index, fragment in enumerate(evidence(markdown), 1):
             if fragment not in compact(text):
                 errors.append(
@@ -135,7 +135,11 @@ def citation_errors(builder, sections, scopes, back):
     try:
         builder.config["citations"] = []
         patterns = [
-            (pattern["file"], builder._read_and_clean_pattern(pattern["file"])[1])
+            (
+                pattern["file"],
+                pattern["anchor"],
+                builder._read_and_clean_pattern(pattern["file"])[1],
+            )
             for section in sections
             for pattern in section["patterns"]
         ]
@@ -157,7 +161,7 @@ def check_citation(builder, index, rule, patterns, scopes, references):
     number = re.fullmatch(r"\[(\d+)\]", annotation)
     if number and references and number.group(1) not in references:
         errors.append(f"citations[{index}]: {annotation} has no numbered References entry")
-    for label, body in patterns:
+    for label, anchor, body in patterns:
         annotated = builder._apply_citation_annotations(body)
         if annotated == body:
             continue
@@ -166,7 +170,7 @@ def check_citation(builder, index, rule, patterns, scopes, references):
         for match in re.finditer(re.escape(annotation), rendered):
             before = re.findall(r"\w+", rendered[max(0, match.start() - 150) : match.start()])
             context = " ".join(before[-6:])
-            start, end, pdf_text = scopes[label]
+            start, end, pdf_text = scopes[anchor]
             needle = compact(context) + "marker" + compact(annotation)
             pdf_marked = re.sub(re.escape(annotation), " marker " + compact(annotation), pdf_text)
             if needle not in compact(pdf_marked):
@@ -187,12 +191,11 @@ def check_content(builder, pdf_text, destinations):
     scopes = block_text(blocks, pages, destinations)
     errors = source_errors(blocks, scopes)
     errors.extend(citation_errors(builder, sections, scopes, back))
-    if "back matter" in scopes:
+    back_anchor = next((anchor for label, anchor, _ in blocks if label == "back matter"), None)
+    if back_anchor:
         for number, entry in reference_entries(back).items():
-            pdf_reference = re.search(
-                rf"(?m)^\s*{re.escape(number)}\.\s+", scopes["back matter"][2]
-            )
-            following = scopes["back matter"][2][pdf_reference.end() :] if pdf_reference else ""
+            pdf_reference = re.search(rf"(?m)^\s*{re.escape(number)}\.\s+", scopes[back_anchor][2])
+            following = scopes[back_anchor][2][pdf_reference.end() :] if pdf_reference else ""
             if not compact(following).startswith(compact(entry)[:50]):
                 errors.append(
                     f"back matter: reference {number} number or source evidence missing; regenerate PDF"

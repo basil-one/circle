@@ -39,6 +39,12 @@ class PaperContentTests(unittest.TestCase):
             with self.subTest(destinations=destinations), self.assertRaises(ValueError):
                 content.block_text(blocks, ["a", "b"], destinations)
 
+    def test_repeated_source_uses_each_planned_destination(self):
+        blocks = [("same.md", "one", "first"), ("same.md", "two", "second")]
+        scopes = content.block_text(blocks, ["first", "second"], {"one": 1, "two": 2})
+        with patch.object(content, "evidence", side_effect=lambda text: [text]):
+            self.assertEqual(content.source_errors(blocks, scopes), [])
+
     def test_citation_target_and_reference_number(self):
         self.builder.config["citations"] = [{"text": "source", "annotation": "[9]"}]
         rules = self.builder._get_citation_annotations()
@@ -47,14 +53,14 @@ class PaperContentTests(unittest.TestCase):
                 self.builder,
                 0,
                 rules[0],
-                [("p", "a source")],
-                {"p": (1, 1, "a source [9]")},
+                [("p", "p-anchor", "a source")],
+                {"p-anchor": (1, 1, "a source [9]")},
                 {"1": "reference"},
             )
         self.assertTrue(any("no numbered References entry" in error for error in errors))
         with patch.object(content, "plain_text", side_effect=lambda text: text):
             errors = content.check_citation(
-                self.builder, 0, rules[0], [("p", "no match")], {}, {"1": "reference"}
+                self.builder, 0, rules[0], [("p", "p-anchor", "no match")], {}, {"1": "reference"}
             )
         self.assertTrue(any("does not match" in error for error in errors))
 
