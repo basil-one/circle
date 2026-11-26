@@ -123,7 +123,9 @@ class RenderingUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "report.json"
             with (
-                patch.object(rendering, "check_rendering", side_effect=rendering.IncompleteCheck("timeout")),
+                patch.object(
+                    rendering, "check_rendering", side_effect=rendering.IncompleteCheck("timeout")
+                ),
                 patch.object(sys, "argv", [str(CHECK), "paper.pdf", "--report", str(report)]),
             ):
                 self.assertEqual(rendering.main(), 2)
@@ -144,7 +146,8 @@ class RenderingUnitTests(unittest.TestCase):
             report = Path(directory) / "report.json"
             with (
                 patch.object(
-                    rendering, "check_rendering",
+                    rendering,
+                    "check_rendering",
                     side_effect=rendering.IncompleteCheck("page 302: timeout", findings),
                 ),
                 patch.object(sys, "argv", [str(CHECK), "paper.pdf", "--report", str(report)]),

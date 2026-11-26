@@ -115,7 +115,9 @@ def main():
     except IncompleteCheck as error:
         pages, findings = None, error.findings
         outcome = "failed" if findings else "incomplete"
-        findings.append(f"Rendering inspection incomplete: {str(error)[:500]}; inspect logs and rerun")
+        findings.append(
+            f"Rendering inspection incomplete: {str(error)[:500]}; inspect logs and rerun"
+        )
     else:
         outcome = "failed" if findings else "passed"
 
@@ -131,7 +133,10 @@ def main():
         try:
             args.report.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
         except OSError as error:
-            print(f"Paper: Rendering Integrity — incomplete: cannot write report: {error}", file=sys.stderr)
+            print(
+                f"Paper: Rendering Integrity — incomplete: cannot write report: {error}",
+                file=sys.stderr,
+            )
             if outcome != "failed":
                 outcome, code = "incomplete", 2
     if outcome == "incomplete":
