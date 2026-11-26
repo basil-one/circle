@@ -831,7 +831,8 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     'code-quality': { result: 'success' },
     'dependency-security': { result: 'success' },
     rendering: { result: 'success' },
-    performance: { result: 'failure' }
+    performance: { result: 'failure' },
+    paper: { result: 'success' }
   };
   const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -845,6 +846,9 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
       const parsed = new URL(url);
       if (parsed.pathname.endsWith(`/actions/runs/${runId}/artifacts`)) {
         const artifactName = parsed.searchParams.get('name');
+        if (artifactName === 'circle3-paper-preview') {
+          return { ok: true, json: async () => ({ artifacts: [] }) };
+        }
         return {
           ok: true,
           json: async () => ({
@@ -900,6 +904,7 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
   const confirmed = await buildFailurePulse(confirmedComparison);
   assert.equal(confirmed.successful, false);
   assert.match(confirmed.markdown, /\| Site: Performance Integrity \| Failed \|/);
+  assert.match(confirmed.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(confirmed.markdown, /Confirmed performance violation\(s\)/);
   assert.match(confirmed.markdown, /`\/method\/`\/mobile largest-contentful-paint: 3\.60 s initially, 3\.20 s confirmed vs 3\.00 s limit/);
   assert.match(confirmed.markdown, /reference 2\.40 s \(Δ 1\.20 s, \+49\.8%\)/);

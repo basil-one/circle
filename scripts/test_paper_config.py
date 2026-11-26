@@ -107,9 +107,7 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
                     if command == "pandoc"
                     else ""
                 )
-                executable.write_text(
-                    f"#!/bin/sh\n{output}exit 1\n", encoding="utf-8"
-                )
+                executable.write_text(f"#!/bin/sh\n{output}exit 1\n", encoding="utf-8")
                 executable.chmod(0o755)
 
             output = temporary / "output"
