@@ -210,6 +210,32 @@ test('Pulse reports unknown when completion-time job metadata is inaccessible', 
   assert.match(markdown, /Review required/);
 });
 
+test('legacy paper lookup retains failed jobs but cannot establish a pass without reports', async () => {
+  const markdown = await buildPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    token: 'test-token',
+    date,
+    fetchImpl: async (url) => {
+      const path = new URL(url).pathname;
+      if (path.endsWith('/actions/workflows/paper-content-integrity.yml/runs')) {
+        return { ok: true, json: async () => ({ workflow_runs: [{ ...passingRun, conclusion: 'failure' }] }) };
+      }
+      if (path.endsWith('/actions/workflows/paper-build-integrity.yml/runs')) {
+        return { ok: true, json: async () => ({ workflow_runs: [passingRun] }) };
+      }
+      if (path.endsWith('/actions/runs/123/jobs')) {
+        return { ok: true, json: async () => ({ total_count: 1, jobs: [
+          { status: 'completed', conclusion: 'success', completed_at: `${date}T06:26:00Z` }
+        ] }) };
+      }
+      return { ok: true, json: async () => ({ workflow_runs: [] }) };
+    }
+  });
+  assert.match(markdown, /\| Paper: Build Integrity \| Unknown \/ PDF evidence unavailable \|/);
+  assert.match(markdown, /\| Paper: Content Integrity \| Fresh — failed \|/);
+});
+
 test('missing today reports prior verification separately from stale data', () => {
   const prior = {
     ...passingRun,
@@ -805,10 +831,10 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
       ? JSON.stringify({ status: 'advisory', findings: ['External source timed out; retry'] })
       : unzipImpl(command, args)
   });
-  assert.equal(advisoryPulse.successful, true);
-  assert.match(advisoryPulse.markdown, /Cycle successful with advisories/);
+  assert.equal(advisoryPulse.successful, false);
+  assert.match(advisoryPulse.markdown, /\| Paper: Content Integrity \| Unknown outcome \|/);
   assert.match(advisoryPulse.markdown, /External source timed out; retry/);
-  assert.doesNotMatch(advisoryPulse.markdown, /All 9 dimensions passed/);
+  assert.doesNotMatch(advisoryPulse.markdown, /Cycle successful with advisories|All 9 dimensions passed/);
 });
 
 test('paper validator outcomes and bounded reports never infer a pass', () => {
@@ -837,6 +863,14 @@ test('paper validator outcomes and bounded reports never infer a pass', () => {
   const linkIncomplete = paperValidatorResult('Paper: Link Integrity', 'failure', 'incomplete', run);
   assert.equal(linkIncomplete.result.label, 'Incomplete / link verification');
   assert.match(linkIncomplete.result.detail, /link job/);
+  assert.equal(paperValidatorResult('Paper: Content Integrity', 'success', 'advisory', run).result.state, 'unknown');
+  assert.equal(paperValidatorResult('Paper: Rendering Integrity', 'success', 'advisory', run).result.state, 'unknown');
+  assert.equal(paperValidatorResult('Paper: Link Integrity', 'failure', 'advisory', run).result.state, 'incomplete');
+  const advisoryOnly = renderPulse({
+    date, generatedAt: `${date}T06:40:00Z`, orchestrated: true,
+    results: [paperValidatorResult('Paper: Link Integrity', 'success', 'advisory', run)]
+  });
+  assert.match(advisoryOnly, /Cycle successful with advisories/);
   const mixed = renderPulse({
     date, generatedAt: `${date}T06:40:00Z`, orchestrated: true,
     results: [
@@ -1107,7 +1141,13 @@ test('paper build, content failure, and missing evidence remain distinct', async
   needs['paper-content'].result = 'success';
   needs['paper-content'].outputs.status = 'failure';
   pulse = await buildOrchestratedPulse(options);
-  assert.match(pulse.markdown, /\| Paper: Content Integrity \| Unknown outcome \|/);
+  assert.match(pulse.markdown, /\| Paper: Content Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /contradictory job result/);
+  const contradictoryWithoutReport = await buildOrchestratedPulse({
+    ...options,
+    unzipImpl: () => JSON.stringify({ status: 'failed', findings: [] })
+  });
+  assert.match(contradictoryWithoutReport.markdown, /\| Paper: Content Integrity \| Unknown outcome \|/);
 
   needs['paper-content'].result = 'cancelled';
   needs['paper-content'].outputs.status = 'success';

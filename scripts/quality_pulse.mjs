@@ -720,14 +720,14 @@ function paperValidatorResult(name, job, status, run) {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / cancelled';
     result.result.detail = `${name} job was cancelled; rerun the paper workflow.`;
-  } else if (job === 'success' && status === 'advisory') {
+  } else if (job === 'success' && status === 'advisory' && name === 'Paper: Link Integrity') {
     result.result.state = 'advisory';
     result.result.label = 'Advisory';
     result.result.detail = 'Verification completed with external uncertainty; review the findings.';
-  } else if (job === 'failure' && ['success', 'incomplete', '', undefined].includes(status)) {
+  } else if (job === 'failure' && ['success', 'incomplete', '', undefined, ...(name === 'Paper: Link Integrity' ? ['advisory'] : [])].includes(status)) {
     result.result.state = 'incomplete';
     result.result.label = `Incomplete / ${domain} verification`;
-    result.result.detail = `Setup, extraction, or evidence upload failed; inspect the ${domain} job and rerun.`;
+    result.result.detail = `Setup, PDF generation, validator tests, or evidence upload failed; inspect the ${domain} job and rerun.`;
   } else if (job !== 'success' || status !== 'success') {
     result.result.state = 'unknown';
     result.result.label = 'Unknown outcome';
@@ -743,7 +743,7 @@ function validPaperReport(report, expectedStatus) {
     (expectedStatus === 'passed' ? report.findings.length === 0 : report.findings.length > 0);
 }
 
-async function applyPaperReport(item, status, artifactOptions, repository, runId, artifactName) {
+async function applyPaperReport(item, job, status, artifactOptions, repository, runId, artifactName) {
   const domain = item.name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
   if (!expectedStatus) return;
@@ -756,6 +756,11 @@ async function applyPaperReport(item, status, artifactOptions, repository, runId
     });
     if (!validPaperReport(report, expectedStatus)) throw new Error('report is malformed or disagrees with the validator');
     item.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+    if (expectedStatus === 'failed' && job === 'success' && item.result.state === 'unknown') {
+      item.result.state = 'failed';
+      item.result.label = 'Failed';
+      item.result.detail += ' Validator status and report establish a defect despite the contradictory job result.';
+    }
     if (report.findings.length) {
       item.result.detail += ` ${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. See the report for all findings.`;
     }
@@ -896,8 +901,8 @@ async function buildOrchestratedPulse({
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
   }
-  if (['fresh', 'failed', 'incomplete', 'advisory'].includes(content.result.state)) {
-    await applyPaperReport(content, paperContent, artifactOptions, repository, runId, 'paper-content-report');
+  if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(content.result.state)) {
+    await applyPaperReport(content, needs?.['paper-content']?.result, paperContent, artifactOptions, repository, runId, 'paper-content-report');
   }
 
   const markdown = renderPulse({
@@ -974,13 +979,13 @@ async function buildPulse({
   );
   // Legacy workflow lookup cannot validate required paper artifacts and validator status.
   const legacyBuild = results.find((item) => item.name === 'Paper: Build Integrity');
-  if (legacyBuild && ['fresh', 'prior'].includes(legacyBuild.result.state)) {
+  if (legacyBuild?.result.run?.conclusion === 'success') {
     legacyBuild.result.state = 'unknown';
     legacyBuild.result.label = 'Unknown / PDF evidence unavailable';
     legacyBuild.result.detail = 'Legacy workflow-run lookup cannot establish PDF artifact evidence; use the same-cycle Quality Pulse.';
   }
   const legacyContent = results.find((item) => item.name === 'Paper: Content Integrity');
-  if (legacyContent) {
+  if (legacyContent?.result.run?.conclusion === 'success') {
     legacyContent.result.state = 'unknown';
     legacyContent.result.label = 'Unknown / validator evidence unavailable';
     legacyContent.result.detail = 'Legacy workflow-run lookup cannot establish Content report consistency; use the same-cycle Quality Pulse.';

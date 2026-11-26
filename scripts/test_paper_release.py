@@ -59,8 +59,11 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn("pull_request:\n    branches: [main]", integrity)
         self.assertIn("workflow_call:", integrity)
         self.assertIn('name: "Paper: Build Integrity"', integrity.split("jobs:", 1)[1])
-        self.assertIn("ref: ${{ github.event.pull_request.head.sha || github.sha }}", integrity)
-        self.assertIn("python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v", integrity)
+        self.assertNotIn("ref:", integrity)
+        self.assertIn("git rev-parse HEAD", integrity)
+        self.assertIn(
+            "python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v", integrity
+        )
         self.assertIn("run: bash scripts/build-paper-pdf.sh", integrity)
         self.assertIn("rm -f assets/pdfs/circle3-paper.pdf", build_script)
         self.assertIn("python3 scripts/build-pdf.py scripts/plop.paper.config.yaml", build_script)

@@ -24,9 +24,12 @@ jobs:
       - name: Checkout intended revision
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Build fresh PDF for content verification
+        id: build
         run: bash scripts/build-paper-pdf.sh
       - name: Check configured paper content
         id: content
@@ -43,12 +46,13 @@ jobs:
           exit "$result"
       - name: Test content checks on generated PDF
         id: tests
+        if: ${{ always() && steps.build.outcome == 'success' }}
         env:
           PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
         run: python3 -m unittest discover -s scripts -p 'test_paper_content.py' -v
       - name: Upload content findings
         id: upload
-        if: ${{ always() && steps.content.outcome != 'skipped' }}
+        if: ${{ always() && (steps.content.outcome == 'success' || steps.content.outcome == 'failure') }}
         uses: actions/upload-artifact@v6
         with:
           name: paper-content-report
@@ -59,20 +63,23 @@ jobs:
         if: ${{ always() }}
         env:
           STATUS: ${{ steps.content.outputs.status }}
+          CONTENT_OUTCOME: ${{ steps.content.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
           TEST_OUTCOME: ${{ steps.tests.outcome }}
           UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
         run: |
           {
             echo "## Paper: Content Integrity"
-            echo "Revision: \`$SOURCE_SHA\`"
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`"
             if [ -n "$STATUS" ]; then
               echo "Validator status: **$STATUS**."
             else
               echo "Verification incomplete: checkout or PDF generation did not complete; inspect the job and rerun."
             fi
-            echo "Content tests: **${TEST_OUTCOME:-unavailable}**; report upload: **${UPLOAD_OUTCOME:-unavailable}**."
+            echo "PDF build: **${BUILD_OUTCOME:-unavailable}**; validator step: **${CONTENT_OUTCOME:-unavailable}**; content tests: **${TEST_OUTCOME:-unavailable}**; report upload: **${UPLOAD_OUTCOME:-unavailable}**."
+            echo "Any failed or unavailable step requires inspection of its logs and a rerun."
             if [ -n "$ARTIFACT_URL" ]; then
               echo "[Download content findings]($ARTIFACT_URL)"
             else
