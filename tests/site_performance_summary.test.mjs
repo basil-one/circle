@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { renderPerformanceSummary } from '../scripts/render_site_performance_summary.mjs';
+import {
+  performanceMeasurementExitCode,
+  renderPerformanceSummary
+} from '../scripts/render_site_performance_summary.mjs';
 
 const routes = ['/', '/moves/', '/lenses/', '/method/'];
 const metrics = [
@@ -10,6 +17,7 @@ const metrics = [
   'total-blocking-time',
   'cumulative-layout-shift'
 ];
+const summaryScript = resolve('scripts/render_site_performance_summary.mjs');
 
 function makeSummary() {
   return {
@@ -93,7 +101,14 @@ function makeInputs(overrides = {}) {
     skip: { measurement: false, paths: [] },
     reports: { outcome: 'success', url: 'https://github.com/basil-one/circle/actions/runs/99/artifacts/1' },
     machineArtifact: { outcome: 'success', url: 'https://github.com/basil-one/circle/actions/runs/99/artifacts/2' },
-    steps: { measure: 'success', diagnostic: 'success', reports: 'success', summary: 'success' },
+    steps: {
+      tests: 'success',
+      classify: 'success',
+      measure: 'success',
+      diagnostic: 'success',
+      reports: 'success',
+      summary: 'success'
+    },
     ...overrides
   };
 }
@@ -199,19 +214,183 @@ test('uses the same hierarchy for intentional collection-text skips without meas
     comparison: undefined,
     skip: {
       measurement: true,
-      reason: 'all changes are editorial move/lens text',
+      reason: 'all changed files are existing move/lens prose-only Markdown edits',
       paths: ['_moves/new.md']
     },
     reports: { outcome: 'skipped' },
     machineArtifact: { outcome: 'skipped' },
-    steps: { measure: 'skipped' }
+    steps: { tests: 'success', classify: 'success', measure: 'skipped' }
   }));
 
   assert.match(report, /^# Site: Performance Integrity\n\n\*\*Intentionally skipped — existing collection text only\*\*/);
   assert.match(report, /Changed paths \(1\): `_moves\/new\.md`/);
+  assert.match(report, /Classification evidence: pull-request prose-only classifier \*\*passed\*\*/);
   assert.match(report, /Lighthouse samples collected: \*\*0\*\*/);
   assert.match(report, /No metrics, baseline comparison, or artifacts were produced/);
   assert.doesNotMatch(report, /24\/24|Mobile LCP|Fixed LCP Δ/);
+});
+
+test('intentional skip requires successful classification evidence and skipped measurement', () => {
+  const valid = makeInputs({
+    summary: undefined,
+    comparison: undefined,
+    skip: {
+      measurement: true,
+      reason: 'all changed files are existing move/lens prose-only Markdown edits',
+      paths: ['_lenses/sense.md']
+    },
+    steps: { tests: 'success', classify: 'success', measure: 'skipped' }
+  });
+  assert.equal(performanceMeasurementExitCode(valid), 0);
+
+  for (const invalid of [
+    { ...valid, steps: { ...valid.steps, classify: 'failure' } },
+    { ...valid, skip: { ...valid.skip, paths: [] } },
+    { ...valid, skip: { ...valid.skip, paths: ['assets/site.css'] } },
+    { ...valid, skip: { ...valid.skip, reason: 'classification unavailable' } },
+    { ...valid, steps: { ...valid.steps, measure: 'success' } }
+  ]) {
+    assert.equal(performanceMeasurementExitCode(invalid), 1);
+  }
+});
+
+test('uncertain classification requires measurement, while missing baselines stay informational', () => {
+  const inputs = makeInputs({
+    comparison: makeComparison(),
+    steps: {
+      tests: 'success',
+      classify: 'failure',
+      measure: 'success'
+    }
+  });
+  assert.equal(performanceMeasurementExitCode(inputs), 0);
+  const report = renderPerformanceSummary(inputs);
+  assert.match(report, /Measurement completed — 24\/24 Lighthouse samples/);
+  assert.match(report, /pending reviewed successful `main` anchor/);
+  assert.match(report, /collecting \(0\/28\)/);
+});
+
+test('required measurement failure or incomplete measurement evidence fails the check', () => {
+  assert.equal(
+    performanceMeasurementExitCode(
+      makeInputs({ steps: { tests: 'success', measure: 'failure' } })
+    ),
+    1
+  );
+  assert.equal(
+    performanceMeasurementExitCode(
+      makeInputs({ steps: { tests: 'success', measure: 'skipped' } })
+    ),
+    1
+  );
+
+  const incompleteSummary = makeSummary();
+  incompleteSummary.results.pop();
+  assert.equal(
+    performanceMeasurementExitCode(
+      makeInputs({
+        summary: incompleteSummary,
+        steps: { tests: 'success', measure: 'success' }
+      })
+    ),
+    1
+  );
+
+  const invalidMetricSummary = makeSummary();
+  invalidMetricSummary.results[0].values['first-contentful-paint'] = null;
+  assert.equal(
+    performanceMeasurementExitCode(
+      makeInputs({
+        summary: invalidMetricSummary,
+        steps: { tests: 'success', measure: 'success' }
+      })
+    ),
+    1
+  );
+});
+
+test('summary executable returns workflow failure only for unverified required measurement', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'circle-performance-summary-'));
+  try {
+    const reportDirectory = join(directory, 'reports');
+    const summaryPath = join(reportDirectory, 'performance-summary.json');
+    mkdirSync(reportDirectory, { recursive: true });
+    const summaryEnvironment = {
+      ...process.env,
+      PERFORMANCE_REPORT_DIR: reportDirectory,
+      STEP_TESTS: 'success',
+      STEP_CLASSIFY: 'failure',
+      STEP_MEASURE: 'success'
+    };
+
+    writeFileSync(
+      summaryPath,
+      JSON.stringify(makeSummary())
+    );
+    const uncertainClassification = spawnSync(
+      process.execPath,
+      [summaryScript],
+      { encoding: 'utf8', env: summaryEnvironment }
+    );
+    assert.equal(uncertainClassification.status, 0, uncertainClassification.stderr);
+
+    const incomplete = makeSummary();
+    incomplete.results.pop();
+    writeFileSync(summaryPath, JSON.stringify(incomplete));
+    const incompleteEvidence = spawnSync(
+      process.execPath,
+      [summaryScript],
+      {
+        encoding: 'utf8',
+        env: {
+          ...summaryEnvironment,
+          STEP_CLASSIFY: 'success'
+        }
+      }
+    );
+    assert.equal(incompleteEvidence.status, 1);
+    assert.match(incompleteEvidence.stdout, /Measurement failed or incomplete/);
+
+    const intentionalSkip = spawnSync(
+      process.execPath,
+      [summaryScript],
+      {
+        encoding: 'utf8',
+        env: {
+          ...summaryEnvironment,
+          PERFORMANCE_REPORT_DIR: join(directory, 'skip-reports'),
+          SKIP_MEASUREMENT: 'true',
+          SKIP_REASON: 'all changed files are existing move/lens prose-only Markdown edits',
+          CHANGED_PATHS: '["_moves/establish.md"]',
+          STEP_CLASSIFY: 'success',
+          STEP_MEASURE: 'skipped'
+        }
+      }
+    );
+    assert.equal(intentionalSkip.status, 0, intentionalSkip.stderr);
+    assert.match(intentionalSkip.stdout, /Classification evidence: pull-request prose-only classifier \*\*passed\*\*/);
+
+    const unclassifiedSkip = spawnSync(
+      process.execPath,
+      [summaryScript],
+      {
+        encoding: 'utf8',
+        env: {
+          ...summaryEnvironment,
+          PERFORMANCE_REPORT_DIR: join(directory, 'unclassified-reports'),
+          SKIP_MEASUREMENT: 'true',
+          SKIP_REASON: 'classification unavailable',
+          CHANGED_PATHS: '["_moves/establish.md"]',
+          STEP_CLASSIFY: 'failure',
+          STEP_MEASURE: 'skipped'
+        }
+      }
+    );
+    assert.equal(unclassifiedSkip.status, 1);
+    assert.match(unclassifiedSkip.stdout, /Measurement failed or incomplete/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test('reports measurement failure and incomplete setup without fabricated counts or artifact links', () => {

@@ -7,7 +7,9 @@ import {
   discoverHtmlRoutes,
   generatedFileForRoute,
   selectPerformanceRoutes,
-  selectSmokeRoutes
+  selectSmokeRoutes,
+  performanceRunCount,
+  responsiveViewports
 } from './browser/site-routes.js';
 
 function writePage(root, route) {
@@ -19,6 +21,8 @@ function writePage(root, route) {
 }
 
 test('discovers Circle collection entries and smoke-tests every generated route', () => {
+  assert.deepEqual(responsiveViewports, [320, 768, 1280]);
+  assert.equal(performanceRunCount, 3);
   const root = mkdtempSync(resolve(tmpdir(), 'circle-site-routes-'));
   try {
     const routes = [

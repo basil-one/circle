@@ -1,7 +1,9 @@
 import { readdirSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 
-const performanceRoutes = ["/", "/moves/", "/lenses/", "/method/"];
+export const performanceRoutes = ["/", "/moves/", "/lenses/", "/method/"];
+export const performanceRunCount = 3;
+export const responsiveViewports = [320, 768, 1280];
 
 function htmlFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

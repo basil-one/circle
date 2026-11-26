@@ -8,7 +8,8 @@ const workflows = [
   ['site-build-integrity.yml', 'build', 'Site: Build Integrity'],
   ['site-link-integrity.yml', 'links', 'Site: Link Integrity'],
   ['site-seo-integrity.yml', 'seo', 'Site: SEO Integrity'],
-  ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity']
+  ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
+  ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -44,15 +45,27 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
   }
 });
 
-test('performance remains available but is not part of Agency’s required-check contract', async () => {
+test('all seven Common and Site checks are required and performance has substantive evidence semantics', async () => {
   const file = 'site-performance-integrity.yml';
   const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
-  assert.ok(!workflows.some(([requiredFile]) => requiredFile === file));
+  assert.ok(workflows.some(([requiredFile]) => requiredFile === file));
   assert.match(yaml, /^  pull_request:\n    branches: \[main\]$/m);
   assert.match(yaml, /^  workflow_dispatch:$/m);
-  assert.match(yaml, /^  workflow_call:$/m);
+  assert.match(yaml, /^  workflow_call:\n    inputs:\n      caller_event_name:/m);
   assert.doesNotMatch(yaml, /^  schedule:$/m);
   assert.match(yaml, /^  lighthouse:\n    name: "Site: Performance Integrity"$/m);
   assert.match(yaml, /^      - name: Run performance classifier and history tests\n        id: tests\n        run: npm run test:performance-history/m);
+  assert.match(yaml, /^      - name: Classify pull request changes for Lighthouse\n        id: classify\n        if: github\.event_name == 'pull_request'\n        continue-on-error: true/m);
   assert.match(yaml, /^      - name: Measure rendered pages\n        id: measure\n        if: .+\n        run: npm run measure:performance/m);
+  assert.match(yaml, /steps\.classify\.outcome == 'failure' \|\| steps\.classify\.outputs\.skip_measurement != 'true'/);
+  assert.match(yaml, /^      - name: Render Performance Integrity summary\n        if: always\(\)/m);
+  assert.match(yaml, /node scripts\/render_site_performance_summary\.mjs/);
+  assert.match(yaml, /STEP_TESTS: \$\{\{ steps\.tests\.outcome \}\}/);
+  assert.match(yaml, /STEP_CLASSIFY: \$\{\{ steps\.classify\.outcome \}\}/);
+  assert.match(yaml, /STEP_MEASURE: \$\{\{ steps\.measure\.outcome \}\}/);
+  const pulse = await readFile(new URL('../.github/workflows/quality-pulse.yml', import.meta.url), 'utf8');
+  assert.match(pulse, /performance:\n    name: "Site: Performance Integrity"\n    uses: \.\/\.github\/workflows\/site-performance-integrity\.yml\n    with:\n      caller_event_name: \$\{\{ github\.event_name \}\}/);
+
+  const summary = await readFile(new URL('../scripts/render_site_performance_summary.mjs', import.meta.url), 'utf8');
+  assert.match(summary, /performanceMeasurementExitCode/);
 });

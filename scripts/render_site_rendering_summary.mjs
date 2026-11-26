@@ -1,6 +1,47 @@
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  discoverHtmlRoutes,
+  responsiveViewports,
+} from "../tests/browser/site-routes.js";
+
+const routeSmokeSuffix = " is present in generated output and loads";
+const axeSuffix = " has no detectable accessibility violations";
+const responsivePrefix = "Responsive usability: ";
+const responsivePattern = /^Responsive usability: (.+) at (\d+)px$/;
+
+function validateAnnotation(annotation, title) {
+  if (!annotation || typeof annotation !== "object" || Array.isArray(annotation)) {
+    return `Test "${title}" contains a non-object annotation.`;
+  }
+  if (typeof annotation.type !== "string" || !annotation.type.trim()) {
+    return `Test "${title}" contains an annotation without a valid type.`;
+  }
+  if (
+    annotation.description !== undefined &&
+    typeof annotation.description !== "string"
+  ) {
+    return `Test "${title}" has a non-string "${annotation.type}" annotation description.`;
+  }
+  if (annotation.type === "responsive-hit-area") {
+    const match =
+      typeof annotation.description === "string" &&
+      /^(navigation|footer):(.+):(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/.exec(
+        annotation.description,
+      );
+    if (
+      !match ||
+      !Number.isFinite(Number(match[3])) ||
+      !Number.isFinite(Number(match[4])) ||
+      Number(match[3]) <= 0 ||
+      Number(match[4]) <= 0
+    ) {
+      return `Test "${title}" has a malformed responsive-hit-area annotation; expected navigation/footer:label:WIDTHxHEIGHT with positive pixel dimensions.`;
+    }
+  }
+  return undefined;
+}
 
 function parsePlaywrightReport(contents) {
   if (contents === undefined) {
@@ -18,6 +59,7 @@ function parsePlaywrightReport(contents) {
     }
 
     const tests = [];
+    const annotationIssues = [];
     const collect = (suite) => {
       if (!suite || typeof suite !== "object") {
         throw new Error("Playwright JSON report contains a malformed suite");
@@ -62,15 +104,19 @@ function parsePlaywrightReport(contents) {
               "Playwright JSON report contains malformed diagnostics",
             );
           }
+          const annotations = test.annotations ?? [];
+          for (const annotation of annotations) {
+            const issue = validateAnnotation(annotation, spec.title);
+            if (issue) annotationIssues.push(issue);
+          }
           tests.push({
             title: spec.title,
             status: result?.status ?? "not completed",
             duration: result?.duration,
-            annotations: test.annotations ?? [],
-            axeScanned:
-              test.annotations?.some(
-                (annotation) => annotation.type === "axe-scan-complete",
-              ) ?? false,
+            annotations,
+            axeScanned: annotations.some(
+              (annotation) => annotation?.type === "axe-scan-complete",
+            ),
             diagnostic: [
               ...new Set(
                 [
@@ -87,7 +133,11 @@ function parsePlaywrightReport(contents) {
     for (const suite of report.suites ?? []) collect(suite);
 
     return tests.length
-      ? { tests, duration: report.stats?.duration ?? report.duration }
+      ? {
+          tests,
+          duration: report.stats?.duration ?? report.duration,
+          annotationIssues,
+        }
       : { tests, reason: "Playwright JSON report contained no test cases" };
   } catch {
     return {
@@ -151,11 +201,131 @@ function diagnosticLines(lines, env) {
   }
 }
 
-export function renderSiteRenderingSummary({ reportContents, env = {} }) {
+function collectCoverageIssues({
+  tests,
+  expectedRoutes,
+  expectedViewports,
+  annotationIssues,
+}) {
+  const issues = [...annotationIssues];
+  if (!Array.isArray(expectedRoutes) || expectedRoutes.length === 0) {
+    issues.push(
+      "Expected generated HTML routes are unavailable; verify Jekyll output and route discovery.",
+    );
+    return issues;
+  }
+  if (
+    !Array.isArray(expectedViewports) ||
+    expectedViewports.length === 0 ||
+    expectedViewports.some((width) => !Number.isInteger(width) || width <= 0)
+  ) {
+    issues.push(
+      "Expected responsive viewport definitions are unavailable or invalid; inspect the shared browser test matrix.",
+    );
+    return issues;
+  }
+
+  const routeSet = new Set(expectedRoutes);
+  const viewportSet = new Set(expectedViewports);
+  const smoke = new Map();
+  const axe = new Map();
+  const responsive = new Map();
+  const addCase = (cases, key, item) => {
+    const entries = cases.get(key) ?? [];
+    entries.push(item);
+    cases.set(key, entries);
+  };
+
+  for (const item of tests) {
+    if (item.title.endsWith(routeSmokeSuffix)) {
+      const route = item.title.slice(0, -routeSmokeSuffix.length);
+      addCase(smoke, route, item);
+      if (!routeSet.has(route)) {
+        issues.push(`Unexpected generated-route smoke case "${item.title}".`);
+      }
+    } else if (item.title.endsWith(axeSuffix)) {
+      const route = item.title.slice(0, -axeSuffix.length);
+      addCase(axe, route, item);
+      if (!routeSet.has(route)) {
+        issues.push(`Unexpected full-site axe case "${item.title}".`);
+      }
+    } else if (item.title.startsWith(responsivePrefix)) {
+      const match = responsivePattern.exec(item.title);
+      if (!match) {
+        issues.push(
+          `Malformed responsive case "${item.title}"; expected "Responsive usability: ROUTE at WIDTHpx".`,
+        );
+        continue;
+      }
+      const [, route, widthText] = match;
+      const width = Number(widthText);
+      const key = `${route}\u0000${width}`;
+      addCase(responsive, key, item);
+      if (!routeSet.has(route) || !viewportSet.has(width)) {
+        issues.push(
+          `Unexpected responsive case "${item.title}"; route and viewport must belong to generated HTML routes and the shared viewport matrix.`,
+        );
+      }
+    }
+  }
+
+  const requireOnePassingCase = (cases, key, label, display = key) => {
+    const entries = cases.get(key) ?? [];
+    if (entries.length === 0) {
+      issues.push(`Missing ${label} evidence for "${display}".`);
+      return;
+    }
+    if (entries.length > 1) {
+      issues.push(
+        `Duplicate ${label} evidence for "${display}" (${entries.length} cases).`,
+      );
+    }
+    if (entries.some((entry) => entry.status !== "passed")) {
+      issues.push(
+        `Incomplete ${label} evidence for "${display}"; every expected case must complete and pass.`,
+      );
+    }
+    return entries;
+  };
+
+  for (const route of expectedRoutes) {
+    requireOnePassingCase(smoke, route, "generated-route smoke");
+    const axeCases = requireOnePassingCase(axe, route, "axe");
+    if (axeCases?.some((item) => !item.axeScanned)) {
+      issues.push(
+        `Axe scan annotation is missing for "${route}"; a completed scan is required for every generated page.`,
+      );
+    }
+    for (const width of expectedViewports) {
+      const responsiveCases = requireOnePassingCase(
+        responsive,
+        `${route}\u0000${width}`,
+        "responsive",
+        `${route} at ${width}px`,
+      );
+      if (responsiveCases?.some((item) => !item.annotations.some(
+        (annotation) => annotation.type === "responsive-hit-area",
+      ))) {
+        issues.push(
+          `Responsive hit-area evidence is missing for "${route}" at ${width}px.`,
+        );
+      }
+    }
+  }
+  return issues;
+}
+
+export function renderSiteRenderingSummary({
+  reportContents,
+  env = {},
+  expectedRoutes,
+  expectedViewports = responsiveViewports,
+}) {
   const {
     tests,
     reason: reportUnavailableReason,
     duration,
+    annotationIssues = [],
   } = parsePlaywrightReport(reportContents);
   const routeTests = tests.filter((test) =>
     test.title.endsWith("is present in generated output and loads"),
@@ -167,7 +337,7 @@ export function renderSiteRenderingSummary({ reportContents, env = {} }) {
     test.title.startsWith("Responsive usability: "),
   );
   const responsiveCases = responsiveTests
-    .map((test) => test.title.match(/^Responsive usability: (.+) at (\d+)px$/))
+    .map((test) => test.title.match(responsivePattern))
     .filter(Boolean);
   const responsiveRoutes = [
     ...new Set(responsiveCases.map((match) => match[1])),
@@ -189,12 +359,14 @@ export function renderSiteRenderingSummary({ reportContents, env = {} }) {
   ).length;
   const hitAreas = responsiveTests.flatMap((test) =>
     test.annotations
-      .filter((annotation) => annotation.type === "responsive-hit-area")
+      .filter((annotation) => annotation?.type === "responsive-hit-area")
       .map((annotation) => annotation.description),
   );
   const smallestHitArea = (region) => {
     const areas = hitAreas
-      .filter((area) => area.startsWith(`${region}:`))
+      .filter(
+        (area) => typeof area === "string" && area.startsWith(`${region}:`),
+      )
       .map((area) => {
         const match = area.match(/^([^:]+):(.+):([\d.]+)x([\d.]+)$/);
         return match
@@ -213,6 +385,14 @@ export function renderSiteRenderingSummary({ reportContents, env = {} }) {
   };
   const smallestNavigationTarget = smallestHitArea("navigation");
   const smallestFooterTarget = smallestHitArea("footer");
+  const coverageIssues = reportUnavailableReason
+    ? []
+    : collectCoverageIssues({
+        tests,
+        expectedRoutes,
+        expectedViewports,
+        annotationIssues,
+      });
   const noAxeViolations =
     axeTests.length > 0 &&
     scansCompleted === axeTests.length &&
@@ -248,18 +428,10 @@ export function renderSiteRenderingSummary({ reportContents, env = {} }) {
     );
   }
 
-  if (
-    !reportUnavailableReason &&
-    (routeTests.length === 0 ||
-      axeTests.length === 0 ||
-      scansCompleted !== axeTests.length ||
-      responsiveTests.length === 0 ||
-      responsiveCases.length !== responsiveTests.length)
-  ) {
-    lines.push(
-      "- Coverage verification: **failed**; the report must contain smoke and responsive cases, every responsive case must identify its route and viewport, and every generated HTML route case must record a completed axe scan.",
-    );
-    exitCode = 1;
+  if (coverageIssues.length > 0) {
+    lines.push("- Coverage verification: **failed**;");
+    lines.push(...coverageIssues.map((issue) => `  - ${issue}`));
+    if (env.SMOKE_OUTCOME === "success") exitCode = 1;
   }
 
   if (reportUnavailableReason && env.SMOKE_OUTCOME === "success") {
@@ -301,9 +473,18 @@ function main() {
       reportContents = null;
     }
   }
+  let expectedRoutes;
+  try {
+    expectedRoutes = discoverHtmlRoutes(
+      resolve(process.env.SITE_DIRECTORY ?? "_site"),
+    );
+  } catch {
+    expectedRoutes = undefined;
+  }
   const { markdown, exitCode } = renderSiteRenderingSummary({
     reportContents,
     env: process.env,
+    expectedRoutes,
   });
   if (process.env.GITHUB_STEP_SUMMARY) {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);

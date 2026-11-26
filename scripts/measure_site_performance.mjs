@@ -3,7 +3,10 @@ import { createServer } from 'node:net';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import { chromium } from 'playwright';
-import { selectPerformanceRoutes } from '../tests/browser/site-routes.js';
+import {
+  performanceRunCount,
+  selectPerformanceRoutes
+} from '../tests/browser/site-routes.js';
 
 const root = process.cwd();
 const siteDirectory = resolve(root, '_site');
@@ -11,7 +14,7 @@ const reportDirectory = resolve(
   process.env.PERFORMANCE_REPORT_DIR ?? resolve(root, 'performance-reports')
 );
 const host = '127.0.0.1';
-const runCount = 3;
+const runCount = performanceRunCount;
 const metrics = [
   ['first-contentful-paint', formatMilliseconds],
   ['largest-contentful-paint', formatMilliseconds],

@@ -1,6 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+  performanceRoutes,
+  performanceRunCount
+} from '../tests/browser/site-routes.js';
 
 const metrics = [
   ['first-contentful-paint', 'FCP'],
@@ -9,6 +13,7 @@ const metrics = [
   ['total-blocking-time', 'TBT'],
   ['cumulative-layout-shift', 'CLS']
 ];
+const formFactors = ['mobile', 'desktop'];
 
 function readJson(path) {
   try {
@@ -235,7 +240,7 @@ function technicalDetails(summary, comparison, inputs) {
 function renderPerformanceSummary(inputs) {
   const summary = inputs.summary;
   const comparison = inputs.comparison;
-  const skipped = inputs.skip?.measurement === true;
+  const skipped = isClassifiedSkip(inputs);
   const measure = statusOf(inputs, 'measure');
   const job = inputs.jobStatus ?? 'unknown';
   const failures = failedStepNames(inputs);
@@ -248,6 +253,7 @@ function renderPerformanceSummary(inputs) {
       '**Intentionally skipped — existing collection text only**',
       '',
       '- Informational lab measurement; this is not a performance pass, field Core Web Vitals result, or regression gate.',
+      '- Classification evidence: pull-request prose-only classifier **passed**; Lighthouse steps were intentionally skipped.',
       `- Reason: ${inputs.skip.reason ?? 'all changed files are existing move/lens text-only Markdown edits'}.`,
       `- Changed paths (${inputs.skip.paths?.length ?? 0}): ${inputs.skip.paths?.length ? inputs.skip.paths.map((path) => `\`${path}\``).join(', ') : 'none reported'}.`,
       '- Lighthouse samples collected: **0**.',
@@ -257,11 +263,8 @@ function renderPerformanceSummary(inputs) {
     return lines.join('\n');
   }
 
-  const complete = measure === 'success' &&
-    summary?.complete === true &&
-    summary.coverage?.routeCount === 4 &&
-    summary.coverage?.runCount === 3 &&
-    summary.coverage?.measurementCount === 24;
+  const complete =
+    measure === 'success' && completeMeasurementEvidence(summary);
   const measurementFailed = measure === 'failure';
   const statusText = complete
     ? `**Measurement completed — 24/24 Lighthouse samples${job === 'failure' ? '; a later workflow operation failed' : ''}**`
@@ -318,6 +321,64 @@ function renderPerformanceSummary(inputs) {
   return lines.join('\n');
 }
 
+function completeMeasurementEvidence(summary) {
+  const expectedProfiles = new Set(
+    performanceRoutes.flatMap((route) =>
+      formFactors.map((formFactor) => `${route}\u0000${formFactor}`)
+    )
+  );
+  const results = summary?.results;
+  if (
+    summary?.complete !== true ||
+    summary.coverage?.routeCount !== performanceRoutes.length ||
+    summary.coverage?.runCount !== performanceRunCount ||
+    summary.coverage?.measurementCount !==
+      performanceRoutes.length * formFactors.length * performanceRunCount ||
+    !Array.isArray(results) ||
+    results.length !== expectedProfiles.size
+  ) {
+    return false;
+  }
+
+  const seenProfiles = new Set();
+  for (const result of results) {
+    const key = `${result?.route}\u0000${result?.formFactor}`;
+    if (!expectedProfiles.has(key) || seenProfiles.has(key)) return false;
+    seenProfiles.add(key);
+    if (metrics.some(([metric]) => !Number.isFinite(result.values?.[metric]))) {
+      return false;
+    }
+  }
+  return seenProfiles.size === expectedProfiles.size;
+}
+
+function isClassifiedSkip(inputs) {
+  const paths = inputs.skip?.paths;
+  return inputs.skip?.measurement === true &&
+    statusOf(inputs, 'tests') === 'success' &&
+    statusOf(inputs, 'classify') === 'success' &&
+    inputs.skip.reason === 'all changed files are existing move/lens prose-only Markdown edits' &&
+    Array.isArray(paths) &&
+    paths.length > 0 &&
+    paths.every(
+      (path) =>
+        typeof path === 'string' &&
+        /^_(?:moves|lenses)\/[^/]+\.md$/.test(path)
+    ) &&
+    statusOf(inputs, 'measure') === 'skipped';
+}
+
+function performanceMeasurementExitCode(inputs) {
+  if (statusOf(inputs, 'tests') !== 'success') return 1;
+  if (inputs.skip?.measurement === true) {
+    return isClassifiedSkip(inputs) ? 0 : 1;
+  }
+  return statusOf(inputs, 'measure') === 'success' &&
+    completeMeasurementEvidence(inputs.summary)
+    ? 0
+    : 1;
+}
+
 function main() {
   const reportDirectory = resolve(process.env.PERFORMANCE_REPORT_DIR ?? 'performance-reports');
   const summary = readJson(join(reportDirectory, 'performance-summary.json'));
@@ -356,10 +417,17 @@ function main() {
     writeFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
   }
   process.stdout.write(markdown);
+  process.exitCode = performanceMeasurementExitCode(inputs);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main();
 }
 
-export { formatDelta, formatValue, renderPerformanceSummary, routeLabel };
+export {
+  formatDelta,
+  formatValue,
+  performanceMeasurementExitCode,
+  renderPerformanceSummary,
+  routeLabel
+};

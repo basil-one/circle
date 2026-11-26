@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { resolve } from "node:path";
-import { discoverHtmlRoutes } from "./site-routes.js";
+import { discoverHtmlRoutes, responsiveViewports } from "./site-routes.js";
 import { assertResponsivePage, assertResponsiveTarget } from "./responsive.js";
 
 test.use({ hasTouch: true });
 
-const widths = [320, 768, 1280];
 const localOrigin = new URL("http://127.0.0.1:4173").origin;
 const routes = discoverHtmlRoutes(resolve(process.cwd(), "_site"));
 
@@ -17,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 for (const route of routes) {
-  for (const width of widths) {
+  for (const width of responsiveViewports) {
     test(`Responsive usability: ${route} at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(route);
