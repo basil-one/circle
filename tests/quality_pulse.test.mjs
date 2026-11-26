@@ -1021,3 +1021,16 @@ test('publication evidence remains independent of same-cycle paper outcomes', as
       assert.match(pulse.markdown, /Release v0\.2\.2 PDF assets differ; review before repair/);
       assert.match(pulse.markdown, new RegExp(`Published main: ${mainSha}; validator revision: ${validatorSha}`));
 });
+
+test('paper domain successes cannot pass without a successful build', async () => {
+      const pulse = await buildOrchestratedPulse({
+        apiUrl: 'https://api.github.com',
+        repository: 'basil-one/circle',
+        needs: { paper: { result: 'failure', outputs: { build: 'failure', content: 'success' } } },
+        runId: '902',
+        runUrl: 'https://github.com/basil-one/circle/actions/runs/902',
+        date
+      });
+      assert.match(pulse.markdown, /\| Paper: Build Integrity \| Failed \|/);
+      assert.match(pulse.markdown, /\| Paper: Content Integrity \| Unknown \/ PDF preview unavailable \|/);
+});

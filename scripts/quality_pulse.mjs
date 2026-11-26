@@ -873,14 +873,14 @@ async function buildOrchestratedPulse({
       paper.result.label = 'Unknown / PDF preview unavailable';
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
-    for (const item of results.filter((result) =>
-      ['Paper: Content Integrity', 'Paper: Link Integrity', 'Paper: Rendering Integrity'].includes(result.name)
-    )) {
-      if (item.result.state === 'fresh' && paper.result.state !== 'fresh') {
-        item.result.state = 'unknown';
-        item.result.label = 'Unknown / PDF preview unavailable';
-        item.result.detail = 'Same-cycle PDF evidence is unavailable; paper verification cannot be established.';
-      }
+  }
+  for (const item of results.filter((result) =>
+    ['Paper: Content Integrity', 'Paper: Link Integrity', 'Paper: Rendering Integrity'].includes(result.name)
+  )) {
+    if (item.result.state === 'fresh' && paper.result.state !== 'fresh') {
+      item.result.state = 'unknown';
+      item.result.label = 'Unknown / PDF preview unavailable';
+      item.result.detail = 'Same-cycle PDF evidence is unavailable; paper verification cannot be established.';
     }
   }
 
