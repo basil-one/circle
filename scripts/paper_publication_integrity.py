@@ -246,7 +246,9 @@ def check_publication():
             if len(data) != assets[name]["size"] or (
                 assets[name].get("digest") and assets[name]["digest"] != digest
             ):
-                mismatches.append(f"Public download {name} differs from its release asset metadata.")
+                mismatches.append(
+                    f"Public download {name} differs from its release asset metadata."
+                )
             try:
                 validate_pdf(data, name, Path(temporary))
             except Mismatch as error:

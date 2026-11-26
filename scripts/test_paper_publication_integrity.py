@@ -124,9 +124,11 @@ class PublicationIntegrityTests(unittest.TestCase):
                     self.assertIn(defective, str(caught.exception))
                     self.assertIn(f"{other} offline", str(caught.exception))
                     self.assertIn(
-                        {"empty": "empty", "unreadable": "not a readable PDF", "metadata": "metadata"}[
-                            kind
-                        ],
+                        {
+                            "empty": "empty",
+                            "unreadable": "not a readable PDF",
+                            "metadata": "metadata",
+                        }[kind],
                         str(caught.exception),
                     )
 
@@ -134,8 +136,9 @@ class PublicationIntegrityTests(unittest.TestCase):
         for missing in (STABLE, VERSIONED):
             values = {STABLE: b"pdf", VERSIONED: b"pdf"}
             values[missing] = publication.Unavailable(f"{missing} offline")
-            with self.subTest(missing=missing), self.assertRaisesRegex(
-                publication.Unavailable, f"{missing} offline"
+            with (
+                self.subTest(missing=missing),
+                self.assertRaisesRegex(publication.Unavailable, f"{missing} offline"),
             ):
                 self.check(stable=values[STABLE], versioned=values[VERSIONED])
 
