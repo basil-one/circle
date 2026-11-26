@@ -754,6 +754,26 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(pulse.markdown, /No fixed wall-clock completion cutoff is applied/);
   assert.doesNotMatch(pulse.markdown, /18:00:00Z|prior verification/);
 
+  needs.paper.outputs = {
+    build: 'success', content: 'success', link: 'success', rendering: 'success'
+  };
+  const combined = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    token: 'test-token',
+    needs,
+    runId,
+    runUrl,
+    date,
+    fetchImpl,
+    unzipImpl
+  });
+  assert.equal(combined.successful, true);
+  assert.match(combined.markdown, /All 12 dimensions passed in this cycle/);
+  for (const domain of ['Build', 'Content', 'Link', 'Rendering', 'Publication']) {
+    assert.ok(combined.markdown.includes(`| Paper: ${domain} Integrity | Passed |`));
+  }
+
   performanceSummary.source.eventName = 'workflow_dispatch';
   const manualPulse = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
