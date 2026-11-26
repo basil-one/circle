@@ -11,9 +11,9 @@ on:
       rendering:
         description: Same-cycle Paper Rendering result
         value: ${{ jobs.paper-results.outputs.rendering }}
-      rendering_evidence:
-        description: Same-cycle Paper Rendering evidence
-        value: ${{ jobs.paper-results.outputs.rendering_evidence }}
+      rendering_job:
+        description: Same-cycle Paper Rendering job result
+        value: ${{ jobs.paper-results.outputs.rendering_job }}
   workflow_dispatch:
 
 permissions:
@@ -67,7 +67,6 @@ jobs:
     timeout-minutes: 10
     outputs:
       status: ${{ steps.rendering.outputs.status }}
-      evidence: ${{ steps.rendering.outputs.evidence }}
     steps:
       - name: Require a successful same-cycle build
         if: ${{ needs.paper-build.result != 'success' }}
@@ -105,10 +104,15 @@ jobs:
             1) echo "status=failure" >> "$GITHUB_OUTPUT" ;;
             *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
           esac
-          if [ -s "$RUNNER_TEMP/paper-rendering.json" ]; then
-            echo "evidence=$(cat "$RUNNER_TEMP/paper-rendering.json")" >> "$GITHUB_OUTPUT"
-          fi
           exit "$result"
+      - name: Upload rendering report
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: paper-rendering-report
+          path: ${{ runner.temp }}/paper-rendering.json
+          if-no-files-found: error
+          retention-days: 30
 
   paper-results:
     name: "Paper: Cycle Results"
@@ -117,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build: ${{ needs.paper-build.result }}
-      rendering: ${{ needs.paper-rendering.outputs.status == 'success' && needs.paper-rendering.result != 'success' && 'incomplete' || needs.paper-rendering.outputs.status || 'incomplete' }}
-      rendering_evidence: ${{ needs.paper-rendering.outputs.evidence }}
+      rendering: ${{ needs.paper-rendering.outputs.status }}
+      rendering_job: ${{ needs.paper-rendering.result }}
     steps:
       - run: echo "Paper Build and Rendering outcomes are available to Quality Pulse."

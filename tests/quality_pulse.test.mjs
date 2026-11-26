@@ -699,7 +699,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   needs.paper.outputs = {
     build: 'success',
     rendering: 'success',
-    rendering_evidence: JSON.stringify({ status: 'success', detail: '', findings: [] })
+    rendering_job: 'success'
   };
   const performanceSummary = {
     complete: true,
@@ -714,13 +714,13 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
         ? 456
         : artifactName === 'circle3-paper-preview'
           ? 458
-          : 457;
+          : artifactName === 'paper-rendering-report' ? 459 : 457;
       return {
         ok: true,
         json: async () => ({ artifacts: [{ name: artifactName, expired: false, id }] })
       };
     }
-    if (/\/actions\/artifacts\/(456|457)\/zip$/.test(parsed.pathname)) {
+    if (/\/actions\/artifacts\/(456|457|459)\/zip$/.test(parsed.pathname)) {
       return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) };
     }
     throw new Error(`Unexpected request: ${parsed.pathname}`);
@@ -728,6 +728,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   const unzipImpl = (_command, args) => {
     if (args.at(-1) === 'performance-comparison.json') return JSON.stringify(performanceComparison);
     if (args.at(-1) === 'performance-summary.json') return JSON.stringify(performanceSummary);
+    if (args.at(-1) === 'paper-rendering.json') return JSON.stringify({ status: 'passed', findings: [] });
     if (args.at(-1) === 'dependency-posture.json') {
       return JSON.stringify({ status: 'passed', detail: 'No open medium-or-higher alerts' });
     }
@@ -752,6 +753,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/458/);
+  assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/459/);
   assert.match(pulse.markdown, /\[same-cycle run\]\(https:\/\/github\.com\/basil-one\/circle\/actions\/runs\/888\)/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/456/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/457/);
@@ -840,7 +842,7 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     rendering: { result: 'success' },
     performance: { result: 'failure' },
     paper: { result: 'success', outputs: { build: 'success', rendering: 'success',
-      rendering_evidence: JSON.stringify({ status: 'success', detail: '', findings: [] }) } }
+      rendering_job: 'success' } }
   };
   const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -956,7 +958,7 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
       rendering: { result: 'success' },
       performance: { result: 'success' },
       paper: { result: 'success', outputs: { build: 'success', rendering: 'success',
-        rendering_evidence: JSON.stringify({ status: 'success', detail: '', findings: [] }) } }
+        rendering_job: 'success' } }
     },
     runId: '891',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/891',
@@ -973,49 +975,80 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
 });
 
 test('paper rendering preserves findings and never infers success from missing evidence', async () => {
-  const outputs = { build: 'success', rendering: 'failure',
-    rendering_evidence: JSON.stringify({
-      status: 'failure', detail: '', findings: ['page 2: rendered completely blank']
-    }) };
+  const outputs = { build: 'success', rendering: 'failure', rendering_job: 'failure' };
+  let report = { status: 'failed', findings: [
+    'page 2: rendered completely blank', 'Rendering inspection incomplete: page 3: renderer timed out'
+  ] };
+  let reportAvailable = true;
+  let workflowResult = 'failure';
   const build = async () => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
     repository: 'basil-one/circle',
     token: 'test-token',
-    needs: { paper: { result: 'failure', outputs } },
+    needs: { paper: { result: workflowResult, outputs } },
     runId: '893',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/893',
     date,
-    fetchImpl: async () => ({
-      ok: true, json: async () => ({
-        artifacts: [{ name: 'circle3-paper-preview', expired: false, id: 1 }]
-      })
-    })
+    fetchImpl: async (url) => {
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith('/zip')) return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) };
+      const name = parsed.searchParams.get('name');
+      return { ok: true, json: async () => ({
+        artifacts: name === 'circle3-paper-preview' || (name === 'paper-rendering-report' && reportAvailable)
+          ? [{ name, expired: false, id: name === 'circle3-paper-preview' ? 1 : 2 }] : []
+      }) };
+    },
+    unzipImpl: () => JSON.stringify(report)
   });
   let pulse = await build();
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \|/);
   assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
   assert.match(pulse.markdown, /page 2: rendered completely blank/);
+  assert.match(pulse.markdown, /page 3: renderer timed out/);
+  assert.match(pulse.markdown, /actions\/runs\/893\/artifacts\/2/);
 
   outputs.rendering = 'incomplete';
-  outputs.rendering_evidence = JSON.stringify({
-    status: 'incomplete', detail: 'page 3: renderer timed out',
-    findings: ['page 2: rendered completely blank']
-  });
+  report = { status: 'incomplete', findings: ['page 3: renderer timed out'] };
   pulse = await build();
   assert.match(pulse.markdown, /Incomplete \/ rendering verification/);
-  assert.match(pulse.markdown, /page 3: renderer timed out; page 2: rendered completely blank/);
+  assert.match(pulse.markdown, /page 3: renderer timed out/);
 
   outputs.rendering = 'success';
-  outputs.rendering_evidence = '';
+  outputs.rendering_job = 'success';
+  reportAvailable = false;
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown outcome/);
+  workflowResult = 'success';
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+  outputs.rendering_job = 'failure';
+  pulse = await build();
+  assert.match(pulse.markdown, /Incomplete \/ rendering verification/);
+  outputs.rendering_job = 'success';
+  reportAvailable = true;
+  report = { status: 'passed', findings: ['page 1: rendered completely blank'] };
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+  report = { status: 'failed', findings: ['page 1: rendered completely blank'] };
   pulse = await build();
   assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
 
-  outputs.rendering_evidence = JSON.stringify({
-    status: 'success', detail: '', findings: ['page 1: rendered completely blank']
-  });
+  outputs.rendering_job = 'cancelled';
   pulse = await build();
-  assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+  assert.match(pulse.markdown, /Incomplete \/ cancelled/);
+  outputs.rendering = 'incomplete';
+  outputs.rendering_job = 'success';
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown outcome/);
 
+  outputs.rendering = 'failure';
+  outputs.rendering_job = 'failure';
+  reportAvailable = false;
+  pulse = await build();
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /Rendering report unavailable or invalid/);
+
+  outputs.rendering = '';
   outputs.build = 'failure';
   pulse = await build();
   assert.match(pulse.markdown, /Incomplete \/ build unavailable/);

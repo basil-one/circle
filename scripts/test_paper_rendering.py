@@ -113,11 +113,48 @@ class RenderingUnitTests(unittest.TestCase):
                 ),
                 patch.object(sys, "argv", [str(CHECK), str(pdf), "--report", str(report)]),
             ):
+                self.assertEqual(rendering.main(), 1)
+            data = json.loads(report.read_text())
+        self.assertEqual(data["status"], "failed")
+        self.assertIn("page 1: rendered completely blank", data["findings"][0])
+        self.assertIn("page 2: renderer timed out", data["findings"][1])
+
+    def test_incomplete_without_findings_has_incomplete_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "report.json"
+            with (
+                patch.object(rendering, "check_rendering", side_effect=rendering.IncompleteCheck("timeout")),
+                patch.object(sys, "argv", [str(CHECK), "paper.pdf", "--report", str(report)]),
+            ):
                 self.assertEqual(rendering.main(), 2)
             data = json.loads(report.read_text())
         self.assertEqual(data["status"], "incomplete")
-        self.assertIn("page 2", data["detail"])
-        self.assertIn("page 1: rendered completely blank", data["findings"][0])
+        self.assertIn("timeout", data["findings"][0])
+
+    def test_failed_result_survives_unwritable_report(self):
+        with (
+            patch.object(rendering, "check_rendering", return_value=(1, ["page 1: blank"])),
+            patch.object(sys, "argv", [str(CHECK), "paper.pdf", "--report", "/missing/report"]),
+        ):
+            self.assertEqual(rendering.main(), 1)
+
+    def test_report_is_bounded_and_keeps_incomplete_coverage(self):
+        findings = [f"page {page}: rendered completely blank" for page in range(1, 302)]
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "report.json"
+            with (
+                patch.object(
+                    rendering, "check_rendering",
+                    side_effect=rendering.IncompleteCheck("page 302: timeout", findings),
+                ),
+                patch.object(sys, "argv", [str(CHECK), "paper.pdf", "--report", str(report)]),
+                patch("sys.stderr"),
+            ):
+                self.assertEqual(rendering.main(), 1)
+            data = json.loads(report.read_text())
+        self.assertEqual(len(data["findings"]), 300)
+        self.assertIn("further findings omitted", data["findings"][-2])
+        self.assertIn("page 302: timeout", data["findings"][-1])
 
     def test_time_limit_reports_incomplete(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -114,23 +114,29 @@ def main():
         pages, findings = check_rendering(args.pdf)
     except IncompleteCheck as error:
         pages, findings = None, error.findings
-        outcome, detail, code = "incomplete", str(error), 2
+        outcome = "failed" if findings else "incomplete"
+        findings.append(f"Rendering inspection incomplete: {str(error)[:500]}; inspect logs and rerun")
     else:
-        outcome = "failure" if findings else "success"
-        detail = ""
-        code = 1 if findings else 0
+        outcome = "failed" if findings else "passed"
 
+    code = {"passed": 0, "failed": 1, "incomplete": 2}[outcome]
     if args.report:
-        report = {"status": outcome, "detail": detail, "findings": findings[:20]}
-        if len(findings) > 20:
-            report["detail"] += f" {len(findings) - 20} further findings omitted."
+        report_findings = findings
+        if len(findings) > 300:
+            report_findings = findings[:298] + [
+                f"{len(findings) - 299} further findings omitted; see job logs",
+                findings[-1],
+            ]
+        report = {"status": outcome, "findings": report_findings}
         try:
-            args.report.write_text(json.dumps(report), encoding="utf-8")
+            args.report.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
         except OSError as error:
-            outcome, detail, code = "incomplete", f"cannot write report: {error}", 2
+            print(f"Paper: Rendering Integrity — incomplete: cannot write report: {error}", file=sys.stderr)
+            if outcome != "failed":
+                outcome, code = "incomplete", 2
     if outcome == "incomplete":
-        print(f"Paper: Rendering Integrity — incomplete: {detail}", file=sys.stderr)
-    elif findings:
+        print("Paper: Rendering Integrity — incomplete:", file=sys.stderr)
+    elif outcome == "failed":
         print("Paper: Rendering Integrity — failed:", file=sys.stderr)
     else:
         print(f"Paper: Rendering Integrity — passed: rendered {pages} nonblank pages.")

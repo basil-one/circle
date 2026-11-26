@@ -741,35 +741,30 @@ async function buildOrchestratedPulse({
   const paperRender = orchestratedJobResult(
     { rendering: { result: paperRendering } }, 'rendering', 'Paper: Rendering Integrity', run
   );
-  if (paperRendering === 'incomplete') {
-    paperRender.result.state = 'incomplete';
-    paperRender.result.label = 'Incomplete / rendering verification';
-    paperRender.result.detail = 'Rendering verification could not complete; inspect the rendering job and rerun.';
-  }
-  if (paperBuild !== 'success') {
+  const renderingJob = paperOutputs?.rendering_job;
+  if (paperRendering === 'failure') {
+    paperRender.result.state = 'failed';
+    paperRender.result.label = 'Failed';
+    paperRender.result.detail = 'Rendering findings require correction; inspect the rendering job and report.';
+    if (renderingJob !== 'failure') {
+      paperRender.result.detail += ' Job and validator outcomes disagree or the job was cancelled; inspect and rerun.';
+    }
+  } else if (paperBuild !== 'success') {
     paperRender.result.state = 'incomplete';
     paperRender.result.label = 'Incomplete / build unavailable';
     paperRender.result.detail = 'The same-cycle paper build did not establish a successful PDF; rendering verification cannot pass.';
-  } else if (['success', 'failure', 'incomplete'].includes(paperRendering)) {
-    try {
-      const evidence = JSON.parse(paperOutputs?.rendering_evidence);
-      if (evidence?.status !== paperRendering || typeof evidence.detail !== 'string' ||
-          !Array.isArray(evidence.findings) ||
-          evidence.findings.some((finding) => typeof finding !== 'string') ||
-          (paperRendering === 'success' && evidence.findings.length !== 0) ||
-          (paperRendering === 'failure' && evidence.findings.length === 0)) {
-        throw new Error('invalid rendering evidence');
-      }
-      const details = [evidence.detail, ...evidence.findings].filter(Boolean)
-        .map((item) => item.replace(/[\r\n]+/g, ' ').slice(0, 600));
-      if (details.length) paperRender.result.detail = details.join('; ');
-    } catch {
-      if (paperRender.result.state === 'fresh') {
-        paperRender.result.state = 'unknown';
-        paperRender.result.label = 'Unknown / rendering evidence unavailable';
-      }
-      paperRender.result.detail += ' Rendering evidence unavailable or invalid; inspect the rendering job logs.';
-    }
+  } else if (renderingJob === 'cancelled' || paperNeeds?.result === 'cancelled') {
+    paperRender.result.state = 'incomplete';
+    paperRender.result.label = 'Incomplete / cancelled';
+    paperRender.result.detail = 'Rendering job was cancelled; inspect and rerun.';
+  } else if (renderingJob === 'failure' && ['success', 'incomplete', '', undefined].includes(paperRendering)) {
+    paperRender.result.state = 'incomplete';
+    paperRender.result.label = 'Incomplete / rendering verification';
+    paperRender.result.detail = 'Setup, rendering, or evidence upload did not complete; inspect the rendering job and rerun.';
+  } else if (renderingJob !== 'success' || paperRendering !== 'success' || paperNeeds?.result !== 'success') {
+    paperRender.result.state = 'unknown';
+    paperRender.result.label = 'Unknown outcome';
+    paperRender.result.detail = 'Rendering job and validator outcomes are missing or inconsistent; inspect and rerun.';
   }
   results.push(paperRender);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
@@ -871,10 +866,41 @@ async function buildOrchestratedPulse({
       paper.result.label = 'Unknown / PDF preview unavailable';
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
-    if (paper.result.state !== 'fresh' && paperRender.result.state === 'fresh') {
-      paperRender.result.state = 'unknown';
-      paperRender.result.label = 'Unknown / PDF preview unavailable';
-      paperRender.result.detail = 'Same-cycle PDF evidence is unavailable; rendering verification cannot be established.';
+  }
+  if (paper.result.state !== 'fresh' && paperRender.result.state === 'fresh') {
+    paperRender.result.state = 'unknown';
+    paperRender.result.label = 'Unknown / PDF preview unavailable';
+    paperRender.result.detail = 'Same-cycle PDF evidence is unavailable; rendering verification cannot be established.';
+  }
+  if (['success', 'failure', 'incomplete'].includes(paperRendering)) {
+    try {
+      const { data: report, artifact } = await fetchArtifactJson({
+        ...artifactOptions,
+        artifactName: 'paper-rendering-report',
+        fileName: 'paper-rendering.json',
+        includeMetadata: true
+      });
+      const expectedStatus = { success: 'passed', failure: 'failed', incomplete: 'incomplete' }[paperRendering];
+      if (report?.status !== expectedStatus || !Array.isArray(report.findings) ||
+          report.findings.length > 300 ||
+          report.findings.some((finding) => typeof finding !== 'string' || finding.length > 2000) ||
+          (expectedStatus === 'passed' && report.findings.length !== 0) ||
+          (expectedStatus !== 'passed' && report.findings.length === 0)) {
+        throw new Error('rendering report is malformed or disagrees with the validator');
+      }
+      paperRender.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+      const details = report.findings.slice(0, 3);
+      const last = report.findings.at(-1);
+      if (report.findings.length > 3 && last.startsWith('Rendering inspection incomplete:')) details.push(last);
+      if (details.length) {
+        paperRender.result.detail += ` ${details.map((item) => item.replace(/[\r\n]+/g, ' ').slice(0, 600)).join('; ')}. See the report for all findings.`;
+      }
+    } catch (error) {
+      if (paperRender.result.state === 'fresh') {
+        paperRender.result.state = 'unknown';
+        paperRender.result.label = 'Unknown / rendering evidence unavailable';
+      }
+      paperRender.result.detail += ` Rendering report unavailable or invalid (${error.message}); inspect the job and rerun.`;
     }
   }
 
