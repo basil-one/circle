@@ -12,11 +12,15 @@ Our [quality stance and practice](.github/QUALITY.md) describes the quality doma
 
 ## Development
 
-1. Open in GitHub Codespaces (uses the provided dev container), or use Ruby 3.2+ with Bundler locally.
+1. Open in GitHub Codespaces (uses the provided dev container), or use Ruby with Bundler locally.
 2. Install dependencies via terminal: `bundle install`
 3. Run locally via terminal: `bundle exec jekyll serve`
 
 The site will be available at http://localhost:4000.
+
+## Site Publication
+
+The website is published automatically to GitHub Pages from `main` using the repository's verified build environment. [Site: Publish](.github/workflows/site-publish.yml) can also be run manually from `main` for recovery.
 
 ## Intellectual stewardship
 

@@ -13,7 +13,7 @@ Technical quality protects people's ability to understand, trust, navigate, and 
 
 ## How We Operate
 
-**On change:** Pull requests are checked against the safeguards in operation below. Failures require correction or an explicit authorized human decision.
+**On change:** Pull requests are checked against the applicable quality safeguards. Failures require correction or an explicit authorized human decision.
 
 **Over time:** Risks that can change without a code change are revisited. Meaningful findings or proposed remedies come to human judgment; healthy checks stay quiet.
 
@@ -26,14 +26,14 @@ Technical quality protects people's ability to understand, trust, navigate, and 
 A single quality practice serves the website and the paper.
 
 - **Common:** Shared code quality and dependency security.
-- **Site:** Integrity of the generated website and the visitor's experience.
+- **Site:** Integrity of website development, generation, publication, and the visitor's experience.
 - **Paper:** Integrity of paper development, generation, review, and publication.
 
 Domain-specific workflows follow the naming convention `Domain: Capability`. Cross-domain capabilities retain unqualified names.
 
-## Safeguards in Operation
+## Capabilities in Operation
 
-| Capability | Safeguard |
+| Capability | Purpose |
 | --- | --- |
 | [Common: Code Quality](workflows/common-code-quality.yml) | Source quality, workflow correctness, and maintainability. Function complexity is capped at 10. |
 | [Common: Dependency Security](workflows/common-dependency-security.yml) | Dependency changes and open vulnerability alerts at moderate severity or higher. |
@@ -42,16 +42,21 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Site: SEO Integrity](workflows/site-seo-integrity.yml) | Page titles, canonical URLs, and indexing directives. |
 | [Site: Rendering Integrity](workflows/site-rendering-integrity.yml) | Browser verification, accessibility, and responsive usability at 320px, 768px, and 1280px. |
 | [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Lighthouse measurements across representative pages on mobile and desktop. |
+| [Site: Publish](workflows/site-publish.yml) | Automatic publication of the website using the verified build environment. |
 | [Paper: Preview](workflows/paper-preview.yml) | Downloadable PDF generation for human review. |
 | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
 
 ## Quality Gate
 
-Required checks protect against known defects before changes are merged. All Common and Site safeguards are required.
+Required checks protect against known defects before changes are merged. All Common and Site quality safeguards are required.
 
 Performance Integrity measures changes when warranted. Performance comparisons inform human judgment rather than automatically prevent merging.
 
-Human approval governs merge and publication.
+## Publication
+
+Website publication uses the same build environment as Site Quality verification.
+
+The website is published automatically following an approved merge. The paper is published through an explicit human decision.
 
 ## Quality Pulse
 
