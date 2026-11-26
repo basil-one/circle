@@ -449,6 +449,42 @@ class PaperLinkTests(unittest.TestCase):
                 self.assertEqual(evidence["status"], "advisory" if expected == 3 else "incomplete")
                 self.assertTrue(evidence["findings"])
 
+    def test_confirmed_status_survives_report_write_failure(self):
+        status_path = Path(self.directory.name) / "status"
+        report_path = Path(self.directory.name) / "missing" / "report.md"
+        argv = [
+            "check_paper_links.py",
+            str(self.path),
+            "--status-file",
+            str(status_path),
+            "--report",
+            str(report_path),
+        ]
+        with (
+            patch.object(sys, "argv", argv),
+            patch.object(links, "audit", return_value=("report\n", "failed", ["broken"])),
+            self.assertRaises(FileNotFoundError),
+        ):
+            links.main()
+        self.assertEqual(status_path.read_text(), "failed")
+
+    def test_status_file_records_each_audit_outcome(self):
+        status_path = Path(self.directory.name) / "status"
+        argv = ["check_paper_links.py", str(self.path), "--status-file", str(status_path)]
+        for state, exit_code, findings in (
+            ("passed", 0, []),
+            ("advisory", 3, ["HTTP 403"]),
+            ("failed", 1, ["Page 1: broken"]),
+            ("incomplete", 2, ["network unavailable"]),
+        ):
+            with (
+                self.subTest(state=state),
+                patch.object(sys, "argv", argv),
+                patch.object(links, "audit", return_value=("report\n", state, findings)),
+            ):
+                self.assertEqual(links.main(), exit_code)
+                self.assertEqual(status_path.read_text(), state)
+
     def test_checker_failure_does_not_hide_internal_defect(self):
         self.make_pdf(internal="missing")
         expected = (
@@ -483,6 +519,17 @@ class PaperLinkTests(unittest.TestCase):
         self.assertEqual(len(findings), 100)
         self.assertTrue(all(0 < len(item) <= 2000 for item in findings))
         self.assertIn("omitted", findings[-1])
+
+    def test_json_report_rejects_contradictory_and_corrupted_evidence(self):
+        report_path = Path(self.directory.name) / "report.json"
+        for state, findings in (("passed", ["broken"]), ("advisory", []), ("unknown", [])):
+            with self.subTest(state=state), self.assertRaises(ValueError):
+                links.write_json_report(report_path, state, findings)
+        with (
+            patch.object(Path, "read_text", return_value='{"status":"failed","findings":[]}'),
+            self.assertRaises(ValueError),
+        ):
+            links.write_json_report(report_path, "passed", [])
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ const workflows = [
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
   ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
-  ['paper-link-integrity.yml', 'paper-links', 'Paper: Link Integrity']
+  ['paper-link-integrity.yml', 'paper-link', 'Paper: Link Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -81,15 +81,19 @@ test('Paper Link Integrity independently builds, tests and audits a fresh PDF', 
   const link = await readFile(new URL('../.github/workflows/paper-link-integrity.yml', import.meta.url), 'utf8');
   assert.match(link, /name: "Paper: Link Integrity"/);
   assert.doesNotMatch(link, /needs:|actions\/download-artifact|circle3-paper-preview/);
-  assert.match(link, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.doesNotMatch(link, /^\s+ref:/m);
+  assert.match(link, /SOURCE_SHA: \$\{\{ steps\.checkout\.outputs\.commit \}\}/);
   assert.match(link, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(link, /--require-hashes --only-binary=:all: -r scripts\/paper-link\/requirements\.txt/);
   assert.match(link, /unittest discover -s tests -p test_paper_links\.py/);
   assert.match(link, /scripts\/check_paper_links\.py/);
-  assert.match(link, /3\) status=advisory/);
+  assert.match(link, /advisory:3\) status=advisory/);
+  assert.match(link, /failed:\*\) status=failure/);
+  assert.match(link, /--status-file/);
   assert.match(link, /--json-report/);
   assert.match(link, /name: paper-link-report/);
+  assert.match(link, /paper-link-report\.json[\s\S]*paper-link-report\.md/);
   assert.match(link, /if-no-files-found: error/);
-  assert.match(link, /report\.get\("status"\) != expected/);
-  assert.match(link, /value: \$\{\{ jobs\.paper-links\.outputs\.status \}\}/);
+  assert.match(link, /! -s "\$RUNNER_TEMP\/paper-link-report\.json"/);
+  assert.match(link, /value: \$\{\{ jobs\.paper-link\.outputs\.status \}\}/);
 });

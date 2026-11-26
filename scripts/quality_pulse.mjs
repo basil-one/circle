@@ -738,9 +738,9 @@ async function buildOrchestratedPulse({
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
-  const paperLinks = needs?.['paper-links']?.outputs?.status;
-  const paperLinksJob = needs?.['paper-links']?.result;
-  const linkResult = orchestratedJobResult(needs, 'paper-links', 'Paper: Link Integrity', run);
+  const paperLinks = needs?.['paper-link']?.outputs?.status;
+  const paperLinksJob = needs?.['paper-link']?.result;
+  const linkResult = orchestratedJobResult(needs, 'paper-link', 'Paper: Link Integrity', run);
   if (paperLinks === 'failure' && ['failure', 'cancelled'].includes(paperLinksJob)) {
     linkResult.result.state = 'failed';
     linkResult.result.label = 'Failed';

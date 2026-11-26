@@ -695,9 +695,9 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'rendering',
     'performance',
     'paper',
-    'paper-links'
+    'paper-link'
   ].map((jobId) => [jobId, { result: 'success' }]));
-  needs['paper-links'].outputs = { status: 'success' };
+  needs['paper-link'].outputs = { status: 'success' };
   const performanceSummary = {
     complete: true,
     capturedAt: `${date}T06:30:00.000Z`,
@@ -775,7 +775,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(manualPulse.markdown, /manually dispatched cycle/);
 
   performanceSummary.source.eventName = 'schedule';
-  needs['paper-links'].outputs.status = 'advisory';
+  needs['paper-link'].outputs.status = 'advisory';
   linkReport = { status: 'advisory', findings: ['Page 2: HTTP 403'] };
   const uncertain = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -806,9 +806,9 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(malformedReport.successful, false);
   assert.match(malformedReport.markdown, /link report is malformed or disagrees with the job/);
 
-  needs['paper-links'].outputs.status = 'success';
+  needs['paper-link'].outputs.status = 'success';
   linkReport = { status: 'passed', findings: [] };
-  needs['paper-links'].result = 'failure';
+  needs['paper-link'].result = 'failure';
   const failedJob = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
@@ -816,7 +816,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(failedJob.successful, false);
   assert.match(failedJob.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
 
-  needs['paper-links'].outputs.status = 'failure';
+  needs['paper-link'].outputs.status = 'failure';
   linkReport = { status: 'failed', findings: ['Page 1: broken destination'] };
   const failed = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -837,14 +837,14 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(failedWithoutEvidence.markdown, /\| Paper: Link Integrity \| Failed \|/);
   assert.match(failedWithoutEvidence.markdown, /Link report unavailable/);
 
-  needs['paper-links'].result = 'success';
+  needs['paper-link'].result = 'success';
   const contradictory = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
   });
   assert.equal(contradictory.successful, false);
   assert.match(contradictory.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
-  needs['paper-links'].result = 'failure';
+  needs['paper-link'].result = 'failure';
   needs.paper.result = 'failure';
   const independent = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -854,8 +854,8 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(independent.markdown, /\| Paper: Link Integrity \| Failed \|/);
   assert.match(independent.markdown, /Page 1: broken destination/);
   needs.paper.result = 'success';
-  needs['paper-links'].result = 'success';
-  needs['paper-links'].outputs.status = 'success';
+  needs['paper-link'].result = 'success';
+  needs['paper-link'].outputs.status = 'success';
   linkReport = { status: 'passed', findings: [] };
   const buildMissing = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -867,8 +867,8 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(buildMissing.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(buildMissing.markdown, /\| Paper: Link Integrity \| Passed \|/);
 
-  needs['paper-links'].result = 'failure';
-  needs['paper-links'].outputs.status = 'incomplete';
+  needs['paper-link'].result = 'failure';
+  needs['paper-link'].outputs.status = 'incomplete';
   linkReport = { status: 'incomplete', findings: ['Audit unavailable'] };
   const incomplete = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -877,7 +877,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(incomplete.successful, false);
   assert.match(incomplete.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
 
-  needs['paper-links'] = { result: 'cancelled' };
+  needs['paper-link'] = { result: 'cancelled' };
   const cancelled = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
@@ -885,7 +885,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(cancelled.successful, false);
   assert.match(cancelled.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
 
-  needs['paper-links'] = { result: 'success' };
+  needs['paper-link'] = { result: 'success' };
   const missingStatus = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
@@ -958,7 +958,7 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     rendering: { result: 'success' },
     performance: { result: 'failure' },
     paper: { result: 'success' },
-    'paper-links': { result: 'success', outputs: { status: 'success' } }
+    'paper-link': { result: 'success', outputs: { status: 'success' } }
   };
   const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -1075,7 +1075,7 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
       rendering: { result: 'success' },
       performance: { result: 'success' },
       paper: { result: 'success' },
-      'paper-links': { result: 'success', outputs: { status: 'success' } }
+      'paper-link': { result: 'success', outputs: { status: 'success' } }
     },
     runId: '891',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/891',

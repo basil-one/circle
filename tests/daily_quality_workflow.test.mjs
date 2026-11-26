@@ -12,7 +12,7 @@ const children = [
   ['site-rendering-integrity.yml', 'rendering'],
   ['site-performance-integrity.yml', 'performance'],
   ['paper-build-integrity.yml', 'paper'],
-  ['paper-link-integrity.yml', 'paper-links']
+  ['paper-link-integrity.yml', 'paper-link']
 ];
 
 test('one daily workflow owns the schedule and fans out to all nine reusable checks', async () => {

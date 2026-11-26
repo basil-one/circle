@@ -8,13 +8,13 @@ on:
     outputs:
       status:
         description: Paper Link audit outcome
-        value: ${{ jobs.paper-links.outputs.status }}
+        value: ${{ jobs.paper-link.outputs.status }}
 
 permissions:
   contents: read
 
 jobs:
-  paper-links:
+  paper-link:
     name: "Paper: Link Integrity"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -22,9 +22,9 @@ jobs:
       status: ${{ steps.audit.outputs.status }}
     steps:
       - name: Checkout intended revision
+        id: checkout
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Install PDF link audit tools
         run: |
@@ -40,30 +40,22 @@ jobs:
           set +e
           "$RUNNER_TEMP/paper-links-venv/bin/python" scripts/check_paper_links.py \
             assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-link-report.md" \
-            --json-report "$RUNNER_TEMP/paper-link-report.json"
+            --json-report "$RUNNER_TEMP/paper-link-report.json" \
+            --status-file "$RUNNER_TEMP/paper-link-status"
           result=$?
           set -e
-          case "$result" in
-            0) status=success ;;
-            1) status=failure ;;
-            3) status=advisory ;;
+          outcome="$(cat "$RUNNER_TEMP/paper-link-status" 2>/dev/null || true)"
+          case "$outcome:$result" in
+            passed:0) status=success ;;
+            failed:*) status=failure ;;
+            advisory:3) status=advisory ;;
             *) status=incomplete ;;
           esac
           if [ "$status" = failure ] || [ "$status" = incomplete ]; then
             echo "status=$status" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-          if ! "$RUNNER_TEMP/paper-links-venv/bin/python" -c '
-          import json, os, sys
-          with open(os.path.join(os.environ["RUNNER_TEMP"], "paper-link-report.json"), encoding="utf-8") as file:
-              report = json.load(file)
-          expected = {"success": "passed", "advisory": "advisory"}[sys.argv[1]]
-          findings = report.get("findings")
-          if (report.get("status") != expected or not isinstance(findings, list)
-              or len(findings) > 100 or any(not isinstance(f, str) or not f or len(f) > 2000 for f in findings)
-              or (expected == "passed" and findings) or (expected == "advisory" and not findings)):
-              raise ValueError("Invalid or inconsistent link report")
-          ' "$status"; then
+          if [ ! -s "$RUNNER_TEMP/paper-link-report.md" ] || [ ! -s "$RUNNER_TEMP/paper-link-report.json" ]; then
             echo "status=incomplete" >> "$GITHUB_OUTPUT"
             exit 1
           fi
@@ -74,19 +66,21 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: paper-link-report
-          path: ${{ runner.temp }}/paper-link-report.json
+          path: |
+            ${{ runner.temp }}/paper-link-report.json
+            ${{ runner.temp }}/paper-link-report.md
           if-no-files-found: error
           retention-days: 30
       - name: Summarize link integrity
         if: always()
         env:
-          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_SHA: ${{ steps.checkout.outputs.commit }}
           AUDIT_OUTCOME: ${{ steps.audit.outcome }}
           AUDIT_STATUS: ${{ steps.audit.outputs.status }}
           UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
-          echo "Intended revision: \`$SOURCE_SHA\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`." >> "$GITHUB_STEP_SUMMARY"
           if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
             printf '%s\n' '**Verification incomplete:** inspect audit and evidence-upload steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
           fi

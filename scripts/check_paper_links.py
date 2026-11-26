@@ -470,12 +470,30 @@ def audit(path: Path, config: Path, check_network=True, checker=bounded_external
     return "\n".join(lines) + "\n", state, findings
 
 
+def write_json_report(path, state, findings):
+    bounded = [item[:2000] for item in findings[:99]]
+    if len(findings) > 99:
+        bounded.append("Additional findings omitted; see the full human-readable report.")
+    if (
+        state not in {"passed", "failed", "incomplete", "advisory"}
+        or any(not isinstance(item, str) or not item or len(item) > 2000 for item in bounded)
+        or (state == "passed" and bounded)
+        or (state != "passed" and not bounded)
+    ):
+        raise ValueError("Invalid link report")
+    evidence = {"status": state, "findings": bounded}
+    path.write_text(json.dumps(evidence, ensure_ascii=False), encoding="utf-8")
+    if json.loads(path.read_text(encoding="utf-8")) != evidence:
+        raise ValueError("Link report could not be verified")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("pdf", type=Path)
     parser.add_argument("--config", type=Path, default=ROOT / "scripts/plop.paper.config.yaml")
     parser.add_argument("--report", type=Path)
     parser.add_argument("--json-report", type=Path)
+    parser.add_argument("--status-file", type=Path)
     parser.add_argument("--skip-external", action="store_true")
     args = parser.parse_args()
     try:
@@ -489,18 +507,12 @@ def main():
         exit_code = 2
     else:
         exit_code = {"passed": 0, "failed": 1, "incomplete": 2, "advisory": 3}[state]
+    if args.status_file:
+        args.status_file.write_text(state, encoding="utf-8")
     if args.report:
         args.report.write_text(report, encoding="utf-8")
     if args.json_report:
-        bounded_findings = [item[:2000] for item in findings[:99]]
-        if len(findings) > 99:
-            bounded_findings.append(
-                "Additional findings omitted; see the full human-readable report."
-            )
-        args.json_report.write_text(
-            json.dumps({"status": state, "findings": bounded_findings}, ensure_ascii=False),
-            encoding="utf-8",
-        )
+        write_json_report(args.json_report, state, findings)
     print(report, end="")
     return exit_code
 
