@@ -1,0 +1,50 @@
+name: "Paper: Build Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paper-build:
+    name: "Paper: Build Integrity"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout intended revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Test paper configuration and release logic
+        run: python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v
+
+      - name: Build and verify fresh author-edition PDF
+        run: bash scripts/build-paper-pdf.sh
+
+      - name: Upload PDF preview
+        id: upload
+        uses: actions/upload-artifact@v6
+        with:
+          name: circle3-paper-preview
+          path: assets/pdfs/circle3-paper.pdf
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Link preview from workflow summary
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          {
+            echo "## Circle3 Paper: Preview"
+            echo
+            echo "Built from proposed revision \`$SOURCE_SHA\`."
+            echo
+            echo "[Download the preview PDF]($ARTIFACT_URL)"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -59,6 +59,12 @@ jobs:
       actions: read
       contents: read
 
+  paper:
+    name: "Paper: Build Integrity"
+    uses: ./.github/workflows/paper-build-integrity.yml
+    permissions:
+      contents: read
+
   pulse:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
@@ -70,6 +76,7 @@ jobs:
       - dependency-security
       - rendering
       - performance
+      - paper
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

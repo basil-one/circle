@@ -9,7 +9,8 @@ const workflows = [
   ['site-link-integrity.yml', 'links', 'Site: Link Integrity'],
   ['site-seo-integrity.yml', 'seo', 'Site: SEO Integrity'],
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
-  ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity']
+  ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
+  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -45,7 +46,7 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
   }
 });
 
-test('all seven Common and Site checks are required and performance has substantive evidence semantics', async () => {
+test('all eight Common, Site, and Paper checks are required and performance has substantive evidence semantics', async () => {
   const file = 'site-performance-integrity.yml';
   const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
   assert.ok(workflows.some(([requiredFile]) => requiredFile === file));
@@ -68,4 +69,9 @@ test('all seven Common and Site checks are required and performance has substant
 
   const summary = await readFile(new URL('../scripts/render_site_performance_summary.mjs', import.meta.url), 'utf8');
   assert.match(summary, /performanceMeasurementExitCode/);
+
+  const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
+  assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
+  assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
+  assert.match(paper, /name: circle3-paper-preview/);
 });

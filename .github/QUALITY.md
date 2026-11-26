@@ -43,24 +43,25 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Site: Rendering Integrity](workflows/site-rendering-integrity.yml) | Browser verification, accessibility, and responsive usability at 320px, 768px, and 1280px. |
 | [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Loading performance, responsiveness, and visual stability across representative pages. |
 | [Site: Publish](workflows/site-publish.yml) | Automatic publication of the website using the verified build environment. |
-| [Paper: Preview](workflows/paper-preview.yml) | Downloadable PDF generation for human review. |
+| [Paper: Build Integrity](workflows/paper-build-integrity.yml) | Reliable generation of a fresh, readable paper PDF. |
+| [Paper: Preview](workflows/paper-preview.yml) | On-demand PDF generation for human review. |
 | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
 
 ## Quality Gate
 
-Required checks protect against known defects before changes are merged. All Common and Site quality safeguards are required.
+Required checks protect against known defects before changes are merged. All Common, Site, and Paper quality safeguards are required.
 
 Performance Integrity protects against confirmed budget violations and substantial loading regressions against a compatible reviewed reference. Rolling comparisons inform human judgment.
 
 ## Publication
 
-Website publication uses the same build environment as Site Quality verification.
+Website and paper publication use their respective verified build mechanisms.
 
 The website is published automatically following an approved merge. The paper is published through an explicit human decision.
 
 ## Quality Pulse
 
-A [daily workflow](workflows/quality-pulse.yml) runs the Common and Site safeguards in parallel and provides a coherent view of quality. It can also be run on demand.
+A [daily workflow](workflows/quality-pulse.yml) runs the Common, Site, and Paper safeguards in parallel and provides a coherent view of quality. It can also be run on demand.
 
 Failures, incomplete checks, and unavailable evidence remain distinguishable from success. Findings bring actionable evidence to human judgment.
 

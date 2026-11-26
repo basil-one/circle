@@ -15,7 +15,8 @@ const dimensions = [
   { name: 'Common: Code Quality', file: 'common-code-quality.yml' },
   { name: 'Common: Dependency Security', file: 'common-dependency-security.yml' },
   { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml' },
-  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml' }
+  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml' },
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -221,6 +222,46 @@ async function fetchRuns({ apiUrl, repository, workflow, token, date, fetchImpl 
     throw new Error('GitHub Actions API returned an unreadable workflow-run list');
   }
   return data.workflow_runs;
+}
+
+async function fetchRunArtifact({
+  apiUrl,
+  repository,
+  runId,
+  artifactName,
+  token,
+  fetchImpl
+}) {
+  if (!token) throw new Error('GitHub Actions read token is unavailable');
+  const url = new URL(
+    `/repos/${repository}/actions/runs/${runId}/artifacts`,
+    apiUrl
+  );
+  url.search = new URLSearchParams({ name: artifactName, per_page: '100' });
+  const response = await fetchImpl(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: ['Bearer', token].join(' '),
+      'X-GitHub-Api-Version': '2022-11-28'
+    },
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!response.ok) throw new Error(`Artifacts API returned HTTP ${response.status}`);
+  const data = await response.json();
+  if (!Array.isArray(data.artifacts)) {
+    throw new Error('Artifacts API returned an unreadable artifact list');
+  }
+  const artifact = data.artifacts.find(
+    (item) => item.name === artifactName && !item.expired
+  );
+  if (!artifact) throw new Error(`${artifactName} artifact is missing or expired`);
+  if (!Number.isInteger(artifact.id)) throw new Error(`${artifactName} artifact ID is invalid`);
+  return artifact;
+}
+
+async function fetchArtifactLink(options) {
+  const artifact = await fetchRunArtifact(options);
+  return `https://github.com/${options.repository}/actions/runs/${options.runId}/artifacts/${artifact.id}`;
 }
 
 async function fetchRunCompletion({ apiUrl, repository, runId, token, fetchImpl }) {
@@ -468,21 +509,14 @@ async function fetchArtifactJson({
     Authorization: ['Bearer', token].join(' '),
     'X-GitHub-Api-Version': '2022-11-28'
   };
-  const artifactsUrl = new URL(
-    `/repos/${repository}/actions/runs/${runId}/artifacts`,
-    apiUrl
-  );
-  artifactsUrl.search = new URLSearchParams({ name: artifactName, per_page: '100' });
-  const listResponse = await fetchImpl(artifactsUrl, {
-    headers,
-    signal: AbortSignal.timeout(15_000)
+  const artifact = await fetchRunArtifact({
+    apiUrl,
+    repository,
+    runId,
+    artifactName,
+    token,
+    fetchImpl
   });
-  if (!listResponse.ok) throw new Error(`Artifacts API returned HTTP ${listResponse.status}`);
-  const artifact = (await listResponse.json()).artifacts?.find(
-    (item) => item.name === artifactName && !item.expired
-  );
-  if (!artifact) throw new Error(`${artifactName} artifact is missing or expired`);
-  if (!Number.isInteger(artifact.id)) throw new Error(`${artifactName} artifact ID is invalid`);
   const downloadUrl = new URL(
     `/repos/${repository}/actions/artifacts/${artifact.id}/zip`,
     apiUrl
@@ -692,7 +726,8 @@ async function buildOrchestratedPulse({
     ['code-quality', 'Common: Code Quality'],
     ['dependency-security', 'Common: Dependency Security'],
     ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity']
+    ['performance', 'Site: Performance Integrity'],
+    ['paper', 'Paper: Build Integrity']
   ];
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
@@ -777,6 +812,24 @@ async function buildOrchestratedPulse({
         dependency.result.label = 'Unknown / posture artifact unavailable';
       }
       dependency.result.detail += ` Dependency posture evidence unavailable or invalid (${error.message}); no clean result is inferred.`;
+    }
+  }
+
+  const paper = results.find((item) => item.name === 'Paper: Build Integrity');
+  if (paper.result.state === 'fresh') {
+    try {
+      paper.result.artifactUrl = await fetchArtifactLink({
+        apiUrl,
+        repository,
+        runId,
+        artifactName: 'circle3-paper-preview',
+        token,
+        fetchImpl
+      });
+    } catch (error) {
+      paper.result.state = 'unknown';
+      paper.result.label = 'Unknown / PDF preview unavailable';
+      paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
   }
 

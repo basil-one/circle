@@ -693,7 +693,8 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'code-quality',
     'dependency-security',
     'rendering',
-    'performance'
+    'performance',
+    'paper'
   ].map((jobId) => [jobId, { result: 'success' }]));
   const performanceSummary = {
     complete: true,
@@ -704,7 +705,11 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     const parsed = new URL(url);
     if (parsed.pathname.endsWith('/actions/runs/888/artifacts')) {
       const artifactName = parsed.searchParams.get('name');
-      const id = artifactName === 'performance-summary' ? 456 : 457;
+      const id = artifactName === 'performance-summary'
+        ? 456
+        : artifactName === 'circle3-paper-preview'
+          ? 458
+          : 457;
       return {
         ok: true,
         json: async () => ({ artifacts: [{ name: artifactName, expired: false, id }] })
@@ -737,8 +742,10 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   });
 
   assert.equal(pulse.successful, true);
-  assert.match(pulse.markdown, /All 7 dimensions passed in this cycle/);
+  assert.match(pulse.markdown, /All 8 dimensions passed in this cycle/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Passed \| Same-cycle job result \|/);
+  assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
+  assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/458/);
   assert.match(pulse.markdown, /\[same-cycle run\]\(https:\/\/github\.com\/basil-one\/circle\/actions\/runs\/888\)/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/456/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/457/);
@@ -775,7 +782,8 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
       'code-quality': { result: 'unexpected' },
       'dependency-security': { result: 'skipped' },
       rendering: { result: 'skipped' },
-      performance: { result: 'skipped' }
+      performance: { result: 'skipped' },
+      paper: { result: 'cancelled' }
     },
     runId: '889',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/889',
@@ -786,12 +794,13 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
     }
   });
   assert.equal(pulse.successful, false);
-  assert.match(pulse.markdown, /Cycle incomplete — 7 of 7 dimensions/);
+  assert.match(pulse.markdown, /Cycle incomplete — 8 of 8 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
   assert.match(pulse.markdown, /\| Common: Code Quality \| Unknown outcome \|/);
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Skipped \|/);
+  assert.match(pulse.markdown, /\| Paper: Build Integrity \| Incomplete \/ cancelled \|/);
 
   const missing = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -804,6 +813,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
   });
   assert.equal(missing.successful, false);
   assert.match(missing.markdown, /\| Site: Build Integrity \| Missing \|/);
+  assert.match(missing.markdown, /\| Paper: Build Integrity \| Missing \|/);
 });
 
 test('orchestrated Pulse reports confirmed performance detail and distinguishes incomplete or legacy evidence', async () => {
@@ -821,7 +831,8 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     'code-quality': { result: 'success' },
     'dependency-security': { result: 'success' },
     rendering: { result: 'success' },
-    performance: { result: 'failure' }
+    performance: { result: 'failure' },
+    paper: { result: 'success' }
   };
   const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -835,6 +846,9 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
       const parsed = new URL(url);
       if (parsed.pathname.endsWith(`/actions/runs/${runId}/artifacts`)) {
         const artifactName = parsed.searchParams.get('name');
+        if (artifactName === 'circle3-paper-preview') {
+          return { ok: true, json: async () => ({ artifacts: [] }) };
+        }
         return {
           ok: true,
           json: async () => ({
@@ -890,6 +904,7 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
   const confirmed = await buildFailurePulse(confirmedComparison);
   assert.equal(confirmed.successful, false);
   assert.match(confirmed.markdown, /\| Site: Performance Integrity \| Failed \|/);
+  assert.match(confirmed.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(confirmed.markdown, /Confirmed performance violation\(s\)/);
   assert.match(confirmed.markdown, /`\/method\/`\/mobile largest-contentful-paint: 3\.60 s initially, 3\.20 s confirmed vs 3\.00 s limit/);
   assert.match(confirmed.markdown, /reference 2\.40 s \(Δ 1\.20 s, \+49\.8%\)/);
@@ -931,7 +946,8 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
       'code-quality': { result: 'success' },
       'dependency-security': { result: 'success' },
       rendering: { result: 'success' },
-      performance: { result: 'success' }
+      performance: { result: 'success' },
+      paper: { result: 'success' }
     },
     runId: '891',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/891',
@@ -941,6 +957,7 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
   assert.equal(pulse.successful, false);
   assert.match(pulse.markdown, /\| Common: Dependency Security \| Unknown \/ posture artifact unavailable \|/);
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Unknown \/ performance evidence unavailable \|/);
+  assert.match(pulse.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(pulse.markdown, /no clean result is inferred/);
   assert.match(pulse.markdown, /no comparison or pass is inferred/);
 });
