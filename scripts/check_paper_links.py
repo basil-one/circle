@@ -148,6 +148,22 @@ def _destination_error(destination, named, page_refs) -> str:
     return ""
 
 
+def _destination_key(destination, named):
+    if isinstance(destination, IndirectObject):
+        destination = destination.get_object()
+    if isinstance(destination, DictionaryObject):
+        destination = destination.get("/D")
+    if isinstance(destination, str):
+        destination = named[str(destination)].dest_array
+    page = destination[0]
+    return (
+        page.idnum,
+        page.generation,
+        str(destination[1]),
+        *(None if isinstance(value, NullObject) else float(value) for value in destination[2:]),
+    )
+
+
 def _outline_findings(outline, reader, issues):
     count = 0
     for item in outline:
@@ -203,6 +219,11 @@ class PDFLinkInspection:
             for page in self.reader.pages
             if page.indirect_reference is not None
         }
+        self.destination_names = {}
+        for name, destination in self.named.items():
+            if not _destination_error(destination.dest_array, self.named, self.page_refs):
+                key = _destination_key(destination.dest_array, self.named)
+                self.destination_names.setdefault(key, set()).add(name)
         self.issues, self.sources, self.toc_labels = [], {}, {}
         self.expected_toc, self.routes, self.site_url = expected_toc, routes, site_url
         self.anchors = anchors
@@ -239,12 +260,14 @@ class PDFLinkInspection:
         error = _destination_error(destination, self.named, self.page_refs)
         if error:
             self.issues.append(f"Page {index + 1}: {destination!r} — {error}")
-        if isinstance(destination, str):
-            observed.add(("internal", str(destination)))
-            if index in self.words and str(destination) in self.expected_toc:
+        else:
+            names = self.destination_names.get(_destination_key(destination, self.named), set())
+            for name in names:
+                observed.add(("internal", name))
+            for name in names & self.expected_toc.keys() if index in self.words else ():
                 label = _annotation_label(annotation, page, self.words[index])
                 if label:
-                    self.toc_labels.setdefault(str(destination), []).append(label)
+                    self.toc_labels.setdefault(name, []).append(label)
 
     def _uri(self, action, location, observed):
         url = str(action.get("/URI", ""))
@@ -327,7 +350,10 @@ def inspect_pdf(
         inspection.scan_page(index, page)
     for anchor, label in sorted(expected_toc.items()):
         actual = " ".join(inspection.toc_labels.get(anchor, [])).split()
-        if actual != label.split():
+        expected = label.split()
+        if not any(
+            actual[index : index + len(expected)] == expected for index in range(len(actual))
+        ):
             inspection.issues.append(
                 f"Table of contents: link labelled {label!r} "
                 f"to {anchor!r} is missing or points elsewhere"

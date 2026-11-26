@@ -29,12 +29,20 @@ class PaperLinkTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.path = Path(self.directory.name) / "fixture.pdf"
 
-    def make_pdf(self, internal="target", url="https://example.com/resource"):
+    def make_pdf(
+        self,
+        internal="target",
+        url="https://example.com/resource",
+        alias_page=None,
+        page_number=False,
+    ):
         writer = PdfWriter()
         page = writer.add_blank_page(width=200, height=200)
         writer.add_blank_page(width=200, height=200)
         writer.add_named_destination("target", 1)
         writer.add_named_destination("source", 0)
+        if alias_page is not None:
+            writer.add_named_destination("alias", alias_page)
         writer.add_outline_item("Target", 1)
         font = DictionaryObject(
             {
@@ -47,7 +55,8 @@ class PaperLinkTests(unittest.TestCase):
             {NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})}
         )
         contents = DecodedStreamObject()
-        contents.set_data(b"BT /F1 12 Tf 10 180 Td (Contents) Tj 0 -80 Td (Target) Tj ET")
+        text = b"BT /F1 12 Tf 10 180 Td (Contents) Tj 0 -80 Td (Target) Tj"
+        contents.set_data(text + (b" 50 0 Td (2) Tj" if page_number else b"") + b" ET")
         page[NameObject("/Contents")] = writer._add_object(contents)
         annotations = ArrayObject()
         for action in (
@@ -61,6 +70,20 @@ class PaperLinkTests(unittest.TestCase):
                     NameObject("/Rect"): ArrayObject([FloatObject(n) for n in (10, 98, 45, 112)]),
                     NameObject("/A"): DictionaryObject(
                         {NameObject(key): value for key, value in action.items()}
+                    ),
+                }
+            )
+            annotations.append(writer._add_object(annotation))
+        if page_number:
+            annotation = DictionaryObject(
+                {
+                    NameObject("/Subtype"): NameObject("/Link"),
+                    NameObject("/Rect"): ArrayObject([FloatObject(n) for n in (60, 98, 75, 112)]),
+                    NameObject("/A"): DictionaryObject(
+                        {
+                            NameObject("/S"): NameObject("/GoTo"),
+                            NameObject("/D"): TextStringObject(internal),
+                        }
                     ),
                 }
             )
@@ -106,6 +129,34 @@ class PaperLinkTests(unittest.TestCase):
         self.assertFalse(any("internal link to 'target' is missing" in i for i in issues))
         self.assertFalse(
             any("external link to 'https://example.com/resource' is missing" in i for i in issues)
+        )
+
+    def test_equivalent_named_destinations_preserve_toc_and_source_links(self):
+        self.make_pdf(internal="alias", alias_page=1, page_number=True)
+        issues, *_ = links.inspect_pdf(
+            self.path,
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {"source": {("internal", "target")}},
+            {"source", "target"},
+        )
+        self.assertEqual(issues, [])
+
+        self.make_pdf(internal="alias", alias_page=0)
+        issues, *_ = links.inspect_pdf(
+            self.path,
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {"source": {("internal", "target")}},
+            {"source", "target"},
+        )
+        self.assertTrue(any("internal link to 'target' is missing" in issue for issue in issues))
+        self.assertTrue(
+            any("to 'target' is missing or points elsewhere" in issue for issue in issues)
         )
 
     def test_source_without_toc_entry_still_has_a_valid_range(self):
