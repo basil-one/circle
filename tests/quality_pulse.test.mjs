@@ -972,7 +972,10 @@ test('publication mismatch, inaccessible evidence and contradictory outputs rema
     ['failure', 'failed', 'Failed'],
     ['failure', 'unknown', 'Unknown / publication evidence unavailable'],
     ['success', undefined, 'Unknown / publication evidence unavailable'],
-    ['success', 'failed', 'Unknown / publication evidence unavailable']
+    ['success', 'failed', 'Failed'],
+    ['failure', 'passed', 'Unknown / publication evidence unavailable'],
+    ['cancelled', 'failed', 'Failed'],
+    ['cancelled', undefined, 'Incomplete / cancelled']
   ]) {
     const pulse = await buildOrchestratedPulse({
       apiUrl: 'https://api.github.com',
@@ -984,6 +987,45 @@ test('publication mismatch, inaccessible evidence and contradictory outputs rema
     });
     assert.equal(pulse.successful, false);
     assert.ok(pulse.markdown.includes(`| Paper: Publication Integrity | ${expected} |`));
+  }
+});
+
+test('publication can pass independently when the paper build fails', async () => {
+  const pulse = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    needs: {
+      paper: { result: 'failure' },
+      'paper-publication': { result: 'success', outputs: { status: 'passed' } }
+    },
+    runId: '903',
+    runUrl: 'https://github.com/basil-one/circle/actions/runs/903',
+    date
+  });
+  assert.equal(pulse.successful, false);
+  assert.match(pulse.markdown, /\| Paper: Build Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Passed \|/);
+});
+
+test('confirmed publication defects survive contradictory success or cancellation', async () => {
+  for (const [result, context] of [['success', 'contradicts'], ['cancelled', 'cancelled']]) {
+    const pulse = await buildOrchestratedPulse({
+      apiUrl: 'https://api.github.com',
+      repository: 'basil-one/circle',
+      needs: {
+        'paper-publication': {
+          result,
+          outputs: { status: 'failed', detail: 'Published PDFs differ; review before repair.' }
+        }
+      },
+      runId: '904',
+      runUrl: 'https://github.com/basil-one/circle/actions/runs/904',
+      date
+    });
+    assert.equal(pulse.successful, false);
+    assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Failed \|/);
+    assert.match(pulse.markdown, /Published PDFs differ; review before repair/);
+    assert.ok(pulse.markdown.includes(context));
   }
 });
 

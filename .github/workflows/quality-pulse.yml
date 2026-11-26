@@ -67,43 +67,9 @@ jobs:
 
   paper-publication:
     name: "Paper: Publication Integrity"
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    uses: ./.github/workflows/paper-publication-integrity.yml
     permissions:
       contents: read
-    outputs:
-      status: ${{ steps.verify.outputs.status }}
-      detail: ${{ steps.verify.outputs.detail }}
-      main_sha: ${{ steps.snapshot.outputs.main_sha }}
-      validator_sha: ${{ github.sha }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Pin published main and tags
-        id: snapshot
-        run: |
-          timeout 120 git fetch --force --tags origin +refs/heads/main:refs/remotes/origin/main
-          echo "main_sha=$(git rev-parse refs/remotes/origin/main)" >> "$GITHUB_OUTPUT"
-      - name: Install PDF inspection tool
-        run: sudo apt-get update && sudo apt-get install -y poppler-utils
-      - name: Verify published release
-        id: verify
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set +e
-          python3 scripts/paper_publication_integrity.py
-          result=$?
-          if [ "$result" != 0 ] && [ "$result" != 2 ] && [ "$result" != 3 ]; then
-            echo "status=unknown" >> "$GITHUB_OUTPUT"
-            echo "detail=The publication validator did not complete; inspect the job logs and rerun." >> "$GITHUB_OUTPUT"
-          fi
-      - name: Enforce publication result
-        env:
-          STATUS: ${{ steps.verify.outputs.status }}
-        run: test "$STATUS" = passed
 
   pulse:
     name: Quality Pulse

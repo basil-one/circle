@@ -11,10 +11,11 @@ const children = [
   ['common-dependency-security.yml', 'dependency-security'],
   ['site-rendering-integrity.yml', 'rendering'],
   ['site-performance-integrity.yml', 'performance'],
-  ['paper-build-integrity.yml', 'paper']
+  ['paper-build-integrity.yml', 'paper'],
+  ['paper-publication-integrity.yml', 'paper-publication']
 ];
 
-test('one daily workflow owns the schedule and fans out to all eight reusable checks', async () => {
+test('one daily workflow owns the schedule and calls all nine reusable checks', async () => {
   const files = await readdir(workflowDirectory);
   const scheduled = [];
   for (const file of files.filter((name) => name.endsWith('.yml'))) {
@@ -26,11 +27,6 @@ test('one daily workflow owns the schedule and fans out to all eight reusable ch
   const orchestrator = await readFile(new URL('quality-pulse.yml', workflowDirectory), 'utf8');
   assert.match(orchestrator, /cron: '17 3 \* \* \*'/);
   assert.match(orchestrator, /^  workflow_dispatch:$/m);
-  assert.match(orchestrator, /paper-publication:\n    name: "Paper: Publication Integrity"/);
-  assert.match(orchestrator, /python3 scripts\/paper_publication_integrity\.py/);
-  assert.match(orchestrator, /fetch-depth: 0\n          persist-credentials: false/);
-  assert.match(orchestrator, /refs\/heads\/main:refs\/remotes\/origin\/main/);
-  assert.doesNotMatch(orchestrator, /ref: main\n/);
   for (const [file, jobId] of children) {
     const child = await readFile(new URL(file, workflowDirectory), 'utf8');
     assert.match(child, /^  workflow_call:$/m, `${file} can be called`);
@@ -46,7 +42,6 @@ test('Pulse waits for every substantive result and preserves least-privilege per
   for (const [, jobId] of children) {
     assert.match(pulse, new RegExp(`^      - ${jobId}$`, 'm'));
   }
-  assert.match(pulse, /^      - paper-publication$/m);
   assert.match(pulse, /PULSE_RESULTS_JSON: \$\{\{ toJSON\(needs\) \}\}/);
   assert.match(pulse, /actions: read/);
   assert.match(pulse, /contents: read/);
@@ -62,6 +57,24 @@ test('Pulse waits for every substantive result and preserves least-privilege per
       `group: ${group}-\\$\\{\\{ github\\.workflow \\}\\}-\\$\\{\\{ github\\.ref \\}\\}\\n  cancel-in-progress: true`
     ));
   }
+});
+
+test('publication audit is read-only, independently callable, and preserves its evidence outputs', async () => {
+  const yaml = await readFile(new URL('paper-publication-integrity.yml', workflowDirectory), 'utf8');
+  assert.match(yaml, /^  workflow_dispatch:$/m);
+  assert.doesNotMatch(yaml, /^  pull_request:$/m);
+  assert.match(yaml, /name: "Paper: Publication Integrity"/);
+  assert.match(yaml, /permissions:\n  contents: read/);
+  assert.match(yaml, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.match(yaml, /validator_sha: \$\{\{ steps\.checkout\.outputs\.commit \}\}/);
+  assert.match(yaml, /fetch-depth: 0\n          persist-credentials: false/);
+  assert.match(yaml, /refs\/heads\/main:refs\/remotes\/origin\/main/);
+  assert.match(yaml, /python3 scripts\/paper_publication_integrity\.py/);
+  for (const output of ['status', 'detail', 'main_sha', 'validator_sha']) {
+    assert.match(yaml, new RegExp(`value: \\$\\{\\{ jobs\\.publication\\.outputs\\.${output} \\}\\}`));
+  }
+  assert.match(yaml, /test "\$STATUS" = passed/);
+  assert.doesNotMatch(yaml, /build-paper-pdf|upload-artifact|contents: write|ref: main\n/);
 });
 
 test('Performance Integrity confirms only affected profiles and enforces the final result', async () => {

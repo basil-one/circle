@@ -734,10 +734,19 @@ async function buildOrchestratedPulse({
     orchestratedJobResult(needs, jobId, name, run)
   );
   const publication = results.find((item) => item.name === 'Paper: Publication Integrity');
+  if (publication.result.state === 'incomplete' && needs['paper-publication']?.outputs?.status === 'failed') {
+    publication.result.state = 'failed';
+    publication.result.label = 'Failed';
+    publication.result.detail = 'The publication validator reported a defect before cancellation; inspect and rerun.';
+  }
   if (['fresh', 'failed'].includes(publication.result.state)) {
     const { status, detail, main_sha: mainSha, validator_sha: validatorSha } =
       needs['paper-publication']?.outputs ?? {};
-    if (status === 'unknown' || !['passed', 'failed'].includes(status) ||
+    if (status === 'failed' && publication.result.state === 'fresh') {
+      publication.result.state = 'failed';
+      publication.result.label = 'Failed';
+      publication.result.detail = 'Publication validator reported a defect despite a successful job; inspect and rerun.';
+    } else if (status === 'unknown' || !['passed', 'failed'].includes(status) ||
         (status === 'passed') !== (publication.result.state === 'fresh')) {
       publication.result.state = 'unknown';
       publication.result.label = 'Unknown / publication evidence unavailable';
@@ -748,6 +757,12 @@ async function buildOrchestratedPulse({
       (status === 'unknown' && publication.result.state === 'unknown');
     if (coherent && typeof detail === 'string' && detail.trim() && detail.length <= 1000) {
       publication.result.detail = detail.replace(/[\r\n]/g, ' ');
+    }
+    if (status === 'failed' && needs['paper-publication']?.result === 'success') {
+      publication.result.detail += ' The job result contradicts the validator; inspect and rerun.';
+    }
+    if (status === 'failed' && needs['paper-publication']?.result === 'cancelled') {
+      publication.result.detail += ' The job was cancelled; inspect and rerun.';
     }
     if (/^[0-9a-f]{40,64}$/.test(mainSha ?? '') && /^[0-9a-f]{40,64}$/.test(validatorSha ?? '')) {
       publication.result.detail += ` Published main: ${mainSha}; validator revision: ${validatorSha}.`;
