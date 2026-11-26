@@ -232,7 +232,9 @@ def reject_complete_published_release(tag: str, release: dict[str, object] | Non
     if required_asset_names(tag).issubset(existing_assets):
         raise ReleaseError(
             f"Release {tag} is already published with both PDF assets. "
-            "Delete only the asset you intend to replace, then rerun this version."
+            "Completed releases are protected from replacement. For a missing asset, "
+            "rerun this version to recover from the surviving verified PDF; "
+            "otherwise review the release before deciding on repair."
         )
 
 
