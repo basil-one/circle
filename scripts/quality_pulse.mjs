@@ -16,8 +16,8 @@ const dimensions = [
   { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'dependency-security' },
   { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'rendering' },
   { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
-  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper', output: 'build' },
-  { name: 'Paper: Content Integrity', file: 'paper-build-integrity.yml', job: 'paper', output: 'content' }
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
+  { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -707,7 +707,7 @@ function orchestratedJobResult(needs, jobId, name, run) {
   };
 }
 
-function paperValidatorResult(name, build, job, status, run) {
+function paperValidatorResult(name, job, status, run) {
   const domain = name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const result = orchestratedJobResult(
     { validator: { result: status } }, 'validator', name, run
@@ -715,11 +715,7 @@ function paperValidatorResult(name, build, job, status, run) {
   if (status === 'failure' && ['failure', 'cancelled'].includes(job)) {
     result.result.state = 'failed';
     result.result.label = 'Failed';
-    result.result.detail = 'Confirmed findings require correction; inspect the report and rerun.';
-  } else if (build !== 'success') {
-    result.result.state = 'incomplete';
-    result.result.label = 'Incomplete / build unavailable';
-    result.result.detail = `The same-cycle paper build did not establish a successful PDF; ${domain} verification cannot pass.`;
+    result.result.detail = `Confirmed findings require correction; inspect the report and rerun.${job === 'cancelled' ? ' The workflow was also cancelled.' : ''}`;
   } else if (job === 'cancelled') {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / cancelled';
@@ -791,33 +787,14 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const results = dimensions.filter((dimension) => dimension.job !== 'paper').map(({ job, name }) =>
+  const results = dimensions.filter((dimension) => dimension.job !== 'paper-content').map(({ job, name }) =>
     orchestratedJobResult(needs, job, name, run)
   );
-  const paperNeeds = needs?.paper;
-  const paperOutputs = paperNeeds?.outputs;
-  const paperBuild = paperOutputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
-  const paperContent = paperOutputs?.content;
-  results.push(orchestratedJobResult(
-    { build: { result: paperBuild } }, 'build', dimensions.find(({ output }) => output === 'build').name, run
-  ));
-  const content = paperValidatorResult(dimensions.find(({ output }) => output === 'content').name, paperBuild, paperOutputs?.content_job, paperContent, run);
-  if (paperNeeds?.result === 'cancelled') {
-    for (const item of [results[results.length - 1], content]) {
-      if (item.result.state !== 'failed') {
-        item.result.state = 'incomplete';
-        item.result.label = 'Incomplete / cancelled';
-        item.result.detail = 'The reusable paper workflow was cancelled; rerun the cycle.';
-      } else {
-        item.result.detail += ' The reusable workflow was also cancelled.';
-      }
-    }
-  } else if (paperNeeds?.result !== 'success' && paperBuild === 'success' &&
-             paperOutputs?.content_job === 'success' && ['success', 'advisory'].includes(paperContent)) {
-    content.result.state = 'unknown';
-    content.result.label = 'Unknown outcome';
-    content.result.detail = 'The reusable workflow outcome disagrees with its successful job outputs; inspect and rerun.';
-  }
+  const paperContent = needs?.['paper-content']?.outputs?.status;
+  const content = paperValidatorResult(
+    dimensions.find(({ job }) => job === 'paper-content').name,
+    needs?.['paper-content']?.result, paperContent, run
+  );
   results.push(content);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
@@ -919,11 +896,6 @@ async function buildOrchestratedPulse({
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
   }
-  if (paper.result.state !== 'fresh' && ['fresh', 'advisory'].includes(content.result.state)) {
-    content.result.state = 'unknown';
-    content.result.label = 'Unknown / PDF preview unavailable';
-    content.result.detail = 'Same-cycle PDF evidence is unavailable; content verification cannot be established.';
-  }
   if (['fresh', 'failed', 'incomplete', 'advisory'].includes(content.result.state)) {
     await applyPaperReport(content, paperContent, artifactOptions, repository, runId, 'paper-content-report');
   }
@@ -950,7 +922,7 @@ async function buildPulse({
   unzipImpl = execFileSync
 }) {
   const results = await Promise.all(
-    dimensions.filter((dimension) => dimension.output !== 'content').map(async (dimension) => {
+    dimensions.map(async (dimension) => {
       try {
         const runs = await fetchRuns({
           apiUrl,
@@ -1000,13 +972,18 @@ async function buildPulse({
       }
     })
   );
-  // Legacy workflow-run lookup cannot distinguish jobs in the reusable paper workflow.
-  const legacyPaper = results.find((item) => item.name === 'Paper: Build Integrity');
-  if (legacyPaper) {
-    legacyPaper.result.state = 'unknown';
-    legacyPaper.result.label = 'Unknown / job outcomes unavailable';
-    legacyPaper.result.detail = 'Legacy workflow-run lookup cannot separate Paper Build from Content; use the same-cycle Quality Pulse.';
-    results.push({ name: 'Paper: Content Integrity', result: { ...legacyPaper.result } });
+  // Legacy workflow lookup cannot validate required paper artifacts and validator status.
+  const legacyBuild = results.find((item) => item.name === 'Paper: Build Integrity');
+  if (legacyBuild && ['fresh', 'prior'].includes(legacyBuild.result.state)) {
+    legacyBuild.result.state = 'unknown';
+    legacyBuild.result.label = 'Unknown / PDF evidence unavailable';
+    legacyBuild.result.detail = 'Legacy workflow-run lookup cannot establish PDF artifact evidence; use the same-cycle Quality Pulse.';
+  }
+  const legacyContent = results.find((item) => item.name === 'Paper: Content Integrity');
+  if (legacyContent) {
+    legacyContent.result.state = 'unknown';
+    legacyContent.result.label = 'Unknown / validator evidence unavailable';
+    legacyContent.result.detail = 'Legacy workflow-run lookup cannot establish Content report consistency; use the same-cycle Quality Pulse.';
   }
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (

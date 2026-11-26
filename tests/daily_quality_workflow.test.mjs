@@ -11,10 +11,11 @@ const children = [
   ['common-dependency-security.yml', 'dependency-security'],
   ['site-rendering-integrity.yml', 'rendering'],
   ['site-performance-integrity.yml', 'performance'],
-  ['paper-build-integrity.yml', 'paper']
+  ['paper-build-integrity.yml', 'paper'],
+  ['paper-content-integrity.yml', 'paper-content']
 ];
 
-test('one daily workflow owns the schedule and fans out to all eight reusable checks', async () => {
+test('one daily workflow owns the schedule and fans out to all nine reusable checks', async () => {
   const files = await readdir(workflowDirectory);
   const scheduled = [];
   for (const file of files.filter((name) => name.endsWith('.yml'))) {
@@ -28,7 +29,7 @@ test('one daily workflow owns the schedule and fans out to all eight reusable ch
   assert.match(orchestrator, /^  workflow_dispatch:$/m);
   for (const [file, jobId] of children) {
     const child = await readFile(new URL(file, workflowDirectory), 'utf8');
-    assert.match(child, /^  workflow_call:$/m, `${file} can be called`);
+    assert.match(child, /^  workflow_call:\s*$/m, `${file} can be called`);
     assert.doesNotMatch(child, /^  schedule:$/m, `${file} has no independent daily schedule`);
     assert.match(orchestrator, new RegExp(`^  ${jobId}:\\n    name: .+\\n    uses: \\.\\/\\.github\\/workflows\\/${file}$`, 'm'));
   }

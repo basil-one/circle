@@ -11,7 +11,7 @@ const workflows = [
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
   ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
-  ['paper-build-integrity.yml', 'paper-content', 'Paper: Content Integrity']
+  ['paper-content-integrity.yml', 'paper-content', 'Paper: Content Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -19,7 +19,7 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
     assert.match(yaml, /^  pull_request:\n    branches: \[main\]$/m, `${file} checks PRs targeting main`);
     assert.match(yaml, /^  workflow_dispatch:$/m, `${file} supports manual diagnostics`);
-    assert.match(yaml, /^  workflow_call:$/m, `${file} can be called by Quality Pulse`);
+    assert.match(yaml, /^  workflow_call:\s*$/m, `${file} can be called by Quality Pulse`);
     assert.doesNotMatch(yaml, /^  schedule:$/m, `${file} has no independent schedule`);
 
     const jobsStart = yaml.indexOf('\njobs:\n') + '\njobs:\n'.length;
@@ -36,18 +36,11 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
-    if (jobId === 'paper-content') {
-      assert.match(job, /^    needs: paper-build$/m);
-      assert.match(job, /python3 scripts\/check_paper_content\.py/);
-    } else {
-      assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
-    }
+    assert.doesNotMatch(job, /^    needs:/m, `${jobId} is independent, not a proxy job`);
 
     const condition = job.match(/^    if: (.+)$/m)?.[1];
     if (jobId === 'dependency-review') {
       assert.equal(condition, "github.event_name == 'pull_request'");
-    } else if (jobId === 'paper-content') {
-      assert.equal(condition, '${{ always() && !cancelled() }}');
     } else {
       assert.equal(condition, undefined, `${jobId} cannot be skipped by a job condition`);
     }
@@ -83,14 +76,15 @@ test('all nine current Common, Site, and Paper checks have substantive evidence 
   assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
   assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
-  assert.match(paper, /paper-content:\n    name: "Paper: Content Integrity"\n    needs: paper-build/);
-  assert.match(paper, /uses: actions\/download-artifact@v7\n        with:\n          name: circle3-paper-preview/);
-  assert.match(paper, /python3 scripts\/check_paper_content\.py scripts\/plop\.paper\.config\.yaml assets\/pdfs\/circle3-paper\.pdf/);
-  assert.match(paper, /build: \$\{\{ needs\.paper-build\.result \}\}/);
-  assert.match(paper, /content: \$\{\{ needs\.paper-content\.outputs\.status \}\}/);
-  assert.match(paper, /content_job: \$\{\{ needs\.paper-content\.result \}\}/);
-  assert.match(paper, /PAPER_PDF_PATH: assets\/pdfs\/circle3-paper\.pdf/);
-  assert.match(paper, /name: paper-content-report/);
+  assert.doesNotMatch(paper, /paper-content:|paper-results:/);
+  const content = await readFile(new URL('../.github/workflows/paper-content-integrity.yml', import.meta.url), 'utf8');
+  assert.match(content, /run: bash scripts\/build-paper-pdf\.sh/);
+  assert.match(content, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.match(content, /python3 scripts\/check_paper_content\.py scripts\/plop\.paper\.config\.yaml assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(content, /value: \$\{\{ jobs\.paper-content\.outputs\.status \}\}/);
+  assert.match(content, /PAPER_PDF_PATH: assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(content, /name: paper-content-report/);
+  assert.doesNotMatch(content, /download-artifact|name: circle3-paper-preview|paper-results:/);
 });
 
 test('manual paper preview only builds and uploads the shared PDF', async () => {
