@@ -724,10 +724,12 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'performance',
     'paper',
     'paper-content',
-    'paper-link'
+    'paper-link',
+    'paper-rendering'
   ].map((jobId) => [jobId, { result: 'success' }]));
   needs['paper-content'].outputs = { status: 'success' };
   needs['paper-link'].outputs = { status: 'success' };
+  needs['paper-rendering'].outputs = { status: 'success' };
   const performanceSummary = {
     complete: true,
     capturedAt: `${date}T06:30:00.000Z`,
@@ -758,7 +760,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     if (args.at(-1) === 'dependency-posture.json') {
       return JSON.stringify({ status: 'passed', detail: 'No open medium-or-higher alerts' });
     }
-    if (['paper-content-report.json', 'paper-link-report.json'].includes(args.at(-1))) {
+    if (['paper-content-report.json', 'paper-link-report.json', 'paper-rendering-report.json'].includes(args.at(-1))) {
       return JSON.stringify({ status: 'passed', findings: [] });
     }
     throw new Error(`Unexpected artifact file: ${args.at(-1)}`);
@@ -777,11 +779,12 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   });
 
   assert.equal(pulse.successful, true);
-  assert.match(pulse.markdown, /All 10 dimensions passed in this cycle/);
+  assert.match(pulse.markdown, /All 11 dimensions passed in this cycle/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Content Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Link Integrity \| Passed \| Same-cycle job result \|/);
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/458/);
   assert.match(pulse.markdown, /\[same-cycle run\]\(https:\/\/github\.com\/basil-one\/circle\/actions\/runs\/888\)/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/456/);
@@ -815,6 +818,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(independent.markdown, /\| Paper: Build Integrity \| Failed \|/);
   assert.match(independent.markdown, /\| Paper: Content Integrity \| Passed \|/);
   assert.match(independent.markdown, /\| Paper: Link Integrity \| Passed \|/);
+  assert.match(independent.markdown, /\| Paper: Rendering Integrity \| Passed \|/);
   needs.paper.result = 'success';
   const noPreview = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -838,7 +842,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(advisoryPulse.successful, false);
   assert.match(advisoryPulse.markdown, /\| Paper: Content Integrity \| Unknown outcome \|/);
   assert.match(advisoryPulse.markdown, /External source timed out; retry/);
-  assert.doesNotMatch(advisoryPulse.markdown, /Cycle successful with advisories|All 10 dimensions passed/);
+  assert.doesNotMatch(advisoryPulse.markdown, /Cycle successful with advisories|All 11 dimensions passed/);
 });
 
 test('paper validator outcomes and bounded reports never infer a pass', () => {
@@ -914,7 +918,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
     }
   });
   assert.equal(pulse.successful, false);
-  assert.match(pulse.markdown, /Cycle incomplete — 10 of 10 dimensions/);
+  assert.match(pulse.markdown, /Cycle incomplete — 11 of 11 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
@@ -936,6 +940,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
   assert.match(missing.markdown, /\| Paper: Build Integrity \| Missing \|/);
   assert.match(missing.markdown, /\| Paper: Content Integrity \| Unknown outcome \|/);
   assert.match(missing.markdown, /\| Paper: Link Integrity \| Unknown outcome \|/);
+  assert.match(missing.markdown, /\| Paper: Rendering Integrity \| Unknown outcome \|/);
 });
 
 test('orchestrated Pulse reports confirmed performance detail and distinguishes incomplete or legacy evidence', async () => {
@@ -1090,7 +1095,8 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
 test('cancelled paper validators retain confirmed report failures and cancellation', async () => {
   for (const [job, name] of [
     ['paper-content', 'Paper: Content Integrity'],
-    ['paper-link', 'Paper: Link Integrity']
+    ['paper-link', 'Paper: Link Integrity'],
+    ['paper-rendering', 'Paper: Rendering Integrity']
   ]) {
     const needs = { [job]: { result: 'cancelled' } };
     let report = { status: 'failed', findings: ['Page 8: confirmed defect; correct and rerun'] };
@@ -1136,6 +1142,77 @@ test('cancelled paper validators retain confirmed report failures and cancellati
     assert.equal(pulse.successful, false);
     assert.ok(pulse.markdown.includes(`| ${name} | Unknown /`));
   }
+});
+
+test('paper rendering preserves defects and incomplete coverage without inferring a pass', async () => {
+  const outputs = { status: 'failure' };
+  let job = 'failure';
+  let available = true;
+  let report = { status: 'failed', findings: [
+    'page 1: blank', 'page 2: blank', 'page 3: blank', 'page 4: blank',
+    'Rendering inspection incomplete: page 5: renderer timed out'
+  ] };
+  const build = () => buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
+    needs: { 'paper-rendering': { result: job, outputs } },
+    runId: '893', runUrl: 'https://github.com/basil-one/circle/actions/runs/893', date,
+    fetchImpl: async (url) => {
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith('/zip')) return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) };
+      const name = parsed.searchParams.get('name');
+      return { ok: true, json: async () => ({
+        artifacts: name === 'paper-rendering-report' && available ? [{ name, expired: false, id: 2 }] : []
+      }) };
+    },
+    unzipImpl: () => JSON.stringify(report)
+  });
+  let pulse = await build();
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /page 1: blank/);
+  assert.match(pulse.markdown, /page 5: renderer timed out/);
+  assert.match(pulse.markdown, /actions\/runs\/893\/artifacts\/2/);
+
+  job = 'cancelled';
+  outputs.status = '';
+  pulse = await build();
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /job was cancelled/);
+  assert.match(pulse.markdown, /page 5: renderer timed out/);
+
+  job = 'failure';
+  outputs.status = 'incomplete';
+  report = { status: 'incomplete', findings: ['page 3: renderer timed out'] };
+  pulse = await build();
+  assert.match(pulse.markdown, /Incomplete \/ rendering verification/);
+  assert.match(pulse.markdown, /page 3: renderer timed out/);
+
+  job = 'success';
+  outputs.status = 'success';
+  available = false;
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+  available = true;
+  for (const invalid of [
+    { status: 'passed', findings: ['page 1: blank'] },
+    { status: 'failed', findings: ['page 1: blank'] },
+    { status: 'passed', findings: 'invalid' }
+  ]) {
+    report = invalid;
+    pulse = await build();
+    assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+  }
+  outputs.status = 'advisory';
+  report = { status: 'advisory', findings: ['unexpected advisory'] };
+  pulse = await build();
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Unknown outcome \|/);
+  assert.equal(pulse.successful, false);
+
+  job = 'failure';
+  outputs.status = 'failure';
+  available = false;
+  pulse = await build();
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /paper-rendering-report unavailable or invalid/);
 });
 
 test('paper build, content failure, and missing evidence remain distinct', async () => {

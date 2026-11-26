@@ -46,6 +46,7 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Paper: Build Integrity](workflows/paper-build-integrity.yml) | Reliable generation of a fresh, readable paper PDF. |
 | [Paper: Content Integrity](workflows/paper-content-integrity.yml) | Verification of sampled source content and citation evidence in the generated PDF. |
 | [Paper: Link Integrity](workflows/paper-link-integrity.yml) | Internal navigation, preserved source links, and external destinations in the generated PDF; uncertain external responses are reported as advisories. |
+| [Paper: Rendering Integrity](workflows/paper-rendering-integrity.yml) | Verification that every generated PDF page renders without errors or wholly blank output; visual fidelity remains for human review. |
 | [Paper: Preview](workflows/paper-preview.yml) | On-demand PDF generation for human review, independent of full quality verification. |
 | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
 

@@ -77,6 +77,12 @@ jobs:
     permissions:
       contents: read
 
+  paper-rendering:
+    name: "Paper: Rendering Integrity"
+    uses: ./.github/workflows/paper-rendering-integrity.yml
+    permissions:
+      contents: read
+
   pulse:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
@@ -91,6 +97,7 @@ jobs:
       - paper
       - paper-content
       - paper-link
+      - paper-rendering
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

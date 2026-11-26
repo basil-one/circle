@@ -18,7 +18,8 @@ const dimensions = [
   { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
   { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
   { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' },
-  { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml', job: 'paper-link' }
+  { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml', job: 'paper-link' },
+  { name: 'Paper: Rendering Integrity', file: 'paper-rendering-integrity.yml', job: 'paper-rendering' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -771,7 +772,10 @@ async function applyPaperReport(item, job, status, artifactOptions, repository, 
       item.result.detail += ' The failed report establishes a defect; inspect the missing or contradictory job/validator outcome.';
     }
     if (report.findings.length) {
-      item.result.detail += ` ${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. See the report for all findings.`;
+      const summary = report.findings.slice(0, 3);
+      const incomplete = report.findings.slice(3).find((finding) => /\bincomplete\b/i.test(finding));
+      if (incomplete) summary.push(incomplete);
+      item.result.detail += ` ${summary.map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. See the report for all findings.`;
     }
   } catch (error) {
     if (['fresh', 'advisory'].includes(item.result.state)) {
@@ -801,7 +805,7 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const results = dimensions.filter((dimension) => !['paper-content', 'paper-link'].includes(dimension.job)).map(({ job, name }) =>
+  const results = dimensions.filter((dimension) => !['paper-content', 'paper-link', 'paper-rendering'].includes(dimension.job)).map(({ job, name }) =>
     orchestratedJobResult(needs, job, name, run)
   );
   const paperContent = needs?.['paper-content']?.outputs?.status;
@@ -816,6 +820,12 @@ async function buildOrchestratedPulse({
     needs?.['paper-link']?.result, paperLink, run
   );
   results.push(link);
+  const paperRendering = needs?.['paper-rendering']?.outputs?.status;
+  const rendering = paperValidatorResult(
+    dimensions.find(({ job }) => job === 'paper-rendering').name,
+    needs?.['paper-rendering']?.result, paperRendering, run
+  );
+  results.push(rendering);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -921,6 +931,9 @@ async function buildOrchestratedPulse({
   }
   if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(link.result.state)) {
     await applyPaperReport(link, needs?.['paper-link']?.result, paperLink, artifactOptions, repository, runId, 'paper-link-report');
+  }
+  if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(rendering.result.state)) {
+    await applyPaperReport(rendering, needs?.['paper-rendering']?.result, paperRendering, artifactOptions, repository, runId, 'paper-rendering-report');
   }
 
   const markdown = renderPulse({

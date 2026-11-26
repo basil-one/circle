@@ -12,7 +12,8 @@ const workflows = [
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
   ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
   ['paper-content-integrity.yml', 'paper-content', 'Paper: Content Integrity'],
-  ['paper-link-integrity.yml', 'paper-link', 'Paper: Link Integrity']
+  ['paper-link-integrity.yml', 'paper-link', 'Paper: Link Integrity'],
+  ['paper-rendering-integrity.yml', 'paper-rendering', 'Paper: Rendering Integrity']
 ];
 
 const capabilities = [
@@ -95,8 +96,8 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
   }
 });
 
-test('all ten current Common, Site, and Paper checks have substantive evidence semantics', async () => {
-  assert.equal(workflows.length, 10);
+test('all eleven current Common, Site, and Paper checks have substantive evidence semantics', async () => {
+  assert.equal(workflows.length, 11);
   const file = 'site-performance-integrity.yml';
   const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
   assert.ok(workflows.some(([requiredFile]) => requiredFile === file));
@@ -146,6 +147,15 @@ test('all ten current Common, Site, and Paper checks have substantive evidence s
   assert.match(link, /unittest discover -s tests -p test_paper_links\.py/);
   assert.match(link, /python" scripts\/check_paper_links\.py/);
   assert.match(link, /name: paper-link-report/);
+  const rendering = await readFile(new URL('../.github/workflows/paper-rendering-integrity.yml', import.meta.url), 'utf8');
+  assert.match(rendering, /run: bash scripts\/build-paper-pdf\.sh/);
+  assert.doesNotMatch(rendering, /^\s+ref:|download-artifact|name: circle3-paper-preview|paper-results:/m);
+  assert.match(rendering, /git rev-parse HEAD/);
+  assert.match(rendering, /SOURCE_SHA: \$\{\{ steps\.revision\.outputs\.sha \}\}/);
+  assert.match(rendering, /unittest discover -s scripts -p 'test_paper_rendering\.py'/);
+  assert.match(rendering, /python3 scripts\/check_paper_rendering\.py/);
+  assert.match(rendering, /name: paper-rendering-report/);
+  assert.match(rendering, /value: \$\{\{ jobs\.paper-rendering\.outputs\.status \}\}/);
   const common = await readFile(new URL('../.github/workflows/common-code-quality.yml', import.meta.url), 'utf8');
   assert.match(common, /python3 -m unittest discover -s scripts -p 'test_paper_release\.py' -v/);
 });
