@@ -734,13 +734,15 @@ async function buildOrchestratedPulse({
   const paperNeeds = needs?.paper;
   const paperBuild = paperNeeds?.outputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
   const paperLinks = paperNeeds?.outputs?.links;
+  const paperLinksJob = paperNeeds?.outputs?.links_job;
   results.push(paperNeeds
     ? orchestratedJobResult({ build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run)
     : orchestratedJobResult(needs, 'paper', 'Paper: Build Integrity', run));
   const linkResult = orchestratedJobResult(
     { links: { result: paperLinks } }, 'links', 'Paper: Link Integrity', run
   );
-  if (['incomplete', 'uncertain'].includes(paperLinks) || paperBuild !== 'success') {
+  if (['incomplete', 'uncertain'].includes(paperLinks) || paperBuild !== 'success' ||
+      (paperLinksJob !== 'success' && paperLinks !== 'failure')) {
     linkResult.result.state = 'incomplete';
     linkResult.result.label = 'Incomplete / link evidence';
     linkResult.result.detail = 'Link verification or the same-cycle PDF was unavailable; inspect the link job report, retry inaccessible destinations or review them manually.';
@@ -878,7 +880,7 @@ async function buildOrchestratedPulse({
     markdown,
     successful: results.every((item) =>
       item.result.state === 'fresh' ||
-      (item === linkResult && paperLinks === 'uncertain' &&
+      (item === linkResult && paperLinks === 'uncertain' && paperLinksJob === 'success' &&
         paper.result.state === 'fresh' && Boolean(item.result.artifactUrl))
     )
   };

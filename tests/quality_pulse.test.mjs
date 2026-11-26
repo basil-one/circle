@@ -696,7 +696,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'performance',
     'paper'
   ].map((jobId) => [jobId, { result: 'success' }]));
-  needs.paper.outputs = { build: 'success', links: 'success' };
+  needs.paper.outputs = { build: 'success', links: 'success', links_job: 'success' };
   const performanceSummary = {
     complete: true,
     capturedAt: `${date}T06:30:00.000Z`,
@@ -792,6 +792,15 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(missingReport.successful, false);
   assert.match(missingReport.markdown, /Link report unavailable/);
 
+  needs.paper.outputs.links = 'success';
+  needs.paper.outputs.links_job = 'failure';
+  const failedJob = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
+    needs, runId, runUrl, date, fetchImpl, unzipImpl
+  });
+  assert.equal(failedJob.successful, false);
+  assert.match(failedJob.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
+
   needs.paper.outputs.links = 'failure';
   const failed = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -872,7 +881,7 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     'dependency-security': { result: 'success' },
     rendering: { result: 'success' },
     performance: { result: 'failure' },
-    paper: { result: 'success', outputs: { build: 'success', links: 'success' } }
+    paper: { result: 'success', outputs: { build: 'success', links: 'success', links_job: 'success' } }
   };
   const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -987,7 +996,7 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
       'dependency-security': { result: 'success' },
       rendering: { result: 'success' },
       performance: { result: 'success' },
-      paper: { result: 'success', outputs: { build: 'success', links: 'success' } }
+      paper: { result: 'success', outputs: { build: 'success', links: 'success', links_job: 'success' } }
     },
     runId: '891',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/891',

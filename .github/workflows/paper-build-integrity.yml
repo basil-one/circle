@@ -11,6 +11,9 @@ on:
       links:
         description: Same-cycle Paper Link audit result
         value: ${{ jobs.paper-results.outputs.links }}
+      links_job:
+        description: Same-cycle Paper Link job result
+        value: ${{ jobs.paper-results.outputs.links_job }}
   workflow_dispatch:
 
 permissions:
@@ -128,5 +131,6 @@ jobs:
     outputs:
       build: ${{ needs.paper-build.result }}
       links: ${{ needs.paper-links.outputs.status || 'incomplete' }}
+      links_job: ${{ needs.paper-links.result }}
     steps:
       - run: echo "Paper Build and Link outcomes are available to Quality Pulse."

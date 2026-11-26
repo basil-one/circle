@@ -89,4 +89,5 @@ test('Paper Link Integrity tests and audits the same-cycle PDF without rebuildin
   assert.match(link, /name: paper-link-report/);
   assert.doesNotMatch(link, /build-paper-pdf\.sh|build-pdf\.py/);
   assert.match(paper, /links: \$\{\{ needs\.paper-links\.outputs\.status \|\| 'incomplete' \}\}/);
+  assert.match(paper, /links_job: \$\{\{ needs\.paper-links\.result \}\}/);
 });

@@ -304,6 +304,19 @@ class PaperLinkTests(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 links.audit(self.path, Path("unused"))
 
+    def test_cli_distinguishes_network_uncertainty_from_unavailable_audit(self):
+        argv = ["check_paper_links.py", str(self.path)]
+        with (
+            patch.object(sys, "argv", argv),
+            patch.object(links, "audit", return_value=("incomplete network\n", "incomplete")),
+        ):
+            self.assertEqual(links.main(), 3)
+        with (
+            patch.object(sys, "argv", argv),
+            patch.object(links, "audit", side_effect=OSError("PDF unavailable")),
+        ):
+            self.assertEqual(links.main(), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
