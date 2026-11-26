@@ -733,27 +733,6 @@ async function buildOrchestratedPulse({
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
-  const paperOutputs = needs?.paper?.outputs;
-  const paperBuild = results.find((item) => item.name === 'Paper: Build Integrity');
-  if (paperOutputs && Object.hasOwn(paperOutputs, 'build')) {
-    paperBuild.result = orchestratedJobResult(
-      { build: { result: paperOutputs.build } }, 'build', paperBuild.name, run
-    ).result;
-  }
-  for (const [key, name] of [
-    ['content', 'Paper: Content Integrity'],
-    ['link', 'Paper: Link Integrity'],
-    ['rendering', 'Paper: Rendering Integrity']
-  ]) {
-    if (!paperOutputs || !Object.hasOwn(paperOutputs, key)) continue;
-    const item = orchestratedJobResult({ [key]: { result: paperOutputs[key] } }, key, name, run);
-    if (paperOutputs[key] === 'incomplete') {
-      item.result.state = 'incomplete';
-      item.result.label = 'Incomplete / paper verification';
-      item.result.detail = `${name} did not complete; inspect the same-cycle job logs and rerun.`;
-    }
-    results.push(item);
-  }
   const publication = results.find((item) => item.name === 'Paper: Publication Integrity');
   if (['fresh', 'failed'].includes(publication.result.state)) {
     const { status, detail, main_sha: mainSha, validator_sha: validatorSha } =
@@ -874,16 +853,6 @@ async function buildOrchestratedPulse({
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
   }
-  for (const item of results.filter((result) =>
-    ['Paper: Content Integrity', 'Paper: Link Integrity', 'Paper: Rendering Integrity'].includes(result.name)
-  )) {
-    if (item.result.state === 'fresh' && paper.result.state !== 'fresh') {
-      item.result.state = 'unknown';
-      item.result.label = 'Unknown / PDF preview unavailable';
-      item.result.detail = 'Same-cycle PDF evidence is unavailable; paper verification cannot be established.';
-    }
-  }
-
   const markdown = renderPulse({
     date,
     generatedAt,
