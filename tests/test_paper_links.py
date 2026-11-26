@@ -69,13 +69,14 @@ class PaperLinkTests(unittest.TestCase):
         with self.path.open("wb") as stream:
             writer.write(stream)
 
-    def inspect(self, expected=None, routes=None):
+    def inspect(self, expected=None, routes=None, normalize_route=None):
         return links.inspect_pdf(
             self.path,
             "Contents",
             {"target": "Target"} if expected is None else expected,
             routes or {},
             "https://circle.basil.one",
+            normalize_route=normalize_route,
         )
 
     def test_real_annotations_and_bookmark_resolve(self):
@@ -106,6 +107,65 @@ class PaperLinkTests(unittest.TestCase):
         self.assertFalse(
             any("external link to 'https://example.com/resource' is missing" in i for i in issues)
         )
+
+    def test_source_without_toc_entry_still_has_a_valid_range(self):
+        self.make_pdf()
+        issues, *_ = links.inspect_pdf(
+            self.path,
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {"source": {("external", "https://example.com/resource")}},
+            {"source", "target"},
+        )
+        self.assertEqual(issues, [])
+
+    def test_wrapped_and_continued_toc_annotations(self):
+        writer = PdfWriter()
+        pages = [writer.add_blank_page(width=200, height=200) for _ in range(3)]
+        writer.add_named_destination("target", 2)
+        font = writer._add_object(
+            DictionaryObject(
+                {
+                    NameObject("/Type"): NameObject("/Font"),
+                    NameObject("/Subtype"): NameObject("/Type1"),
+                    NameObject("/BaseFont"): NameObject("/Helvetica"),
+                }
+            )
+        )
+        for page, text, y in ((pages[0], b"Contents", 180), (pages[1], b"Wrapped Label", 100)):
+            page[NameObject("/Resources")] = DictionaryObject(
+                {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+            )
+            stream = DecodedStreamObject()
+            stream.set_data(b"BT /F1 12 Tf 10 " + str(y).encode() + b" Td (" + text + b") Tj ET")
+            page[NameObject("/Contents")] = writer._add_object(stream)
+        annotations = ArrayObject()
+        for rect in ((10, 98, 56, 112), (56, 98, 90, 112)):
+            annotations.append(
+                writer._add_object(
+                    DictionaryObject(
+                        {
+                            NameObject("/Subtype"): NameObject("/Link"),
+                            NameObject("/Rect"): ArrayObject([FloatObject(n) for n in rect]),
+                            NameObject("/A"): DictionaryObject(
+                                {
+                                    NameObject("/S"): NameObject("/GoTo"),
+                                    NameObject("/D"): TextStringObject("target"),
+                                }
+                            ),
+                        }
+                    )
+                )
+            )
+        pages[1][NameObject("/Annots")] = annotations
+        with self.path.open("wb") as stream:
+            writer.write(stream)
+        issues, *_ = links.inspect_pdf(
+            self.path, "Contents", {"target": "Wrapped Label"}, {}, "https://circle.basil.one"
+        )
+        self.assertEqual(issues, [])
 
     def test_broken_internal_target_and_missing_toc_link_are_reported(self):
         self.make_pdf(internal="missing")
@@ -166,18 +226,29 @@ class PaperLinkTests(unittest.TestCase):
         self.assertIn("intro-heading", toc)
 
     def test_source_link_to_included_move_must_be_rewritten(self):
+        normalizer = links.paper_expectations(ROOT / "scripts/plop.paper.config.yaml")[-1]
         for suffix in ("", "index.html", ".html"):
             self.make_pdf(url=f"https://circle.basil.one/moves/establish/{suffix}")
             if suffix == ".html":
                 self.make_pdf(url="https://circle.basil.one/moves/establish.html")
-            issues, *_ = self.inspect(routes={"/moves/establish/": "pattern-establish"})
+            issues, *_ = self.inspect(
+                routes={"/moves/establish/": "pattern-establish"}, normalize_route=normalizer
+            )
             self.assertTrue(
                 any("should link to PDF destination 'pattern-establish'" in i for i in issues)
             )
 
     def test_external_failure_and_uncertainty_are_distinct(self):
         self.make_pdf()
-        expected = ("Contents", {"target": "Target"}, {}, "https://circle.basil.one", {})
+        expected = (
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {},
+            {"target"},
+            None,
+        )
         with patch.object(links, "paper_expectations", return_value=expected):
             report, state = links.audit(
                 self.path,
@@ -202,7 +273,15 @@ class PaperLinkTests(unittest.TestCase):
         with patch.object(
             links,
             "paper_expectations",
-            return_value=("Contents", {"target": "Target"}, {}, "https://circle.basil.one", {}),
+            return_value=(
+                "Contents",
+                {"target": "Target"},
+                {},
+                "https://circle.basil.one",
+                {},
+                {"target"},
+                None,
+            ),
         ):
             report, state = links.audit(self.path, Path("unused"), check_network=False)
         self.assertEqual(state, "incomplete")
@@ -212,7 +291,15 @@ class PaperLinkTests(unittest.TestCase):
         with patch.object(
             links,
             "paper_expectations",
-            return_value=("Contents", {"target": "Target"}, {}, "https://circle.basil.one", {}),
+            return_value=(
+                "Contents",
+                {"target": "Target"},
+                {},
+                "https://circle.basil.one",
+                {},
+                {"target"},
+                None,
+            ),
         ):
             with self.assertRaises(FileNotFoundError):
                 links.audit(self.path, Path("unused"))

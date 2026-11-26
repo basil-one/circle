@@ -47,6 +47,8 @@ def paper_expectations(config: Path):
             toc[intro] = intro_label
     core, appendix, routes = [], [], {}
     sections = builder._plan_pdf_sections(data["sections"], used, core, appendix, routes)
+    anchors = {section["anchor"] for section in sections}
+    anchors.update(pattern["anchor"] for section in sections for pattern in section["patterns"])
     toc.update((item["anchor"], item["label"]) for item in core + appendix)
     for key in ("discussion", "conclusion"):
         section = data[key]
@@ -60,7 +62,16 @@ def paper_expectations(config: Path):
         if include_back:
             toc[anchor] = back_label
     source_links = _source_expectations(builder, sections, routes)
-    return framing["toc_label"], toc, routes, builder._get_root_url(), source_links
+    anchors.update(used)
+    return (
+        framing["toc_label"],
+        toc,
+        routes,
+        builder._get_root_url(),
+        source_links,
+        anchors,
+        builder._normalize_site_path,
+    )
 
 
 def _source_expectations(builder, sections, routes):
@@ -181,19 +192,8 @@ def _annotation_label(annotation, page, words):
     return " ".join(selected)
 
 
-def _route_path(path):
-    path = path.rstrip("/")
-    if path.endswith("/index.html"):
-        path = path[: -len("/index.html")]
-    elif path.endswith("index.html"):
-        path = path[: -len("index.html")]
-    elif path.endswith(".html"):
-        path = path[: -len(".html")]
-    return path.rstrip("/") + "/"
-
-
 class PDFLinkInspection:
-    def __init__(self, path, toc_label, expected_toc, routes, site_url):
+    def __init__(self, path, toc_label, expected_toc, routes, site_url, anchors):
         self.reader = PdfReader(path, strict=True)
         if not self.reader.pages:
             raise ValueError("PDF has no pages")
@@ -203,8 +203,9 @@ class PDFLinkInspection:
             for page in self.reader.pages
             if page.indirect_reference is not None
         }
-        self.issues, self.sources, self.toc_targets = [], {}, set()
+        self.issues, self.sources, self.toc_labels = [], {}, {}
         self.expected_toc, self.routes, self.site_url = expected_toc, routes, site_url
+        self.anchors = anchors
         self.internal_count, self.page_links = 0, []
         toc_pages = [
             i for i, page in enumerate(self.reader.pages) if toc_label in page.extract_text()
@@ -214,7 +215,23 @@ class PDFLinkInspection:
                 f"Table of contents label {toc_label!r} found on {len(toc_pages)} pages"
             )
         self.toc_start = toc_pages[0] if len(toc_pages) == 1 else -1
-        self.words = _toc_words(path, self.toc_start + 1) if self.toc_start >= 0 else []
+        positions = self.anchor_positions()
+        self.toc_end = min(
+            (pos for pos in positions.values() if pos is not None and pos > self.toc_start),
+            default=len(self.reader.pages),
+        )
+        self.words = (
+            {index: _toc_words(path, index + 1) for index in range(self.toc_start, self.toc_end)}
+            if self.toc_start >= 0
+            else {}
+        )
+
+    def anchor_positions(self):
+        return {
+            anchor: self.reader.get_destination_page_number(self.named[anchor])
+            for anchor in self.anchors
+            if anchor in self.named
+        }
 
     def _internal(self, annotation, action, page, index, observed):
         destination = annotation.get("/Dest") if "/Dest" in annotation else action.get("/D")
@@ -224,10 +241,10 @@ class PDFLinkInspection:
             self.issues.append(f"Page {index + 1}: {destination!r} — {error}")
         if isinstance(destination, str):
             observed.add(("internal", str(destination)))
-            if index == self.toc_start and str(destination) in self.expected_toc:
-                label = _annotation_label(annotation, page, self.words)
-                if label == self.expected_toc[str(destination)]:
-                    self.toc_targets.add(str(destination))
+            if index in self.words and str(destination) in self.expected_toc:
+                label = _annotation_label(annotation, page, self.words[index])
+                if label:
+                    self.toc_labels.setdefault(str(destination), []).append(label)
 
     def _uri(self, action, location, observed):
         url = str(action.get("/URI", ""))
@@ -237,7 +254,7 @@ class PDFLinkInspection:
                 observed.add(("external", url))
                 self.sources.setdefault(urldefrag(url).url, set()).add(location)
                 if same_site(url, self.site_url):
-                    normalized = _route_path(parts.path)
+                    normalized = self.normalize_route(url)
                     if normalized in self.routes:
                         self.issues.append(
                             f"{location}: {url} should link to PDF destination "
@@ -266,11 +283,7 @@ class PDFLinkInspection:
         self.page_links.append(observed)
 
     def check_source_links(self, source_links):
-        positions = {
-            anchor: self.reader.get_destination_page_number(self.named[anchor])
-            for anchor in self.expected_toc
-            if anchor in self.named
-        }
+        positions = self.anchor_positions()
         for anchor, targets in source_links.items():
             start = positions.get(anchor)
             if start is None or start < 0:
@@ -292,19 +305,33 @@ def inspect_pdf(
     routes: dict[str, str],
     site_url: str,
     source_links=None,
+    anchors=None,
+    normalize_route=None,
 ):
-    inspection = PDFLinkInspection(path, toc_label, expected_toc, routes, site_url)
+    inspection = PDFLinkInspection(
+        path,
+        toc_label,
+        expected_toc,
+        routes,
+        site_url,
+        set(expected_toc) | set(source_links or {}) if anchors is None else anchors,
+    )
+    inspection.normalize_route = normalize_route or (
+        lambda url: urlsplit(url).path.rstrip("/") + "/"
+    )
     for name, destination in inspection.named.items():
         error = _destination_error(destination.dest_array, inspection.named, inspection.page_refs)
         if error:
             inspection.issues.append(f"Named destination {name!r}: {error}")
     for index, page in enumerate(inspection.reader.pages):
         inspection.scan_page(index, page)
-    for anchor in sorted(expected_toc.keys() - inspection.toc_targets):
-        inspection.issues.append(
-            f"Table of contents: link labelled {expected_toc[anchor]!r} "
-            f"to {anchor!r} is missing or points elsewhere"
-        )
+    for anchor, label in sorted(expected_toc.items()):
+        actual = " ".join(inspection.toc_labels.get(anchor, [])).split()
+        if actual != label.split():
+            inspection.issues.append(
+                f"Table of contents: link labelled {label!r} "
+                f"to {anchor!r} is missing or points elsewhere"
+            )
     if source_links:
         inspection.check_source_links(source_links)
     outline_count = _outline_findings(
@@ -347,9 +374,11 @@ def bounded_external(url: str, timeout: float):
 
 
 def audit(path: Path, config: Path, check_network=True, checker=bounded_external):
-    label, toc, routes, site_url, source_links = paper_expectations(config)
+    label, toc, routes, site_url, source_links, anchors, normalize_route = paper_expectations(
+        config
+    )
     issues, sources, named_count, internal_count, outline_count = inspect_pdf(
-        path, label, toc, routes, site_url, source_links
+        path, label, toc, routes, site_url, source_links, anchors, normalize_route
     )
     results = {}
     deadline = time.monotonic() + 120
@@ -376,12 +405,21 @@ def audit(path: Path, config: Path, check_network=True, checker=bounded_external
         f"- Internal findings: {len(issues)}",
         f"- Likely broken external destinations: {len(broken)}",
         f"- Uncertain external destinations: {len(uncertain)}",
+        "- External URL fragments are not checked.",
         "",
     ]
     lines.extend(f"- {issue}" for issue in issues)
     for url, (category, detail) in results.items():
         if category != "healthy":
             lines.append(f"- {category}: `{url}` ({', '.join(sorted(sources[url]))}) — {detail}")
+    if issues or broken:
+        lines.append(
+            "- Next step: inspect the cited PDF page and destination; correct the source or generation and rerun."
+        )
+    if uncertain:
+        lines.append(
+            "- Next step: retry from an unrestricted network or check the destinations manually; do not treat unavailable evidence as a pass."
+        )
     return "\n".join(lines) + "\n", state
 
 
