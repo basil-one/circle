@@ -746,7 +746,7 @@ function validPaperReport(report, expectedStatus) {
 async function applyPaperReport(item, job, status, artifactOptions, repository, runId, artifactName) {
   const domain = item.name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
-  if (!expectedStatus) return;
+  if (!expectedStatus && job !== 'failure') return;
   try {
     const { data: report, artifact } = await fetchArtifactJson({
       ...artifactOptions,
@@ -754,12 +754,20 @@ async function applyPaperReport(item, job, status, artifactOptions, repository, 
       fileName: `${artifactName}.json`,
       includeMetadata: true
     });
-    if (!validPaperReport(report, expectedStatus)) throw new Error('report is malformed or disagrees with the validator');
+    if (!['passed', 'failed', 'incomplete', 'advisory'].includes(report?.status) ||
+        !validPaperReport(report, report.status)) {
+      throw new Error('report is malformed');
+    }
+    const confirmedReportFailure = report.status === 'failed' &&
+      (job === 'failure' || (job === 'success' && status === 'failure'));
+    if (report.status !== expectedStatus && !confirmedReportFailure) {
+      throw new Error('report disagrees with the validator');
+    }
     item.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
-    if (expectedStatus === 'failed' && job === 'success' && item.result.state === 'unknown') {
+    if (confirmedReportFailure && item.result.state !== 'failed') {
       item.result.state = 'failed';
       item.result.label = 'Failed';
-      item.result.detail += ' Validator status and report establish a defect despite the contradictory job result.';
+      item.result.detail += ' The failed report establishes a defect; inspect the missing or contradictory job/validator outcome.';
     }
     if (report.findings.length) {
       item.result.detail += ` ${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. See the report for all findings.`;

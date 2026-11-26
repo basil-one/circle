@@ -1136,13 +1136,33 @@ test('paper build, content failure, and missing evidence remain distinct', async
   needs['paper-content'].result = 'failure';
   needs['paper-content'].outputs.status = '';
   pulse = await buildOrchestratedPulse(options);
+  assert.match(pulse.markdown, /\| Paper: Content Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /failed report establishes a defect/);
+  const missingStatusAndReport = await buildOrchestratedPulse({
+    ...options,
+    fetchImpl: async (url) => new URL(url).searchParams.get('name') === 'paper-content-report'
+      ? { ok: true, json: async () => ({ artifacts: [] }) }
+      : options.fetchImpl(url)
+  });
+  assert.match(missingStatusAndReport.markdown, /\| Paper: Content Integrity \| Incomplete \/ content verification \|/);
+
+  needs['paper-content'].outputs.status = 'success';
+  pulse = await buildOrchestratedPulse(options);
+  assert.match(pulse.markdown, /\| Paper: Content Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /contradictory job\/validator outcome/);
+
+  needs['paper-content'].outputs.status = 'incomplete';
+  pulse = await buildOrchestratedPulse({
+    ...options,
+    unzipImpl: () => JSON.stringify({ status: 'incomplete', findings: ['PDF extraction incomplete'] })
+  });
   assert.match(pulse.markdown, /\| Paper: Content Integrity \| Incomplete \/ content verification \|/);
 
   needs['paper-content'].result = 'success';
   needs['paper-content'].outputs.status = 'failure';
   pulse = await buildOrchestratedPulse(options);
   assert.match(pulse.markdown, /\| Paper: Content Integrity \| Failed \|/);
-  assert.match(pulse.markdown, /contradictory job result/);
+  assert.match(pulse.markdown, /contradictory job\/validator outcome/);
   const contradictoryWithoutReport = await buildOrchestratedPulse({
     ...options,
     unzipImpl: () => JSON.stringify({ status: 'failed', findings: [] })
