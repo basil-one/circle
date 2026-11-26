@@ -1,16 +1,6 @@
 name: "Paper: Preview"
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/paper-preview.yml'
-      - 'scripts/build-pdf.py'
-      - 'scripts/content/**'
-      - 'scripts/plop.paper.config.yaml'
-      - 'scripts/template.tex'
-      - '_moves/**'
-      - '_lenses/**'
-      - 'images/**'
   workflow_dispatch:
 
 permissions:
@@ -19,49 +9,4 @@ permissions:
 jobs:
   preview:
     name: "Paper: Preview"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout proposed revision
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-
-      - name: Install PDF build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            pandoc \
-            texlive-xetex \
-            texlive-latex-recommended \
-            texlive-latex-extra \
-            texlive-fonts-recommended \
-            fontconfig \
-            fonts-noto-core \
-            fonts-noto-ui-core
-          fc-cache -f -v
-
-      - name: Build PDF preview
-        run: python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
-
-      - name: Upload PDF preview
-        id: upload
-        uses: actions/upload-artifact@v6
-        with:
-          name: circle3-paper-preview
-          path: assets/pdfs/circle3-paper.pdf
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Link preview from workflow summary
-        env:
-          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          {
-            echo "## Circle3 Paper: Preview"
-            echo
-            echo "Built from proposed revision \`$SOURCE_SHA\`."
-            echo
-            echo "[Download the preview PDF]($ARTIFACT_URL)"
-          } >> "$GITHUB_STEP_SUMMARY"
+    uses: ./.github/workflows/paper-build-integrity.yml

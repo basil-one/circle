@@ -93,7 +93,8 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 
 ## Paper Workflows
 
-- **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Builds a downloadable PDF for paper-related pull requests; also available on demand.
+- **[Paper: Build Integrity](../.github/workflows/paper-build-integrity.yml)** — Runs on every pull request to `main` and in Quality Pulse; verifies a fresh, nonempty, readable author-edition PDF and provides a downloadable preview.
+- **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Runs the same build on demand.
 - **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from `main` with the intended version (e.g. `0.2.1`). Promotes the `Unreleased` changelog entries, creates the tag, and publishes the PDF.
 
 Each release includes:

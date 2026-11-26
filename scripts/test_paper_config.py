@@ -93,6 +93,19 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
                 any(arg.startswith("copyright_notice") for arg in run.call_args.args[0])
             )
 
+    def test_failed_pdf_generation_is_not_reported_as_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.builder.config["output"]["directory"] = directory
+            failure = subprocess.CompletedProcess(
+                ["pandoc"], 1, b"", b"deliberate generation failure"
+            )
+            with (
+                patch.object(self.builder, "_check_dependencies", return_value=True),
+                patch.object(BUILD_PDF.subprocess, "run", return_value=failure),
+            ):
+                self.assertFalse(self.builder.build())
+            self.assertFalse((Path(directory) / "circle3-paper.pdf").exists())
+
     def test_template_places_only_configured_notice_in_existing_slot(self):
         template = (ROOT / "scripts/template.tex").read_text()
         notice_block = template.split("$if(copyright_notice)$", 1)[1].split(r"\end{center}", 1)[0]

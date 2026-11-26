@@ -73,7 +73,8 @@ jobs:
             texlive-fonts-recommended \
             fontconfig \
             fonts-noto-core \
-            fonts-noto-ui-core
+            fonts-noto-ui-core \
+            poppler-utils
           fc-cache -f -v
 
       - name: Build and validate paper PDF
@@ -83,6 +84,7 @@ jobs:
           set -euo pipefail
           python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
           test -s assets/pdfs/circle3-paper.pdf
+          pdfinfo -isodates assets/pdfs/circle3-paper.pdf >/dev/null
           python3 scripts/paper_release.py notes \
             --version "$VERSION" \
             --output /tmp/release-notes.md
