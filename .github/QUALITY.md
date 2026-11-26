@@ -42,12 +42,13 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Site: SEO Integrity](workflows/site-seo-integrity.yml) | Page titles, canonical URLs, and indexing directives. |
 | [Site: Rendering Integrity](workflows/site-rendering-integrity.yml) | Browser verification, accessibility, and responsive usability at 320px, 768px, and 1280px. |
 | [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Lighthouse measurements across representative pages on mobile and desktop. |
+| [Site: Publish](workflows/site-publish.yml) | Main-only production publication to GitHub Pages; a publication workflow, not a PR-required check. |
 | [Paper: Preview](workflows/paper-preview.yml) | Downloadable PDF generation for human review. |
 | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
 
 ## Quality Gate
 
-Required checks protect against known defects before changes are merged. All Common and Site safeguards are required.
+Required checks protect against known defects before changes are merged. All Common and Site integrity safeguards are required; Site: Publish is not a PR check.
 
 Performance Integrity measures changes when warranted. Performance comparisons inform human judgment rather than automatically prevent merging.
 

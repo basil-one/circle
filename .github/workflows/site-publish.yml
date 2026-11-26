@@ -1,0 +1,94 @@
+name: "Site: Publish"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build site
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - name: Checkout main revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+        env:
+          BUNDLE_FROZEN: 'true'
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+      - name: Build production site
+        run: bundle exec jekyll build --trace
+        env:
+          JEKYLL_ENV: production
+      - name: Verify generated site
+        run: |
+          test -s _site/CNAME
+          test ! -e _site/CHANGELOG.html
+      - name: Record source revision
+        id: source
+        run: |
+          source_sha="$(git rev-parse HEAD)"
+          test "$source_sha" = "$GITHUB_SHA"
+          echo "sha=$source_sha" >> "$GITHUB_OUTPUT"
+          echo "Built source SHA: $source_sha" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload Pages artifact
+        id: artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          name: github-pages
+          path: _site
+
+  deploy:
+    name: Deploy site
+    if: github.ref == 'refs/heads/main' && needs.build.outputs.source_sha == github.sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: build
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Verify source is still the latest main revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.build.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$SOURCE_SHA" = "$GITHUB_SHA"
+          current_sha="$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)"
+          test "$current_sha" = "$SOURCE_SHA" || {
+            echo "::error::main advanced after this site artifact was built; refusing to deploy stale output."
+            exit 1
+          }
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages

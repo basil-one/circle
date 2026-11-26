@@ -18,6 +18,33 @@ Our [quality stance and practice](.github/QUALITY.md) describes the quality doma
 
 The site will be available at http://localhost:4000.
 
+## Site Publication
+
+`Site: Publish` builds the production site with the repository's frozen Bundler
+dependencies and publishes it to GitHub Pages after pushes to `main`. It can
+also be dispatched manually from `main` for recovery. It is a publication
+workflow, not an additional pull-request quality check.
+
+### Pages cutover and rollback
+
+The workflow does not change repository Pages settings. Before the cutover,
+record the current Pages source branch and folder in **Settings → Pages**.
+After this change is merged, switch **Build and deployment → Source** to
+**GitHub Actions**, keeping the existing custom domain and HTTPS setting. Check
+the merge-triggered `Site: Publish` run. If it started before the source switch
+or did not deploy, run `Site: Publish` manually from the current `main` branch.
+In **Actions**, open **Site: Publish**, choose **Run workflow**, select
+`main`, and start the run.
+Verify the deployed run's source SHA and check the live custom-domain site,
+HTTPS, and paper download before considering the cutover complete.
+
+To roll back the publication mechanism, restore the Pages source branch and
+folder recorded before cutover, then verify the site and HTTPS. This returns to
+the previous Pages builder and its existing dependency posture, so use it only
+as a temporary recovery. To roll back site content while keeping Actions
+publication, revert the affected change on `main`; do not dispatch an older
+revision.
+
 ## Intellectual stewardship
 
 We develop original work while recognizing that knowledge emerges through practice, relationships, and the contributions of others.
