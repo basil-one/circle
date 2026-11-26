@@ -201,7 +201,7 @@ function renderSummary(
     `- **Mode:** ${process.env.PERFORMANCE_EVENT_NAME ?? 'local'} run on \`${process.env.PERFORMANCE_SOURCE_BRANCH ?? 'local'}\`; informational lab baseline, not a performance-quality judgment.`,
     `- **Tools:** Lighthouse ${lighthouseVersion}; ${chromeVersion}; ${rubyVersion}; ${jekyllVersion}; Node ${process.version}.`,
     `- **Conditions:** ${process.env.PERFORMANCE_RUNNER ?? `local ${process.platform}/${process.arch}`}; Jekyll production build served locally; Lighthouse default mobile configuration and desktop preset; ${runCount} fresh-browser runs per route and form factor; medians shown; external scripts are allowed but Google Analytics collection requests are blocked to avoid synthetic visits. These are lab measurements, not field data or real-user Core Web Vitals.`,
-    `- **Coverage:** ${new Set(results.map((result) => result.route)).size} generated routes × ${results.length} route/profile measurements × ${runCount} runs.`,
+    `- **Coverage:** ${new Set(results.map((result) => result.route)).size} generated routes × ${results.length} distinct route/profile pairs × ${results.length * runCount} samples (${runCount} per pair).`,
     `- **Measurement runtime:** ${elapsedSeconds.toFixed(1)} seconds, excluding workflow setup, build, dependency/browser installation, missing-route verification, and artifact upload; total Actions job duration is shown in the run overview.`,
     '',
     '| Generated route | Form factor | Lab FCP | Lab LCP | Lab Speed Index | Lab TBT | Lab CLS |',

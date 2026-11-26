@@ -137,6 +137,7 @@ test('puts completed outcome first and summarizes representative LCP/TBT by page
   assert.match(report, /\| Lenses \|/);
   assert.match(report, /\| Method \| 1\.23 s \| 567 ms \| 89 ms \|/);
   assert.match(report, /Technical details/);
+  assert.equal([...report.matchAll(/## Performance safeguards/g)].length, 1);
   assert.match(report, /\| Page \| Profile \| FCP \| LCP \| Speed Index \| TBT \| CLS \|/);
   assert.match(
     report,

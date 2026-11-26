@@ -82,6 +82,24 @@ test('applies LCP deterioration only when both strict thresholds are exceeded', 
       false
     );
   }
+  const increaseOnly = assessment(
+    [result('mobile', { 'largest-contentful-paint': 3_501 })],
+    [result('mobile', { 'largest-contentful-paint': 3_000 })],
+    true
+  );
+  assert.equal(
+    increaseOnly.initialViolations.some((violation) => violation.criterion === 'reference-deterioration'),
+    false
+  );
+  const percentageOnly = assessment(
+    [result('mobile', { 'largest-contentful-paint': 1_251 })],
+    reference,
+    true
+  );
+  assert.equal(
+    percentageOnly.initialViolations.some((violation) => violation.criterion === 'reference-deterioration'),
+    false
+  );
   const violation = assessment(
     [result('mobile', { 'largest-contentful-paint': 1_501 })],
     reference,

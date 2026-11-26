@@ -27,6 +27,15 @@ export function median(values) {
     : (ordered[middle - 1] + ordered[middle]) / 2;
 }
 
+export function formatPerformanceValue(metric, value) {
+  if (!Number.isFinite(value)) return 'unavailable';
+  return metric === 'cumulative-layout-shift'
+    ? value.toFixed(3)
+    : value >= 1_000
+      ? `${(value / 1_000).toFixed(2)} s`
+      : `${Math.round(value)} ms`;
+}
+
 function isLcpDeterioration(value, referenceValue) {
   if (!Number.isFinite(value) || !Number.isFinite(referenceValue) || referenceValue <= 0) {
     return false;

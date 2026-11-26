@@ -5,6 +5,7 @@ import {
   performanceRoutes,
   performanceRunCount
 } from '../tests/browser/site-routes.js';
+import { formatPerformanceValue } from './site_performance_policy.mjs';
 
 const metrics = [
   ['first-contentful-paint', 'FCP'],
@@ -36,9 +37,7 @@ function routeLabel(route) {
 }
 
 function formatValue(metric, value) {
-  if (!Number.isFinite(value)) return 'unavailable';
-  if (metric === 'cumulative-layout-shift') return value.toFixed(3);
-  return value >= 1_000 ? `${(value / 1_000).toFixed(2)} s` : `${Math.round(value)} ms`;
+  return formatPerformanceValue(metric, value);
 }
 
 function formatDelta(metric, current, baseline) {
@@ -234,8 +233,6 @@ function technicalDetails(summary, comparison, inputs) {
       lines.push(`- Conditions differing from available baseline(s): ${comparison.conditions.join('; ')}.`);
     }
   }
-  lines.push('', '### Performance safeguards', '');
-  lines.push(...performanceSafeguardLines(comparison?.policy));
   const diagnostic = diagnosticStatus(inputs);
   lines.push('', `- Controlled missing-route diagnostic: ${diagnostic}.`);
   const failures = failedStepNames(inputs);
