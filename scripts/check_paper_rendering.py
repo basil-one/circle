@@ -31,7 +31,9 @@ def page_count(pdf):
     match = re.search(rb"^Pages:\s*(\d+)\s*$", result.stdout, re.MULTILINE)
     if result.returncode or not match or int(match.group(1)) < 1:
         detail = result.stderr.decode("utf-8", "replace").strip()
-        raise IncompleteCheck(f"could not determine PDF pages: {detail or 'invalid pdfinfo output'}")
+        raise IncompleteCheck(
+            f"could not determine PDF pages: {detail or 'invalid pdfinfo output'}"
+        )
     return int(match.group(1))
 
 
@@ -83,7 +85,9 @@ def check_rendering(pdf):
             findings.append(f"page {page}: rendering error: {error}")
             continue
         if pixels.count(b"\xff") == len(pixels):
-            findings.append(f"page {page}: rendered completely blank; review for an unintended page")
+            findings.append(
+                f"page {page}: rendered completely blank; review for an unintended page"
+            )
     return pages, findings
 
 

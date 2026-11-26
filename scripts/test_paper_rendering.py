@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 import check_paper_rendering as rendering
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CHECK = ROOT / "scripts/check_paper_rendering.py"
 
@@ -41,11 +40,7 @@ def fixture_pdf(path, page_streams, *, broken_image=False):
             + f"{page_id + 1} 0 R >>".encode()
         )
         objects.append(
-            b"<< /Length "
-            + str(len(stream)).encode()
-            + b" >>\nstream\n"
-            + stream
-            + b"\nendstream"
+            b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream"
         )
     objects[1] = (
         b"<< /Type /Pages /Count "
@@ -64,8 +59,7 @@ def fixture_pdf(path, page_streams, *, broken_image=False):
     for offset in offsets:
         data += f"{offset:010d} 00000 n \n".encode()
     data += (
-        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
-        f"startxref\n{xref}\n%%EOF\n"
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n"
     ).encode()
     path.write_bytes(data)
 
