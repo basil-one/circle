@@ -16,13 +16,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout intended revision
+        id: checkout
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-
-      - name: Test paper configuration and release logic
-        run: python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v
 
       - name: Build and verify fresh author-edition PDF
         run: bash scripts/build-paper-pdf.sh
@@ -39,7 +36,7 @@ jobs:
       - name: Link preview from workflow summary
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_SHA: ${{ steps.checkout.outputs.commit }}
         run: |
           {
             echo "## Circle3 Paper: Preview"

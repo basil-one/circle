@@ -696,7 +696,13 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'performance',
     'paper'
   ].map((jobId) => [jobId, { result: 'success' }]));
-  needs['paper-publication'] = { result: 'success', outputs: { status: 'passed' } };
+  needs['paper-publication'] = {
+    result: 'success',
+    outputs: {
+      status: 'passed', detail: 'Published release agrees.',
+      main_sha: 'a'.repeat(40), validator_sha: 'b'.repeat(40)
+    }
+  };
   const performanceSummary = {
     complete: true,
     capturedAt: `${date}T06:30:00.000Z`,
@@ -736,6 +742,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     needs,
     runId,
     runUrl,
+    validatorRevision: 'b'.repeat(40),
     date,
     generatedAt: `${date}T06:40:00Z`,
     fetchImpl,
@@ -763,6 +770,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     runId,
     runUrl,
     eventName: 'workflow_dispatch',
+    validatorRevision: 'b'.repeat(40),
     date,
     generatedAt: `${date}T06:40:00Z`,
     fetchImpl,
@@ -996,7 +1004,10 @@ test('publication can pass independently when the paper build fails', async () =
     repository: 'basil-one/circle',
     needs: {
       paper: { result: 'failure' },
-      'paper-publication': { result: 'success', outputs: { status: 'passed' } }
+      'paper-publication': {
+        result: 'success',
+        outputs: { status: 'passed', detail: 'Published release agrees.', main_sha: 'a'.repeat(40), validator_sha: 'b'.repeat(40) }
+      }
     },
     runId: '903',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/903',
@@ -1005,6 +1016,51 @@ test('publication can pass independently when the paper build fails', async () =
   assert.equal(pulse.successful, false);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Passed \|/);
+});
+
+test('publication pass requires bounded detail and matching revision provenance', async () => {
+  const valid = {
+    status: 'passed',
+    detail: 'Published release agrees.',
+    main_sha: 'a'.repeat(40),
+    validator_sha: 'b'.repeat(40)
+  };
+  const cases = [
+    { detail: undefined }, { detail: '  ' }, { detail: 'x'.repeat(1001) },
+    { detail: 'bad\noutput' }, { main_sha: undefined }, { main_sha: 'a'.repeat(41) },
+    { validator_sha: undefined }, { validator_sha: 'z'.repeat(40) },
+    { validator_sha: 'c'.repeat(40) }
+  ];
+  for (const invalid of cases) {
+    const pulse = await buildOrchestratedPulse({
+      apiUrl: 'https://api.github.com',
+      repository: 'basil-one/circle',
+      needs: { 'paper-publication': { result: 'success', outputs: { ...valid, ...invalid } } },
+      validatorRevision: 'b'.repeat(40),
+      runId: '905',
+      runUrl: 'https://github.com/basil-one/circle/actions/runs/905',
+      date
+    });
+    assert.equal(pulse.successful, false);
+    assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Unknown \/ publication evidence unavailable \|/);
+  }
+});
+
+test('publication defect survives missing or inconsistent provenance', async () => {
+  const pulse = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    needs: { 'paper-publication': { result: 'failure', outputs: {
+      status: 'failed', detail: 'Published PDFs differ; review before repair.', validator_sha: 'c'.repeat(40)
+    } } },
+    validatorRevision: 'b'.repeat(40),
+    runId: '906',
+    runUrl: 'https://github.com/basil-one/circle/actions/runs/906',
+    date
+  });
+  assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /Published PDFs differ; review before repair/);
+  assert.match(pulse.markdown, /provenance is unavailable or inconsistent/);
 });
 
 test('confirmed publication defects survive contradictory success or cancellation', async () => {

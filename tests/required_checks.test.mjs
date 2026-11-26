@@ -71,7 +71,9 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(summary, /performanceMeasurementExitCode/);
 
   const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
-  assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
+  assert.doesNotMatch(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
+  const codeQuality = await readFile(new URL('../.github/workflows/common-code-quality.yml', import.meta.url), 'utf8');
+  assert.match(codeQuality, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
   assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
 });

@@ -62,6 +62,8 @@ jobs:
         run: npm run test:quality-pulse
       - name: Test required-check contracts
         run: npm run test:required-checks
+      - name: Test paper configuration and publication logic
+        run: python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v
       - name: Test generated-site route discovery
         run: npm run test:site-routes
       - name: Test rendering summary and coverage

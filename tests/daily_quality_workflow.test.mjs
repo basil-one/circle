@@ -65,7 +65,7 @@ test('publication audit is read-only, independently callable, and preserves its 
   assert.doesNotMatch(yaml, /^  pull_request:$/m);
   assert.match(yaml, /name: "Paper: Publication Integrity"/);
   assert.match(yaml, /permissions:\n  contents: read/);
-  assert.match(yaml, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.doesNotMatch(yaml, /^\s+ref:/m);
   assert.match(yaml, /validator_sha: \$\{\{ steps\.checkout\.outputs\.commit \}\}/);
   assert.match(yaml, /fetch-depth: 0\n          persist-credentials: false/);
   assert.match(yaml, /refs\/heads\/main:refs\/remotes\/origin\/main/);

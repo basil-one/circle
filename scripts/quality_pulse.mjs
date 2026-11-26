@@ -709,6 +709,7 @@ async function buildOrchestratedPulse({
   runUrl,
   eventName = 'schedule',
   branch = 'main',
+  validatorRevision,
   date,
   generatedAt = new Date().toISOString(),
   fetchImpl = fetch,
@@ -742,6 +743,12 @@ async function buildOrchestratedPulse({
   if (['fresh', 'failed'].includes(publication.result.state)) {
     const { status, detail, main_sha: mainSha, validator_sha: validatorSha } =
       needs['paper-publication']?.outputs ?? {};
+    const validDetail = typeof detail === 'string' && detail.trim().length > 0 &&
+      detail.length <= 1000 && !/[\x00-\x1f\x7f]/.test(detail);
+    const isSha = (value) => typeof value === 'string' &&
+      /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(value);
+    const validProvenance = isSha(mainSha) && isSha(validatorSha) &&
+      (validatorRevision === undefined || (isSha(validatorRevision) && validatorSha === validatorRevision));
     if (status === 'failed' && publication.result.state === 'fresh') {
       publication.result.state = 'failed';
       publication.result.label = 'Failed';
@@ -752,11 +759,16 @@ async function buildOrchestratedPulse({
       publication.result.label = 'Unknown / publication evidence unavailable';
       publication.result.detail = 'Publication evidence could not be verified; inspect the publication job logs and rerun.';
     }
+    if (publication.result.state === 'fresh' && (!validDetail || !validProvenance)) {
+      publication.result.state = 'unknown';
+      publication.result.label = 'Unknown / publication evidence unavailable';
+      publication.result.detail = 'Publication detail or revision provenance is missing or invalid; inspect the publication job and rerun.';
+    }
     const coherent = (status === 'passed' && publication.result.state === 'fresh') ||
       (status === 'failed' && publication.result.state === 'failed') ||
       (status === 'unknown' && publication.result.state === 'unknown');
-    if (coherent && typeof detail === 'string' && detail.trim() && detail.length <= 1000) {
-      publication.result.detail = detail.replace(/[\r\n]/g, ' ');
+    if (coherent && validDetail) {
+      publication.result.detail = detail;
     }
     if (status === 'failed' && needs['paper-publication']?.result === 'success') {
       publication.result.detail += ' The job result contradicts the validator; inspect and rerun.';
@@ -764,8 +776,10 @@ async function buildOrchestratedPulse({
     if (status === 'failed' && needs['paper-publication']?.result === 'cancelled') {
       publication.result.detail += ' The job was cancelled; inspect and rerun.';
     }
-    if (/^[0-9a-f]{40,64}$/.test(mainSha ?? '') && /^[0-9a-f]{40,64}$/.test(validatorSha ?? '')) {
+    if (validProvenance) {
       publication.result.detail += ` Published main: ${mainSha}; validator revision: ${validatorSha}.`;
+    } else if (publication.result.state === 'failed') {
+      publication.result.detail += ' Publication revision provenance is unavailable or inconsistent; inspect and rerun.';
     }
   }
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
@@ -1031,6 +1045,7 @@ async function main() {
     runUrl: process.env.PULSE_RUN_URL,
     eventName: process.env.PULSE_EVENT_NAME ?? 'schedule',
     branch: process.env.PULSE_RUN_BRANCH ?? 'main',
+    validatorRevision: process.env.GITHUB_SHA,
     date,
     generatedAt: process.env.PULSE_GENERATED_AT ?? new Date().toISOString()
   });
