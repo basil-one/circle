@@ -14,10 +14,11 @@ const children = [
   ['paper-build-integrity.yml', 'paper'],
   ['paper-content-integrity.yml', 'paper-content'],
   ['paper-link-integrity.yml', 'paper-link'],
-  ['paper-rendering-integrity.yml', 'paper-rendering']
+  ['paper-rendering-integrity.yml', 'paper-rendering'],
+  ['paper-publication-integrity.yml', 'paper-publication']
 ];
 
-test('one daily workflow owns the schedule and fans out to all eleven reusable checks', async () => {
+test('one daily workflow owns the schedule and calls all twelve reusable checks', async () => {
   const files = await readdir(workflowDirectory);
   const scheduled = [];
   for (const file of files.filter((name) => name.endsWith('.yml'))) {
@@ -59,6 +60,24 @@ test('Pulse waits for every substantive result and preserves least-privilege per
       `group: ${group}-\\$\\{\\{ github\\.workflow \\}\\}-\\$\\{\\{ github\\.ref \\}\\}\\n  cancel-in-progress: true`
     ));
   }
+});
+
+test('publication audit is read-only, independently callable, and preserves its evidence outputs', async () => {
+  const yaml = await readFile(new URL('paper-publication-integrity.yml', workflowDirectory), 'utf8');
+  assert.match(yaml, /^  workflow_dispatch:$/m);
+  assert.doesNotMatch(yaml, /^  pull_request:$/m);
+  assert.match(yaml, /name: "Paper: Publication Integrity"/);
+  assert.match(yaml, /permissions:\n  contents: read/);
+  assert.doesNotMatch(yaml, /^\s+ref:/m);
+  assert.match(yaml, /validator_sha: \$\{\{ steps\.checkout\.outputs\.commit \}\}/);
+  assert.match(yaml, /fetch-depth: 0\n          persist-credentials: false/);
+  assert.match(yaml, /refs\/heads\/main:refs\/remotes\/origin\/main/);
+  assert.match(yaml, /python3 scripts\/paper_publication_integrity\.py/);
+  for (const output of ['status', 'detail', 'main_sha', 'validator_sha']) {
+    assert.match(yaml, new RegExp(`value: \\$\\{\\{ jobs\\.publication\\.outputs\\.${output} \\}\\}`));
+  }
+  assert.match(yaml, /test "\$STATUS" = passed/);
+  assert.doesNotMatch(yaml, /build-paper-pdf|upload-artifact|contents: write|ref: main\n/);
 });
 
 test('Performance Integrity confirms only affected profiles and enforces the final result', async () => {

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
@@ -206,7 +207,7 @@ def latest_stable_tag(tags: list[str]) -> str | None:
 
 
 def run_gh(args: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["gh", *args], check=False, text=True, capture_output=True)
+    return subprocess.run(["gh", *args], check=False, text=True, capture_output=True, timeout=60)
 
 
 def validate_publish_request(version: str, pdf_path: Path, tags: list[str]) -> str:
@@ -223,10 +224,17 @@ def reject_complete_published_release(tag: str, release: dict[str, object] | Non
     if release is None or release["isDraft"]:
         return
     existing_assets = set(release["assetNames"])
+    if not (required_asset_names(tag) & existing_assets):
+        raise ReleaseError(
+            f"Published release {tag} has no surviving PDF asset; decide how to repair it "
+            "before uploading a rebuilt paper."
+        )
     if required_asset_names(tag).issubset(existing_assets):
         raise ReleaseError(
             f"Release {tag} is already published with both PDF assets. "
-            "Delete only the asset you intend to replace, then rerun this version."
+            "Completed releases are protected from replacement. For a missing asset, "
+            "rerun this version to recover from the surviving verified PDF; "
+            "otherwise review the release before deciding on repair."
         )
 
 
@@ -278,6 +286,55 @@ def upload_missing_release_assets(
             )
 
 
+def download_release_assets(tag: str, names: set[str], directory: Path) -> dict[str, Path]:
+    downloaded = {}
+    for name in sorted(names):
+        result = run_gh(["release", "download", tag, "--pattern", name, "--dir", str(directory)])
+        path = directory / name
+        if result.returncode or not path.is_file() or not 0 < path.stat().st_size <= 50_000_000:
+            raise ReleaseError(f"Unable to download a nonempty, bounded asset {name} for {tag}.")
+        try:
+            subprocess.run(["pdfinfo", str(path)], check=True, capture_output=True, timeout=30)
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ReleaseError(
+                f"Asset {name} for {tag} is not verifiably readable: {error}"
+            ) from error
+        downloaded[name] = path
+    return downloaded
+
+
+def verify_asset_sizes(tag: str, release: dict[str, object], names: set[str]) -> None:
+    sizes = release["assetSizes"]
+    for name in names:
+        size = sizes.get(name)
+        if not isinstance(size, int) or isinstance(size, bool) or not 0 < size <= 50_000_000:
+            raise ReleaseError(f"Asset {name} for {tag} has a missing, empty, or oversized length.")
+
+
+def verify_downloaded_assets(tag: str, release: dict[str, object], assets: dict[str, Path]) -> None:
+    for name, path in assets.items():
+        metadata = release["assetMetadata"][name]
+        data = path.read_bytes()
+        if metadata.get("state") != "uploaded" or len(data) != metadata.get("size"):
+            raise ReleaseError(f"Asset {name} for {tag} differs from its release metadata.")
+        digest = metadata.get("digest")
+        if digest is not None:
+            if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+                raise ReleaseError(f"Asset {name} for {tag} has an unverifiable digest.")
+            if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
+                raise ReleaseError(f"Asset {name} for {tag} differs from its release digest.")
+
+
+def verify_asset_parity(tag: str, release: dict[str, object], directory: Path) -> None:
+    assets = download_release_assets(tag, required_asset_names(tag), directory)
+    verify_downloaded_assets(tag, release, assets)
+    digests = {hashlib.sha256(path.read_bytes()).digest() for path in assets.values()}
+    if len(digests) != 1:
+        raise ReleaseError(
+            f"Release {tag} PDF assets differ; stop and decide how to repair them before publishing."
+        )
+
+
 def verify_release_assets(
     tag: str, release: dict[str, object] | None, *, published: bool = False
 ) -> dict[str, object]:
@@ -324,19 +381,41 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
     tag = validate_publish_request(version, pdf_path, tags)
     release = get_release(tag)
     reject_complete_published_release(tag, release)
-    versioned_pdf = pdf_path.with_name(f"circle3-paper-{tag}.pdf")
-    shutil.copyfile(pdf_path, versioned_pdf)
-    assets = {
-        "circle3-paper.pdf": pdf_path,
-        f"circle3-paper-{tag}.pdf": versioned_pdf,
-    }
     notes = render_release_notes(version, changelog)
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".md") as notes_file:
+    with (
+        tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".md") as notes_file,
+        tempfile.TemporaryDirectory() as temporary,
+    ):
         notes_file.write(notes)
         notes_file.flush()
         release = ensure_draft_release(tag, release, notes_file.name)
-        upload_missing_release_assets(tag, release, assets)
+        existing = required_asset_names(tag) & set(release["assetNames"])
+        verify_asset_sizes(tag, release, existing)
+        with tempfile.TemporaryDirectory(dir=temporary) as download_dir:
+            recovered = download_release_assets(tag, existing, Path(download_dir))
+            verify_downloaded_assets(tag, release, recovered)
+            if len(existing) == 2:
+                digests = {
+                    hashlib.sha256(path.read_bytes()).digest() for path in recovered.values()
+                }
+                if len(digests) != 1:
+                    raise ReleaseError(
+                        f"Release {tag} PDF assets differ; decide how to repair them."
+                    )
+            if len(existing) == 1:
+                source = next(iter(recovered.values()))
+            else:
+                source = pdf_path
+            assets = {}
+            for name in ("circle3-paper.pdf", f"circle3-paper-{tag}.pdf"):
+                target = Path(temporary) / name
+                shutil.copyfile(source, target)
+                assets[name] = target
+            upload_missing_release_assets(tag, release, assets)
         verified = verify_release_assets(tag, get_release(tag))
+        verify_asset_sizes(tag, verified, required_asset_names(tag))
+        with tempfile.TemporaryDirectory(dir=temporary) as download_dir:
+            verify_asset_parity(tag, verified, Path(download_dir))
         mark_release_published(tag, notes_file.name, verified)
         verify_release_assets(tag, get_release(tag), published=True)
 
@@ -354,17 +433,25 @@ def get_release(tag: str) -> dict[str, object] | None:
         raise ReleaseError(f"Unable to check release {tag}: {result.stderr.strip()}")
     try:
         data = json.loads(result.stdout)
+        if data["tagName"] != tag or not isinstance(data["isDraft"], bool):
+            raise ValueError("invalid tag or draft state")
+        metadata = {asset["name"]: asset for asset in data["assets"]}
+        sizes = {name: asset["size"] for name, asset in metadata.items()}
+        if len(sizes) != len(data["assets"]):
+            raise ValueError("duplicate asset names")
         return {
-            "isDraft": bool(data["isDraft"]),
-            "assetNames": {asset["name"] for asset in data["assets"]},
+            "isDraft": data["isDraft"],
+            "assetNames": set(sizes),
+            "assetSizes": sizes,
+            "assetMetadata": metadata,
         }
-    except (KeyError, json.JSONDecodeError, TypeError) as error:
+    except (KeyError, ValueError, TypeError) as error:
         raise ReleaseError(f"Unable to read release state for {tag}.") from error
 
 
 def git_tags() -> list[str]:
     result = subprocess.run(
-        ["git", "tag", "--list", "v*"], check=True, text=True, capture_output=True
+        ["git", "tag", "--list", "v*"], check=True, text=True, capture_output=True, timeout=30
     )
     return result.stdout.splitlines()
 
@@ -433,7 +520,7 @@ def main() -> None:
     args = parser.parse_args()
     try:
         args.func(args)
-    except (OSError, ReleaseError, subprocess.CalledProcessError) as error:
+    except (OSError, ReleaseError, subprocess.SubprocessError) as error:
         print(f"Paper release error: {error}", file=sys.stderr)
         raise SystemExit(1) from error
 

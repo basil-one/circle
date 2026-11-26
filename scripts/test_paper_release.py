@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 import tempfile
@@ -13,6 +14,8 @@ from paper_release import (
     render_release_notes,
     validate_new_release,
     validate_resume,
+    verify_asset_parity,
+    verify_downloaded_assets,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,13 +42,18 @@ class PaperReleaseTests(unittest.TestCase):
     @staticmethod
     def gh_result(draft, assets=(), returncode=0, stderr=""):
         stdout = json.dumps(
-            {"tagName": "v0.2.1", "isDraft": draft, "assets": [{"name": name} for name in assets]}
+            {
+                "tagName": "v0.2.1",
+                "isDraft": draft,
+                "assets": [{"name": name, "size": 11, "state": "uploaded"} for name in assets],
+            }
         )
         return subprocess.CompletedProcess(["gh"], returncode, stdout, stderr)
 
     def test_domain_first_workflow_names_and_references(self):
         preview = (ROOT / ".github/workflows/paper-preview.yml").read_text()
         integrity = (ROOT / ".github/workflows/paper-build-integrity.yml").read_text()
+        code_quality = (ROOT / ".github/workflows/common-code-quality.yml").read_text()
         publish = (ROOT / ".github/workflows/paper-publish.yml").read_text()
         changelog = (ROOT / "CHANGELOG.md").read_text()
         build_script = (ROOT / "scripts/build-paper-pdf.sh").read_text()
@@ -63,6 +71,13 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn("git rev-parse HEAD", integrity)
         self.assertIn(
             "python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v", integrity
+        )
+        self.assertIn(
+            "python3 -m unittest discover -s scripts -p 'test_paper_release.py' -v", code_quality
+        )
+        self.assertIn(
+            "python3 -m unittest discover -s scripts -p 'test_paper_publication_integrity.py' -v",
+            code_quality,
         )
         self.assertIn("run: bash scripts/build-paper-pdf.sh", integrity)
         self.assertIn("rm -f assets/pdfs/circle3-paper.pdf", build_script)
@@ -85,7 +100,11 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn("if: github.ref == 'refs/heads/main'", publish)
         self.assertIn("group: paper-publication", publish)
         self.assertIn("GH_TOKEN: ${{ github.token }}", publish)
-        self.assertIn("python3 scripts/paper_release.py release", publish)
+        self.assertLess(
+            publish.index('cp scripts/paper_release.py "$RUNNER_TEMP/paper_release.py"'),
+            publish.index('git checkout --detach "refs/tags/v$VERSION"'),
+        )
+        self.assertIn('python3 "$RUNNER_TEMP/paper_release.py" release', publish)
         self.assertNotIn("tags:", publish)
         self.assertNotIn("release-pdf.yml", changelog)
         self.assertIn("At the time, pushing a `v*.*.*` tag", changelog)
@@ -174,14 +193,17 @@ class PaperReleaseTests(unittest.TestCase):
                 success,
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
-            with patch("paper_release.run_gh", side_effect=states) as run:
+            with (
+                patch("paper_release.run_gh", side_effect=states) as run,
+                patch("paper_release.verify_asset_parity"),
+            ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
 
             self.assertIn("--draft", run.call_args_list[1].args[0])
-            self.assertEqual(run.call_args_list[3].args[0][3], str(pdf))
+            self.assertEqual(Path(run.call_args_list[3].args[0][3]).name, "circle3-paper.pdf")
             self.assertEqual(
-                run.call_args_list[4].args[0][3],
-                str(Path(directory) / "circle3-paper-v0.2.1.pdf"),
+                Path(run.call_args_list[4].args[0][3]).name,
+                "circle3-paper-v0.2.1.pdf",
             )
             self.assertIn("--draft=false", run.call_args_list[6].args[0])
             self.assertIn("--latest", run.call_args_list[6].args[0])
@@ -189,7 +211,6 @@ class PaperReleaseTests(unittest.TestCase):
             self.assertEqual(run.call_args_list[5].args[0][1], "view")
             self.assertEqual(run.call_args_list[6].args[0][1], "edit")
             self.assertFalse(any("--clobber" in call.args[0] for call in run.call_args_list))
-            self.assertTrue((Path(directory) / "circle3-paper-v0.2.1.pdf").exists())
 
     def test_upload_failure_does_not_publish_draft_or_change_latest(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -219,7 +240,13 @@ class PaperReleaseTests(unittest.TestCase):
                 success,
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
-            with patch("paper_release.run_gh", side_effect=states) as run:
+            with (
+                patch("paper_release.run_gh", side_effect=states) as run,
+                patch(
+                    "paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                ),
+                patch("paper_release.verify_asset_parity"),
+            ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(len(run.call_args_list), 5)
             self.assertEqual(
@@ -249,6 +276,15 @@ class PaperReleaseTests(unittest.TestCase):
             run.assert_called_once()
             self.assertFalse(versioned.exists())
 
+    def test_published_release_without_surviving_assets_requires_decision(self):
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "circle3-paper.pdf"
+            pdf.write_bytes(b"new build")
+            with patch("paper_release.run_gh", return_value=self.gh_result(False)) as run:
+                with self.assertRaisesRegex(ReleaseError, "no surviving PDF"):
+                    publish_release("0.2.1", pdf, CHANGELOG, ["v0.2.1"])
+            run.assert_called_once()
+
     def test_published_release_recovery_uploads_only_missing_asset(self):
         with tempfile.TemporaryDirectory() as directory:
             pdf = Path(directory) / "circle3-paper.pdf"
@@ -262,7 +298,13 @@ class PaperReleaseTests(unittest.TestCase):
                 success,
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
-            with patch("paper_release.run_gh", side_effect=states) as run:
+            with (
+                patch("paper_release.run_gh", side_effect=states) as run,
+                patch(
+                    "paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                ),
+                patch("paper_release.verify_asset_parity"),
+            ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(run.call_args_list[1].args[0][2], "v0.2.1")
             self.assertEqual(
@@ -287,13 +329,165 @@ class PaperReleaseTests(unittest.TestCase):
                 success,
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
-            with patch("paper_release.run_gh", side_effect=states) as run:
+            with (
+                patch("paper_release.run_gh", side_effect=states) as run,
+                patch(
+                    "paper_release.download_release_assets",
+                    return_value={"circle3-paper-v0.2.1.pdf": pdf},
+                ),
+                patch("paper_release.verify_asset_parity"),
+            ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(run.call_args_list[1].args[0][2], "v0.2.1")
-            self.assertEqual(run.call_args_list[1].args[0][3], str(pdf))
+            self.assertEqual(Path(run.call_args_list[1].args[0][3]).name, "circle3-paper.pdf")
             self.assertEqual(
                 run.call_args_list[3].args[0], ["release", "edit", "v0.2.1", "--latest"]
             )
+
+    def test_asset_parity_rejects_mismatch_and_accepts_identical_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "first.pdf"
+            second = Path(directory) / "second.pdf"
+            first.write_bytes(b"released")
+            second.write_bytes(b"other")
+            with patch(
+                "paper_release.download_release_assets", return_value={"a": first, "b": second}
+            ):
+                with self.assertRaisesRegex(ReleaseError, "differ"):
+                    verify_asset_parity(
+                        "v0.2.1",
+                        {
+                            "assetMetadata": {
+                                "a": {"size": 8, "state": "uploaded"},
+                                "b": {"size": 5, "state": "uploaded"},
+                            }
+                        },
+                        Path(directory),
+                    )
+                second.write_bytes(b"released")
+                verify_asset_parity(
+                    "v0.2.1",
+                    {"assetMetadata": dict.fromkeys(("a", "b"), {"size": 8, "state": "uploaded"})},
+                    Path(directory),
+                )
+
+    def test_partial_recovery_uses_surviving_asset_not_rebuild(self):
+        names = ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")
+        for existing in names:
+            with self.subTest(existing=existing), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                pdf = root / "circle3-paper.pdf"
+                pdf.write_bytes(b"new build")
+                surviving = root / "surviving.pdf"
+                surviving.write_bytes(b"original release")
+                initial = {
+                    "isDraft": True,
+                    "assetNames": {existing},
+                    "assetSizes": {existing: 16},
+                    "assetMetadata": {existing: {"size": 16, "state": "uploaded"}},
+                }
+                complete = {
+                    "isDraft": True,
+                    "assetNames": set(names),
+                    "assetSizes": dict.fromkeys(names, 16),
+                    "assetMetadata": dict.fromkeys(names, {"size": 16, "state": "uploaded"}),
+                }
+                published = dict(complete, isDraft=False)
+                uploads = {}
+
+                def capture(_tag, _release, assets):
+                    for name, path in assets.items():
+                        if name != existing:
+                            uploads[name] = path.read_bytes()
+
+                with (
+                    patch("paper_release.get_release", side_effect=[initial, complete, published]),
+                    patch(
+                        "paper_release.download_release_assets", return_value={existing: surviving}
+                    ),
+                    patch("paper_release.upload_missing_release_assets", side_effect=capture),
+                    patch("paper_release.verify_asset_parity"),
+                    patch("paper_release.mark_release_published"),
+                ):
+                    changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
+                    publish_release("0.2.1", pdf, changelog, ["v0.2.1"])
+                self.assertEqual(
+                    uploads, {next(name for name in names if name != existing): b"original release"}
+                )
+
+    def test_mismatch_or_inaccessible_existing_assets_never_publishes(self):
+        names = {"circle3-paper.pdf", "circle3-paper-v0.2.1.pdf"}
+        state = {
+            "isDraft": True,
+            "assetNames": names,
+            "assetSizes": dict.fromkeys(names, 11),
+            "assetMetadata": dict.fromkeys(names, {"size": 11, "state": "uploaded"}),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "circle3-paper.pdf"
+            pdf.write_bytes(b"new build")
+            for failure in ("download", "parity"):
+                with (
+                    self.subTest(failure=failure),
+                    patch("paper_release.get_release", return_value=state),
+                    patch(
+                        "paper_release.download_release_assets",
+                        side_effect=ReleaseError("unavailable") if failure == "download" else None,
+                    ),
+                    patch(
+                        "paper_release.verify_asset_parity",
+                        side_effect=ReleaseError("differ") if failure == "parity" else None,
+                    ),
+                    patch("paper_release.mark_release_published") as publish,
+                ):
+                    with self.assertRaises(ReleaseError):
+                        changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
+                        publish_release("0.2.1", pdf, changelog, ["v0.2.1"])
+                    publish.assert_not_called()
+
+    def test_downloaded_asset_matches_size_digest_and_upload_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "asset.pdf"
+            path.write_bytes(b"released")
+            metadata = {
+                "size": 8,
+                "state": "uploaded",
+                "digest": "sha256:" + hashlib.sha256(b"released").hexdigest(),
+            }
+            release = {"assetMetadata": {"asset.pdf": metadata}}
+            verify_downloaded_assets("v0.2.1", release, {"asset.pdf": path})
+            for key, value in (("size", 9), ("digest", "sha256:" + "0" * 64), ("state", "new")):
+                with self.subTest(key=key):
+                    bad = {"assetMetadata": {"asset.pdf": dict(metadata, **{key: value})}}
+                    with self.assertRaises(ReleaseError):
+                        verify_downloaded_assets("v0.2.1", bad, {"asset.pdf": path})
+            metadata["digest"] = None
+            verify_downloaded_assets("v0.2.1", release, {"asset.pdf": path})
+
+    def test_bad_survivor_digest_causes_no_upload_or_publish(self):
+        name = "circle3-paper.pdf"
+        state = {
+            "isDraft": False,
+            "assetNames": {name},
+            "assetSizes": {name: 8},
+            "assetMetadata": {
+                name: {"size": 8, "state": "uploaded", "digest": "sha256:" + "0" * 64}
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / name
+            path.write_bytes(b"released")
+            with (
+                patch("paper_release.get_release", return_value=state),
+                patch("paper_release.download_release_assets", return_value={name: path}),
+                patch("paper_release.upload_missing_release_assets") as upload,
+                patch("paper_release.mark_release_published") as publish,
+            ):
+                with self.assertRaisesRegex(ReleaseError, "digest"):
+                    changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
+                    publish_release("0.2.1", path, changelog, ["v0.2.1"])
+                upload.assert_not_called()
+                publish.assert_not_called()
 
 
 if __name__ == "__main__":

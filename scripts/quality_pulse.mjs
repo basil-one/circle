@@ -19,7 +19,8 @@ const dimensions = [
   { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
   { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' },
   { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml', job: 'paper-link' },
-  { name: 'Paper: Rendering Integrity', file: 'paper-rendering-integrity.yml', job: 'paper-rendering' }
+  { name: 'Paper: Rendering Integrity', file: 'paper-rendering-integrity.yml', job: 'paper-rendering' },
+  { name: 'Paper: Publication Integrity', file: 'paper-publication-integrity.yml', job: 'paper-publication' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -667,7 +668,7 @@ function renderPulse({
   }
   lines.push('');
   lines.push(orchestrated
-    ? 'Each outcome below comes from the corresponding reusable workflow job in this run. No fixed wall-clock completion cutoff is applied.'
+    ? 'Each outcome below comes from the corresponding job in this run. No fixed wall-clock completion cutoff is applied.'
     : `Daily workflow runs are queried from \`main\` with \`schedule\` provenance. Runs must complete by ${cutoff} UTC to count as fresh; late or missing runs are not replaced with prior green results.`);
   return `${lines.join('\n')}\n`;
 }
@@ -795,6 +796,7 @@ async function buildOrchestratedPulse({
   runUrl,
   eventName = 'schedule',
   branch = 'main',
+  validatorRevision,
   date,
   generatedAt = new Date().toISOString(),
   fetchImpl = fetch,
@@ -808,6 +810,55 @@ async function buildOrchestratedPulse({
   const results = dimensions.filter((dimension) => !['paper-content', 'paper-link', 'paper-rendering'].includes(dimension.job)).map(({ job, name }) =>
     orchestratedJobResult(needs, job, name, run)
   );
+  const publication = results.find((item) => item.name === 'Paper: Publication Integrity');
+  if (!['fresh', 'failed'].includes(publication.result.state) &&
+      needs['paper-publication']?.outputs?.status === 'failed') {
+    publication.result.state = 'failed';
+    publication.result.label = 'Failed';
+    publication.result.detail = 'The publication validator reported a defect with incomplete job evidence; inspect and rerun.';
+  }
+  if (['fresh', 'failed'].includes(publication.result.state)) {
+    const { status, detail, main_sha: mainSha, validator_sha: validatorSha } =
+      needs['paper-publication']?.outputs ?? {};
+    const validDetail = typeof detail === 'string' && detail.trim().length > 0 &&
+      detail.length <= 1000 && !/[\x00-\x1f\x7f]/.test(detail);
+    const isSha = (value) => typeof value === 'string' &&
+      /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(value);
+    const validProvenance = isSha(mainSha) && isSha(validatorSha) &&
+      (validatorRevision === undefined || (isSha(validatorRevision) && validatorSha === validatorRevision));
+    if (status === 'failed' && publication.result.state === 'fresh') {
+      publication.result.state = 'failed';
+      publication.result.label = 'Failed';
+      publication.result.detail = 'Publication validator reported a defect despite a successful job; inspect and rerun.';
+    } else if (status === 'unknown' || !['passed', 'failed'].includes(status) ||
+        (status === 'passed') !== (publication.result.state === 'fresh')) {
+      publication.result.state = 'unknown';
+      publication.result.label = 'Unknown / publication evidence unavailable';
+      publication.result.detail = 'Publication evidence could not be verified; inspect the publication job logs and rerun.';
+    }
+    if (publication.result.state === 'fresh' && (!validDetail || !validProvenance)) {
+      publication.result.state = 'unknown';
+      publication.result.label = 'Unknown / publication evidence unavailable';
+      publication.result.detail = 'Publication detail or revision provenance is missing or invalid; inspect the publication job and rerun.';
+    }
+    const coherent = (status === 'passed' && publication.result.state === 'fresh') ||
+      (status === 'failed' && publication.result.state === 'failed') ||
+      (status === 'unknown' && publication.result.state === 'unknown');
+    if (coherent && validDetail) {
+      publication.result.detail = detail;
+    }
+    if (status === 'failed' && needs['paper-publication']?.result === 'success') {
+      publication.result.detail += ' The job result contradicts the validator; inspect and rerun.';
+    }
+    if (status === 'failed' && !['success', 'failure'].includes(needs['paper-publication']?.result)) {
+      publication.result.detail += ' The job outcome is incomplete or unavailable; inspect and rerun.';
+    }
+    if (validProvenance) {
+      publication.result.detail += ` Published main: ${mainSha}; validator revision: ${validatorSha}.`;
+    } else if (publication.result.state === 'failed') {
+      publication.result.detail += ' Publication revision provenance is unavailable or inconsistent; inspect and rerun.';
+    }
+  }
   const paperContent = needs?.['paper-content']?.outputs?.status;
   const content = paperValidatorResult(
     dimensions.find(({ job }) => job === 'paper-content').name,
@@ -1118,6 +1169,7 @@ async function main() {
     runUrl: process.env.PULSE_RUN_URL,
     eventName: process.env.PULSE_EVENT_NAME ?? 'schedule',
     branch: process.env.PULSE_RUN_BRANCH ?? 'main',
+    validatorRevision: process.env.GITHUB_SHA,
     date,
     generatedAt: process.env.PULSE_GENERATED_AT ?? new Date().toISOString()
   });

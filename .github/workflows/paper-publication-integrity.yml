@@ -1,0 +1,72 @@
+name: "Paper: Publication Integrity"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      status:
+        value: ${{ jobs.publication.outputs.status }}
+      detail:
+        value: ${{ jobs.publication.outputs.detail }}
+      main_sha:
+        value: ${{ jobs.publication.outputs.main_sha }}
+      validator_sha:
+        value: ${{ jobs.publication.outputs.validator_sha }}
+
+permissions:
+  contents: read
+
+jobs:
+  publication:
+    name: "Paper: Publication Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      status: ${{ steps.verify.outputs.status }}
+      detail: ${{ steps.verify.outputs.detail }}
+      main_sha: ${{ steps.snapshot.outputs.main_sha }}
+      validator_sha: ${{ steps.checkout.outputs.commit }}
+    steps:
+      - name: Checkout intended revision
+        id: checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pin published main and tags
+        id: snapshot
+        run: |
+          timeout 120 git fetch --force --tags origin +refs/heads/main:refs/remotes/origin/main
+          echo "main_sha=$(git rev-parse refs/remotes/origin/main)" >> "$GITHUB_OUTPUT"
+      - name: Install PDF inspection tool
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Verify published release
+        id: verify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          python3 scripts/paper_publication_integrity.py
+          result=$?
+          if [ "$result" != 0 ] && [ "$result" != 2 ] && [ "$result" != 3 ]; then
+            echo "status=unknown" >> "$GITHUB_OUTPUT"
+            echo "detail=The publication validator did not complete; inspect the job logs and rerun." >> "$GITHUB_OUTPUT"
+          fi
+      - name: Summarize publication evidence
+        if: always()
+        env:
+          STATUS: ${{ steps.verify.outputs.status }}
+          DETAIL: ${{ steps.verify.outputs.detail }}
+          MAIN_SHA: ${{ steps.snapshot.outputs.main_sha }}
+          VALIDATOR_SHA: ${{ steps.checkout.outputs.commit }}
+        run: |
+          {
+            echo "## Paper: Publication Integrity"
+            echo
+            printf 'Outcome: **%s**. %s\n\n' "${STATUS:-unknown}" "${DETAIL:-Evidence unavailable; inspect the job logs and rerun.}"
+            printf "Published main: \`%s\`; validator revision: \`%s\`.\n" "${MAIN_SHA:-unavailable}" "$VALIDATOR_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce publication result
+        env:
+          STATUS: ${{ steps.verify.outputs.status }}
+        run: test "$STATUS" = passed
