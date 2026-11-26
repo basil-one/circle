@@ -65,7 +65,9 @@ function makeSummary({
             ? lcp
             : key === 'cumulative-layout-shift'
               ? 0
-              : 500
+              : key === 'total-blocking-time'
+                ? 50
+                : 500
         ]))
       }))
     )
@@ -107,7 +109,7 @@ test('reports unavailable fixed and rolling baselines without fabricating deltas
   );
   const report = lines.join('\n');
 
-  assert.match(report, /\*\*Fixed reference:\*\* pending first reviewed successful main measurement/);
+  assert.match(report, /\*\*Fixed reference:\*\* not comparable; tool or runner versions differ from the reviewed reference|Fixed reference:\*\* unavailable; no complete reviewed successful main reference is available/);
   assert.match(report, /\*\*Rolling daily-main baseline:\*\* collecting \(0\/28 compatible successful daily-main runs\)/);
   assert.match(report, /No comparison\/deltas available yet/);
   assert.doesNotMatch(report, /^\| `\//m);
@@ -150,7 +152,7 @@ test('renders a comparison table when the fixed reference is available', () => {
   assert.equal(comparison.deltasAvailable, true);
 });
 
-test('compares against 28 matching daily-main summaries without applying a performance threshold', () => {
+test('reports rolling summaries without using them as enforcement thresholds', () => {
   const prior = Array.from({ length: 28 }, (_, index) =>
     makeSummary({
       lcp: 1_000 + index,
@@ -166,8 +168,9 @@ test('compares against 28 matching daily-main summaries without applying a perfo
   assert.equal(comparison.history.requiredDailySamples, 28);
   assert.match(report, /28\/28 compatible successful daily-main runs; available/);
   assert.match(report, /\+587 ms \(\+57\.9%\)/);
-  assert.match(report, /do not fail this workflow/);
+  assert.match(report, /Rolling comparisons are descriptive only and never establish an enforcement threshold/);
   assert.equal(comparison.deltasAvailable, true);
+  assert.equal(comparison.policy.confirmationProfiles.length, 8);
 });
 
 test('accepts observed Ruby and Node patch drift while preserving exact recorded versions', () => {

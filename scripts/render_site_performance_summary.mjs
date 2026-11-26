@@ -5,6 +5,7 @@ import {
   performanceRoutes,
   performanceRunCount
 } from '../tests/browser/site-routes.js';
+import { formatPerformanceValue } from './site_performance_policy.mjs';
 
 const metrics = [
   ['first-contentful-paint', 'FCP'],
@@ -36,9 +37,7 @@ function routeLabel(route) {
 }
 
 function formatValue(metric, value) {
-  if (!Number.isFinite(value)) return 'unavailable';
-  if (metric === 'cumulative-layout-shift') return value.toFixed(3);
-  return value >= 1_000 ? `${(value / 1_000).toFixed(2)} s` : `${Math.round(value)} ms`;
+  return formatPerformanceValue(metric, value);
 }
 
 function formatDelta(metric, current, baseline) {
@@ -76,8 +75,11 @@ function failedStepNames(inputs) {
     history: 'daily-main history lookup',
     measure: 'Lighthouse measurement',
     comparison: 'baseline comparison',
+    confirmation: 'required performance confirmation',
+    evaluation: 'performance safeguard evaluation',
     diagnostic: 'missing-route diagnostic',
     reports: 'raw report upload',
+    confirmation_reports: 'confirmation report upload',
     summary: 'summary artifact upload'
   };
   return Object.entries(names)
@@ -97,9 +99,11 @@ function baselineLines(comparison) {
   const history = comparison.history ?? {};
   const fixedStatus = fixed?.available
     ? `[available](${fixed.runUrl})`
-    : fixed?.reason?.includes('different tool')
+    : fixed?.reason?.includes('incompatible')
       ? 'not comparable; tool or runner environment differs'
-      : 'pending reviewed successful `main` anchor';
+      : fixed?.reason
+        ? `unavailable (${trimSentenceEnd(fixed.reason)})`
+        : 'pending reviewed successful `main` anchor';
   let rollingStatus;
   if (history.status === 'available' && history.availableDailySamples >= history.requiredDailySamples) {
     rollingStatus = `${history.availableDailySamples}/${history.requiredDailySamples} compatible successful daily-main runs available`;
@@ -113,7 +117,7 @@ function baselineLines(comparison) {
     `- **Rolling daily-main baseline:** ${rollingStatus}.`
   ];
   if (comparison.deltasAvailable) {
-    lines.push('- Deltas are descriptive lab comparisons only; no threshold or regression verdict is applied.');
+    lines.push('- Rolling deltas are descriptive only; they are not enforcement thresholds.');
   } else if (history.status === 'unavailable') {
     lines.push('- No comparison/deltas available; inspect the history lookup details below and rerun when access is restored.');
   } else {
@@ -237,6 +241,41 @@ function technicalDetails(summary, comparison, inputs) {
   return lines;
 }
 
+function performanceSafeguardLines(policy) {
+  if (!policy) return ['Safeguard outcome unavailable; this is not reported as a pass.'];
+  const lines = [
+    policy.status === 'passed'
+      ? '- **Passed:** no confirmed absolute-budget or substantial compatible-reference LCP violation.'
+      : policy.status === 'failed'
+        ? '- **Failed:** one or more performance violations were confirmed.'
+        : policy.status === 'incomplete'
+          ? `- **Not passed:** required confirmation is incomplete (${policy.confirmationReason ?? 'reason unavailable'}).`
+          : '- **Pending:** initial route/profile violations require confirmation.'
+  ];
+  for (const violation of policy.confirmations ?? policy.initialViolations ?? []) {
+    const profile = `\`${violation.route}\` / ${violation.formFactor}`;
+    const initial = formatValue(violation.metric, violation.value);
+    const confirmed = Number.isFinite(violation.confirmationValue)
+      ? `; confirmation ${formatValue(violation.metric, violation.confirmationValue)}`
+      : '';
+    const result = violation.result ?? 'confirmation required';
+    if (violation.criterion === 'absolute') {
+      lines.push(`- ${profile}: ${violation.metric} ${initial} vs ${formatValue(violation.metric, violation.limit)} absolute limit${confirmed}; ${result}.`);
+    } else {
+      lines.push(`- ${profile}: LCP ${initial} vs reference ${formatValue(violation.metric, violation.referenceValue)}; delta ${formatValue(violation.metric, violation.delta)} (+${violation.deltaPercentage.toFixed(1)}%); both >${formatValue(violation.metric, violation.minimumMilliseconds)} and >${violation.minimumPercentage}% required${confirmed}; ${result}.`);
+    }
+  }
+  if (policy.referenceReason) {
+    lines.push(`- Relative deterioration gate unavailable: ${policy.referenceReason}; absolute budgets remain enforced.`);
+  }
+  if (['failed', 'incomplete'].includes(policy.status)) {
+    lines.push('- Next step: review the route/profile reports, correct the confirmed regression, or restore complete confirmation evidence.');
+  } else if (policy.status === 'passed' && policy.confirmations?.length) {
+    lines.push('- Initial variation was not confirmed; no safeguard failure was raised.');
+  }
+  return lines;
+}
+
 function renderPerformanceSummary(inputs) {
   const summary = inputs.summary;
   const comparison = inputs.comparison;
@@ -275,8 +314,8 @@ function renderPerformanceSummary(inputs) {
     statusText,
     '',
     complete
-    ? '- Measurements were collected using controlled Lighthouse tests, not actual visitors. Comparisons are informational; no automatic regression thresholds are enforced.'
-    : '- No complete measurement is reported. Any partial output is not treated as complete; comparisons are informational and no automatic regression thresholds are enforced.',
+    ? '- Measurements were collected using controlled Lighthouse tests, not actual visitors. Absolute budgets and substantial deterioration against a compatible reviewed reference are enforced after confirmation; rolling comparisons are informational.'
+    : '- No complete measurement is reported. Any partial output is not treated as complete; the safeguard cannot pass without complete measurement and required confirmation evidence.',
     `- Run: \`${inputs.eventName ?? 'unknown'}\` on ref \`${inputs.ref ?? 'unknown'}\`; job status: ${job}.`
   );
   if (complete) {
@@ -295,6 +334,8 @@ function renderPerformanceSummary(inputs) {
 
   lines.push('', '## Findings', '');
   lines.push(...baselineLines(comparison));
+  lines.push('', '## Performance safeguards', '');
+  lines.push(...performanceSafeguardLines(comparison?.policy));
   if (comparison?.deltasAvailable) {
     lines.push(...deltaTable(comparison));
   } else if (complete) {
@@ -307,6 +348,11 @@ function renderPerformanceSummary(inputs) {
     lines.push(`- [Raw Lighthouse reports](${inputs.reports.url}) — 14-day retention.`);
   } else {
     lines.push(`- Raw Lighthouse reports unavailable (${inputs.reports?.outcome ?? 'not uploaded'}); inspect the upload step in [the workflow run](${inputs.runUrl ?? ''}).`);
+  }
+  if (inputs.confirmationReports?.outcome === 'success' && inputs.confirmationReports.url) {
+    lines.push(`- [Fresh confirmation Lighthouse reports](${inputs.confirmationReports.url}) — 14-day retention; kept separate from the initial measurements.`);
+  } else if (inputs.steps?.confirmation && inputs.steps.confirmation !== 'skipped') {
+    lines.push(`- Confirmation Lighthouse reports unavailable (${inputs.confirmationReports?.outcome ?? 'not uploaded'}); inspect the confirmation step in [the workflow run](${inputs.runUrl ?? ''}).`);
   }
   if (inputs.machineArtifact?.outcome === 'success' && inputs.machineArtifact.url) {
     const artifactLabel = inputs.machineArtifact.hasComparison
@@ -374,7 +420,10 @@ function performanceMeasurementExitCode(inputs) {
     return isClassifiedSkip(inputs) ? 0 : 1;
   }
   return statusOf(inputs, 'measure') === 'success' &&
-    completeMeasurementEvidence(inputs.summary)
+    completeMeasurementEvidence(inputs.summary) &&
+    statusOf(inputs, 'comparison') === 'success' &&
+    statusOf(inputs, 'evaluation') === 'success' &&
+    inputs.comparison?.policy?.status === 'passed'
     ? 0
     : 1;
 }
@@ -402,6 +451,10 @@ function main() {
       paths: changedPaths
     },
     reports: { outcome: process.env.REPORTS_OUTCOME, url: process.env.REPORTS_URL },
+    confirmationReports: {
+      outcome: process.env.STEP_CONFIRMATION_REPORTS,
+      url: process.env.CONFIRMATION_REPORTS_URL
+    },
     machineArtifact: {
       outcome: process.env.SUMMARY_OUTCOME,
       url: process.env.SUMMARY_URL,
@@ -409,7 +462,8 @@ function main() {
     },
     steps: Object.fromEntries([
       'tests', 'classify', 'ruby', 'node', 'build', 'dependencies', 'chromium',
-      'history', 'measure', 'comparison', 'diagnostic', 'reports', 'summary'
+      'history', 'measure', 'comparison', 'confirmation', 'evaluation',
+      'diagnostic', 'reports', 'confirmation_reports', 'summary'
     ].map((key) => [key, process.env[`STEP_${key.toUpperCase()}`]]))
   };
   const markdown = `${renderPerformanceSummary(inputs)}\n`;
@@ -427,6 +481,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
 export {
   formatDelta,
   formatValue,
+  performanceSafeguardLines,
   performanceMeasurementExitCode,
   renderPerformanceSummary,
   routeLabel
