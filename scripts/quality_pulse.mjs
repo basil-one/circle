@@ -735,10 +735,11 @@ async function buildOrchestratedPulse({
     orchestratedJobResult(needs, jobId, name, run)
   );
   const publication = results.find((item) => item.name === 'Paper: Publication Integrity');
-  if (publication.result.state === 'incomplete' && needs['paper-publication']?.outputs?.status === 'failed') {
+  if (!['fresh', 'failed'].includes(publication.result.state) &&
+      needs['paper-publication']?.outputs?.status === 'failed') {
     publication.result.state = 'failed';
     publication.result.label = 'Failed';
-    publication.result.detail = 'The publication validator reported a defect before cancellation; inspect and rerun.';
+    publication.result.detail = 'The publication validator reported a defect with incomplete job evidence; inspect and rerun.';
   }
   if (['fresh', 'failed'].includes(publication.result.state)) {
     const { status, detail, main_sha: mainSha, validator_sha: validatorSha } =
@@ -773,8 +774,8 @@ async function buildOrchestratedPulse({
     if (status === 'failed' && needs['paper-publication']?.result === 'success') {
       publication.result.detail += ' The job result contradicts the validator; inspect and rerun.';
     }
-    if (status === 'failed' && needs['paper-publication']?.result === 'cancelled') {
-      publication.result.detail += ' The job was cancelled; inspect and rerun.';
+    if (status === 'failed' && !['success', 'failure'].includes(needs['paper-publication']?.result)) {
+      publication.result.detail += ' The job outcome is incomplete or unavailable; inspect and rerun.';
     }
     if (validProvenance) {
       publication.result.detail += ` Published main: ${mainSha}; validator revision: ${validatorSha}.`;

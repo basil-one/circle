@@ -1063,8 +1063,10 @@ test('publication defect survives missing or inconsistent provenance', async () 
   assert.match(pulse.markdown, /provenance is unavailable or inconsistent/);
 });
 
-test('confirmed publication defects survive contradictory success or cancellation', async () => {
-  for (const [result, context] of [['success', 'contradicts'], ['cancelled', 'cancelled']]) {
+test('confirmed publication defects survive contradictory success or incomplete outcomes', async () => {
+  for (const [result, context] of [
+    ['success', 'contradicts'], ['cancelled', 'incomplete'], ['skipped', 'incomplete'], [undefined, 'unavailable']
+  ]) {
     const pulse = await buildOrchestratedPulse({
       apiUrl: 'https://api.github.com',
       repository: 'basil-one/circle',
