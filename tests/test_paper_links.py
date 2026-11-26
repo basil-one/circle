@@ -30,6 +30,7 @@ class PaperLinkTests(unittest.TestCase):
         page = writer.add_blank_page(width=200, height=200)
         writer.add_blank_page(width=200, height=200)
         writer.add_named_destination("target", 1)
+        writer.add_named_destination("source", 0)
         writer.add_outline_item("Target", 1)
         font = DictionaryObject({
             NameObject("/Type"): NameObject("/Font"),
@@ -71,7 +72,19 @@ class PaperLinkTests(unittest.TestCase):
         issues, urls, named, internal, outline = self.inspect()
         self.assertEqual(issues, [])
         self.assertEqual(urls, {"https://example.com/resource": {"Page 1"}})
-        self.assertEqual((named, internal, outline), (1, 1, 1))
+        self.assertEqual((named, internal, outline), (2, 1, 1))
+
+    def test_source_links_must_survive_in_the_source_section(self):
+        self.make_pdf()
+        issues, *_ = links.inspect_pdf(
+            self.path, "Contents", {"source", "target"}, {}, "https://circle.basil.one",
+            {"source": {("internal", "target"), ("external", "https://example.com/resource"),
+                        ("internal", "lost")}},
+        )
+        self.assertTrue(any("internal link to 'lost' is missing" in i for i in issues))
+        self.assertFalse(any("internal link to 'target' is missing" in i for i in issues))
+        self.assertFalse(any("external link to 'https://example.com/resource' is missing" in i
+                             for i in issues))
 
     def test_broken_internal_target_and_missing_toc_link_are_reported(self):
         self.make_pdf(internal="missing")
@@ -86,7 +99,7 @@ class PaperLinkTests(unittest.TestCase):
 
     def test_external_failure_and_uncertainty_are_distinct(self):
         self.make_pdf()
-        expected = ("Contents", {"target"}, {}, "https://circle.basil.one")
+        expected = ("Contents", {"target"}, {}, "https://circle.basil.one", {})
         with patch.object(links, "paper_expectations", return_value=expected):
             report, state = links.audit(
                 self.path, Path("unused"), checker=lambda url, timeout: ("likely broken", "HTTP 404")
@@ -108,7 +121,7 @@ class PaperLinkTests(unittest.TestCase):
         self.make_pdf()
         with patch.object(
             links, "paper_expectations",
-            return_value=("Contents", {"target"}, {}, "https://circle.basil.one"),
+            return_value=("Contents", {"target"}, {}, "https://circle.basil.one", {}),
         ):
             report, state = links.audit(self.path, Path("unused"), check_network=False)
         self.assertEqual(state, "incomplete")
@@ -117,7 +130,7 @@ class PaperLinkTests(unittest.TestCase):
     def test_missing_pdf_is_not_a_pass(self):
         with patch.object(
             links, "paper_expectations",
-            return_value=("Contents", {"target"}, {}, "https://circle.basil.one"),
+            return_value=("Contents", {"target"}, {}, "https://circle.basil.one", {}),
         ):
             with self.assertRaises(FileNotFoundError):
                 links.audit(self.path, Path("unused"))

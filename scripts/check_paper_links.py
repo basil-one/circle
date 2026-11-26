@@ -7,6 +7,7 @@ import argparse
 import importlib.util
 import multiprocessing
 import queue
+import re
 import time
 from pathlib import Path
 from urllib.parse import urldefrag, urlsplit
@@ -19,7 +20,7 @@ from check_site_links import check_external, same_site
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def paper_expectations(config: Path) -> tuple[str, set[str], dict[str, str], str]:
+def paper_expectations(config: Path):
     spec = importlib.util.spec_from_file_location("build_pdf", ROOT / "scripts/build-pdf.py")
     builder_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder_module)
@@ -35,7 +36,7 @@ def paper_expectations(config: Path) -> tuple[str, set[str], dict[str, str], str
         if body["include_introduction_in_toc"]:
             toc.add(intro)
     core, appendix, routes = [], [], {}
-    builder._plan_pdf_sections(data["sections"], used, core, appendix, routes)
+    sections = builder._plan_pdf_sections(data["sections"], used, core, appendix, routes)
     toc.update(item["anchor"] for item in core + appendix)
     for key in ("discussion", "conclusion"):
         section = data[key]
@@ -48,7 +49,24 @@ def paper_expectations(config: Path) -> tuple[str, set[str], dict[str, str], str
         anchor = builder._reserve_pdf_anchor(body["back_matter_anchor"], used)
         if body["include_back_matter_in_toc"]:
             toc.add(anchor)
-    return framing["toc_label"], toc, routes, builder._get_root_url()
+    source_links = {}
+    for section in sections:
+        for pattern in section["patterns"]:
+            targets = set()
+            for match in re.finditer(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)", pattern["body"]):
+                raw = match.group(2).strip().split()
+                if not raw:
+                    continue
+                url = raw[0]
+                route = builder._normalize_site_path(url)
+                if route in routes:
+                    targets.add(("internal", routes[route]))
+                elif url.startswith("#"):
+                    targets.add(("internal", url[1:]))
+                elif urlsplit(url).scheme in {"http", "https"}:
+                    targets.add(("external", url))
+            source_links[pattern["anchor"]] = targets
+    return framing["toc_label"], toc, routes, builder._get_root_url(), source_links
 
 
 def _page_reference_valid(reference, page_refs: set[tuple[int, int]]) -> bool:
@@ -92,7 +110,7 @@ def _outline_findings(outline, reader, issues):
 
 
 def inspect_pdf(path: Path, toc_label: str, expected_toc: set[str],
-                routes: dict[str, str], site_url: str):
+                routes: dict[str, str], site_url: str, source_links=None):
     reader = PdfReader(path, strict=True)
     if not reader.pages:
         raise ValueError("PDF has no pages")
@@ -112,8 +130,10 @@ def inspect_pdf(path: Path, toc_label: str, expected_toc: set[str],
     toc_start = toc_pages[0] if len(toc_pages) == 1 else -1
     in_toc = False
     internal_count = 0
+    page_links = []
     for index, page in enumerate(reader.pages):
         page_targets = set()
+        observed_links = set()
         for ref in page.get("/Annots", []):
             annotation = ref.get_object()
             if annotation.get("/Subtype") != "/Link":
@@ -129,11 +149,13 @@ def inspect_pdf(path: Path, toc_label: str, expected_toc: set[str],
                     issues.append(f"{location}: {destination!r} — {error}")
                 if isinstance(destination, str):
                     page_targets.add(str(destination))
+                    observed_links.add(("internal", str(destination)))
             elif action and action.get("/S") == "/URI":
                 url = str(action.get("/URI", ""))
                 try:
                     parts = urlsplit(url)
                     if parts.scheme in {"http", "https"} and parts.hostname:
+                        observed_links.add(("external", url))
                         sources.setdefault(urldefrag(url).url, set()).add(location)
                         if same_site(url, site_url):
                             normalized = parts.path.rstrip("/") + "/"
@@ -155,8 +177,24 @@ def inspect_pdf(path: Path, toc_label: str, expected_toc: set[str],
                 in_toc = False
             else:
                 toc_targets.update(page_targets)
+        page_links.append(observed_links)
     for anchor in sorted(expected_toc - toc_targets):
         issues.append(f"Table of contents: link to {anchor!r} is missing")
+    if source_links:
+        positions = {
+            anchor: reader.get_destination_page_number(named[anchor])
+            for anchor in expected_toc if anchor in named
+        }
+        for anchor, targets in source_links.items():
+            start = positions.get(anchor)
+            if start is None or start < 0:
+                issues.append(f"Source {anchor!r}: destination page is unavailable")
+                continue
+            end = min((pos for pos in positions.values() if pos is not None and pos > start),
+                      default=len(reader.pages))
+            observed = set().union(*page_links[start:end])
+            for kind, target in sorted(targets - observed):
+                issues.append(f"Source {anchor!r}: {kind} link to {target!r} is missing")
     outline_count = _outline_findings(reader.outline, reader, issues)
     return issues, sources, len(named), internal_count, outline_count
 
@@ -185,9 +223,9 @@ def bounded_external(url: str, timeout: float):
 
 
 def audit(path: Path, config: Path, check_network=True, checker=bounded_external):
-    label, toc, routes, site_url = paper_expectations(config)
+    label, toc, routes, site_url, source_links = paper_expectations(config)
     issues, sources, named_count, internal_count, outline_count = inspect_pdf(
-        path, label, toc, routes, site_url
+        path, label, toc, routes, site_url, source_links
     )
     results = {}
     deadline = time.monotonic() + 120
