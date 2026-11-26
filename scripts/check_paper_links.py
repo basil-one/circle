@@ -8,14 +8,23 @@ import importlib.util
 import multiprocessing
 import queue
 import re
+import subprocess
 import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urldefrag, urlsplit
 
-from pypdf import PdfReader
-from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject
-
 from check_site_links import check_external, same_site
+from pypdf import PdfReader
+from pypdf.generic import (
+    ArrayObject,
+    DictionaryObject,
+    FloatObject,
+    IndirectObject,
+    NameObject,
+    NullObject,
+    NumberObject,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,29 +35,35 @@ def paper_expectations(config: Path):
     spec.loader.exec_module(builder_module)
     builder = builder_module.CirclePDFBuilder(str(config), str(ROOT))
     data = builder.config
-    framing, body = data["framing"], data["body"]
-    used = {builder._latex_id(framing["abstract_anchor"], default="abstract")}
-    toc = set()
-    if framing["include_abstract_in_toc"]:
-        toc.update(used)
-    if body["introduction_file"]:
-        intro = builder._reserve_pdf_anchor(body["introduction_anchor"], used)
-        if body["include_introduction_in_toc"]:
-            toc.add(intro)
+    framing = data["framing"]
+    abstract_label, abstract, include_abstract = builder._get_framing_abstract_toc_settings()
+    intro_text, intro_label, intro_anchor, include_intro = builder._get_body_intro()
+    back_text, back_label, back_anchor, include_back = builder._get_body_back_matter()
+    used = {abstract}
+    toc = {abstract: abstract_label} if include_abstract else {}
+    if intro_text:
+        intro = builder._reserve_pdf_anchor(intro_anchor, used)
+        if include_intro:
+            toc[intro] = intro_label
     core, appendix, routes = [], [], {}
     sections = builder._plan_pdf_sections(data["sections"], used, core, appendix, routes)
-    toc.update(item["anchor"] for item in core + appendix)
+    toc.update((item["anchor"], item["label"]) for item in core + appendix)
     for key in ("discussion", "conclusion"):
         section = data[key]
         anchor = builder._reserve_pdf_anchor(
             builder._latex_id(section["anchor"], default=key), used
         )
         if section["title"]:
-            toc.add(anchor)
-    if body["back_matter_file"]:
-        anchor = builder._reserve_pdf_anchor(body["back_matter_anchor"], used)
-        if body["include_back_matter_in_toc"]:
-            toc.add(anchor)
+            toc[anchor] = section["title"]
+    if back_text:
+        anchor = builder._reserve_pdf_anchor(back_anchor, used)
+        if include_back:
+            toc[anchor] = back_label
+    source_links = _source_expectations(builder, sections, routes)
+    return framing["toc_label"], toc, routes, builder._get_root_url(), source_links
+
+
+def _source_expectations(builder, sections, routes):
     source_links = {}
     for section in sections:
         for pattern in section["patterns"]:
@@ -66,13 +81,14 @@ def paper_expectations(config: Path):
                 elif urlsplit(url).scheme in {"http", "https"}:
                     targets.add(("external", url))
             source_links[pattern["anchor"]] = targets
-    return framing["toc_label"], toc, routes, builder._get_root_url(), source_links
+    return source_links
 
 
 def _page_reference_valid(reference, page_refs: set[tuple[int, int]]) -> bool:
-    return isinstance(reference, IndirectObject) and (
-        reference.idnum, reference.generation
-    ) in page_refs
+    return (
+        isinstance(reference, IndirectObject)
+        and (reference.idnum, reference.generation) in page_refs
+    )
 
 
 def _destination_error(destination, named, page_refs) -> str:
@@ -90,9 +106,34 @@ def _destination_error(destination, named, page_refs) -> str:
     if not _page_reference_valid(destination[0], page_refs):
         return "destination page is missing from this PDF"
     if str(destination[1]) not in {
-        "/XYZ", "/Fit", "/FitH", "/FitV", "/FitR", "/FitB", "/FitBH", "/FitBV"
+        "/XYZ",
+        "/Fit",
+        "/FitH",
+        "/FitV",
+        "/FitR",
+        "/FitB",
+        "/FitBH",
+        "/FitBV",
     }:
         return "invalid destination fit type"
+    operand_counts = {
+        "/XYZ": 3,
+        "/Fit": 0,
+        "/FitH": 1,
+        "/FitV": 1,
+        "/FitR": 4,
+        "/FitB": 0,
+        "/FitBH": 1,
+        "/FitBV": 1,
+    }
+    kind = str(destination[1])
+    operands = destination[2:]
+    if (
+        len(operands) != operand_counts[kind]
+        or any(not isinstance(value, (NumberObject, FloatObject, NullObject)) for value in operands)
+        or (kind == "/FitR" and any(isinstance(value, NullObject) for value in operands))
+    ):
+        return "invalid destination operands"
     return ""
 
 
@@ -109,31 +150,106 @@ def _outline_findings(outline, reader, issues):
     return count
 
 
-def inspect_pdf(path: Path, toc_label: str, expected_toc: set[str],
-                routes: dict[str, str], site_url: str, source_links=None):
-    reader = PdfReader(path, strict=True)
-    if not reader.pages:
-        raise ValueError("PDF has no pages")
-    named = reader.named_destinations
-    page_refs = {
-        (page.indirect_reference.idnum, page.indirect_reference.generation)
-        for page in reader.pages if page.indirect_reference is not None
-    }
-    issues, sources, toc_targets = [], {}, set()
-    for name, destination in named.items():
-        error = _destination_error(destination.dest_array, named, page_refs)
+def _toc_words(path: Path, page: int):
+    result = subprocess.run(
+        ["pdftotext", "-f", str(page), "-l", str(page), "-bbox", str(path), "-"],
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    root = ET.fromstring(result.stdout)
+    return [
+        (
+            word.text or "",
+            float(word.get("xMin")),
+            float(word.get("yMin")),
+            float(word.get("xMax")),
+            float(word.get("yMax")),
+        )
+        for word in root.iter("{http://www.w3.org/1999/xhtml}word")
+    ]
+
+
+def _annotation_label(annotation, page, words):
+    left, bottom, right, top = map(float, annotation["/Rect"])
+    height = float(page.mediabox.height)
+    selected = [
+        text
+        for text, x1, y1, x2, y2 in words
+        if left <= (x1 + x2) / 2 <= right and height - top <= (y1 + y2) / 2 <= height - bottom
+    ]
+    return " ".join(selected)
+
+
+def _route_path(path):
+    path = path.rstrip("/")
+    if path.endswith("/index.html"):
+        path = path[: -len("/index.html")]
+    elif path.endswith("index.html"):
+        path = path[: -len("index.html")]
+    elif path.endswith(".html"):
+        path = path[: -len(".html")]
+    return path.rstrip("/") + "/"
+
+
+class PDFLinkInspection:
+    def __init__(self, path, toc_label, expected_toc, routes, site_url):
+        self.reader = PdfReader(path, strict=True)
+        if not self.reader.pages:
+            raise ValueError("PDF has no pages")
+        self.named = self.reader.named_destinations
+        self.page_refs = {
+            (page.indirect_reference.idnum, page.indirect_reference.generation)
+            for page in self.reader.pages
+            if page.indirect_reference is not None
+        }
+        self.issues, self.sources, self.toc_targets = [], {}, set()
+        self.expected_toc, self.routes, self.site_url = expected_toc, routes, site_url
+        self.internal_count, self.page_links = 0, []
+        toc_pages = [
+            i for i, page in enumerate(self.reader.pages) if toc_label in page.extract_text()
+        ]
+        if len(toc_pages) != 1:
+            self.issues.append(
+                f"Table of contents label {toc_label!r} found on {len(toc_pages)} pages"
+            )
+        self.toc_start = toc_pages[0] if len(toc_pages) == 1 else -1
+        self.words = _toc_words(path, self.toc_start + 1) if self.toc_start >= 0 else []
+
+    def _internal(self, annotation, action, page, index, observed):
+        destination = annotation.get("/Dest") if "/Dest" in annotation else action.get("/D")
+        self.internal_count += 1
+        error = _destination_error(destination, self.named, self.page_refs)
         if error:
-            issues.append(f"Named destination {name!r}: {error}")
-    toc_pages = [i for i, page in enumerate(reader.pages) if toc_label in page.extract_text()]
-    if len(toc_pages) != 1:
-        issues.append(f"Table of contents label {toc_label!r} found on {len(toc_pages)} pages")
-    toc_start = toc_pages[0] if len(toc_pages) == 1 else -1
-    in_toc = False
-    internal_count = 0
-    page_links = []
-    for index, page in enumerate(reader.pages):
-        page_targets = set()
-        observed_links = set()
+            self.issues.append(f"Page {index + 1}: {destination!r} — {error}")
+        if isinstance(destination, str):
+            observed.add(("internal", str(destination)))
+            if index == self.toc_start and str(destination) in self.expected_toc:
+                label = _annotation_label(annotation, page, self.words)
+                if label == self.expected_toc[str(destination)]:
+                    self.toc_targets.add(str(destination))
+
+    def _uri(self, action, location, observed):
+        url = str(action.get("/URI", ""))
+        try:
+            parts = urlsplit(url)
+            if parts.scheme in {"http", "https"} and parts.hostname:
+                observed.add(("external", url))
+                self.sources.setdefault(urldefrag(url).url, set()).add(location)
+                if same_site(url, self.site_url):
+                    normalized = _route_path(parts.path)
+                    if normalized in self.routes:
+                        self.issues.append(
+                            f"{location}: {url} should link to PDF destination "
+                            f"{self.routes[normalized]!r}"
+                        )
+            elif parts.scheme != "mailto" or not parts.path:
+                self.issues.append(f"{location}: unsupported or invalid URI {url!r}")
+        except ValueError as error:
+            self.issues.append(f"{location}: invalid URI {url!r}: {error}")
+
+    def scan_page(self, index, page):
+        observed = set()
         for ref in page.get("/Annots", []):
             annotation = ref.get_object()
             if annotation.get("/Subtype") != "/Link":
@@ -142,65 +258,73 @@ def inspect_pdf(path: Path, toc_label: str, expected_toc: set[str],
             action = annotation.get("/A")
             action = action.get_object() if action else None
             if "/Dest" in annotation or (action and action.get("/S") == "/GoTo"):
-                destination = annotation.get("/Dest") if "/Dest" in annotation else action.get("/D")
-                internal_count += 1
-                error = _destination_error(destination, named, page_refs)
-                if error:
-                    issues.append(f"{location}: {destination!r} — {error}")
-                if isinstance(destination, str):
-                    page_targets.add(str(destination))
-                    observed_links.add(("internal", str(destination)))
+                self._internal(annotation, action, page, index, observed)
             elif action and action.get("/S") == "/URI":
-                url = str(action.get("/URI", ""))
-                try:
-                    parts = urlsplit(url)
-                    if parts.scheme in {"http", "https"} and parts.hostname:
-                        observed_links.add(("external", url))
-                        sources.setdefault(urldefrag(url).url, set()).add(location)
-                        if same_site(url, site_url):
-                            normalized = parts.path.rstrip("/") + "/"
-                            if normalized in routes:
-                                issues.append(
-                                    f"{location}: {url} should link to PDF destination "
-                                    f"{routes[normalized]!r}"
-                                )
-                    elif parts.scheme != "mailto" or not parts.path:
-                        issues.append(f"{location}: unsupported or invalid URI {url!r}")
-                except ValueError as error:
-                    issues.append(f"{location}: invalid URI {url!r}: {error}")
+                self._uri(action, location, observed)
             else:
-                issues.append(f"{location}: unsupported or missing link action")
-        if index == toc_start:
-            in_toc = True
-        if in_toc:
-            if index != toc_start and not (page_targets & expected_toc):
-                in_toc = False
-            else:
-                toc_targets.update(page_targets)
-        page_links.append(observed_links)
-    for anchor in sorted(expected_toc - toc_targets):
-        issues.append(f"Table of contents: link to {anchor!r} is missing")
-    if source_links:
+                self.issues.append(f"{location}: unsupported or missing link action")
+        self.page_links.append(observed)
+
+    def check_source_links(self, source_links):
         positions = {
-            anchor: reader.get_destination_page_number(named[anchor])
-            for anchor in expected_toc if anchor in named
+            anchor: self.reader.get_destination_page_number(self.named[anchor])
+            for anchor in self.expected_toc
+            if anchor in self.named
         }
         for anchor, targets in source_links.items():
             start = positions.get(anchor)
             if start is None or start < 0:
-                issues.append(f"Source {anchor!r}: destination page is unavailable")
+                self.issues.append(f"Source {anchor!r}: destination page is unavailable")
                 continue
-            end = min((pos for pos in positions.values() if pos is not None and pos > start),
-                      default=len(reader.pages))
-            observed = set().union(*page_links[start:end])
+            end = min(
+                (pos for pos in positions.values() if pos is not None and pos > start),
+                default=len(self.reader.pages),
+            )
+            observed = set().union(*self.page_links[start:end])
             for kind, target in sorted(targets - observed):
-                issues.append(f"Source {anchor!r}: {kind} link to {target!r} is missing")
-    outline_count = _outline_findings(reader.outline, reader, issues)
-    return issues, sources, len(named), internal_count, outline_count
+                self.issues.append(f"Source {anchor!r}: {kind} link to {target!r} is missing")
+
+
+def inspect_pdf(
+    path: Path,
+    toc_label: str,
+    expected_toc: dict[str, str],
+    routes: dict[str, str],
+    site_url: str,
+    source_links=None,
+):
+    inspection = PDFLinkInspection(path, toc_label, expected_toc, routes, site_url)
+    for name, destination in inspection.named.items():
+        error = _destination_error(destination.dest_array, inspection.named, inspection.page_refs)
+        if error:
+            inspection.issues.append(f"Named destination {name!r}: {error}")
+    for index, page in enumerate(inspection.reader.pages):
+        inspection.scan_page(index, page)
+    for anchor in sorted(expected_toc.keys() - inspection.toc_targets):
+        inspection.issues.append(
+            f"Table of contents: link labelled {expected_toc[anchor]!r} "
+            f"to {anchor!r} is missing or points elsewhere"
+        )
+    if source_links:
+        inspection.check_source_links(source_links)
+    outline_count = _outline_findings(
+        inspection.reader.outline, inspection.reader, inspection.issues
+    )
+    return (
+        inspection.issues,
+        inspection.sources,
+        len(inspection.named),
+        inspection.internal_count,
+        outline_count,
+    )
 
 
 def _external_worker(url, results):
-    results.put(check_external(url))
+    category, detail = check_external(url)
+    if category == "likely broken" and detail.startswith("HTTP 416"):
+        category = "uncertain"
+        detail += "; range request was rejected"
+    results.put((category, detail))
 
 
 def bounded_external(url: str, timeout: float):
@@ -241,14 +365,18 @@ def audit(path: Path, config: Path, check_network=True, checker=bounded_external
     uncertain = [url for url, (category, _) in results.items() if category == "uncertain"]
     state = "failed" if issues or broken else "incomplete" if uncertain else "passed"
     lines = [
-        "# Paper: Link Integrity", "", f"**Outcome: {state}**", "",
+        "# Paper: Link Integrity",
+        "",
+        f"**Outcome: {state}**",
+        "",
         f"- Named destinations: {named_count}",
         f"- Internal link annotations: {internal_count}",
         f"- Bookmarks: {outline_count}",
         f"- Unique HTTP(S) destinations: {len(sources)}",
         f"- Internal findings: {len(issues)}",
         f"- Likely broken external destinations: {len(broken)}",
-        f"- Uncertain external destinations: {len(uncertain)}", "",
+        f"- Uncertain external destinations: {len(uncertain)}",
+        "",
     ]
     lines.extend(f"- {issue}" for issue in issues)
     for url, (category, detail) in results.items():
@@ -267,7 +395,10 @@ def main():
     try:
         report, state = audit(args.pdf, args.config, not args.skip_external)
     except Exception as error:
-        report, state = f"# Paper: Link Integrity\n\n**Outcome: incomplete**\n\n- Audit unavailable: {error}\n", "incomplete"
+        report, state = (
+            f"# Paper: Link Integrity\n\n**Outcome: incomplete**\n\n- Audit unavailable: {error}\n",
+            "incomplete",
+        )
     if args.report:
         args.report.write_text(report, encoding="utf-8")
     print(report, end="")

@@ -1,7 +1,9 @@
+import importlib
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from queue import Queue
 from unittest.mock import patch
 
 from pypdf import PdfWriter
@@ -11,12 +13,14 @@ from pypdf.generic import (
     DictionaryObject,
     FloatObject,
     NameObject,
+    NullObject,
+    NumberObject,
     TextStringObject,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-import check_paper_links as links
+links = importlib.import_module("check_paper_links")
 
 
 class PaperLinkTests(unittest.TestCase):
@@ -32,30 +36,34 @@ class PaperLinkTests(unittest.TestCase):
         writer.add_named_destination("target", 1)
         writer.add_named_destination("source", 0)
         writer.add_outline_item("Target", 1)
-        font = DictionaryObject({
-            NameObject("/Type"): NameObject("/Font"),
-            NameObject("/Subtype"): NameObject("/Type1"),
-            NameObject("/BaseFont"): NameObject("/Helvetica"),
-        })
-        page[NameObject("/Resources")] = DictionaryObject({
-            NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})
-        })
+        font = DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Font"),
+                NameObject("/Subtype"): NameObject("/Type1"),
+                NameObject("/BaseFont"): NameObject("/Helvetica"),
+            }
+        )
+        page[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})}
+        )
         contents = DecodedStreamObject()
-        contents.set_data(b"BT /F1 12 Tf 10 100 Td (Contents) Tj ET")
+        contents.set_data(b"BT /F1 12 Tf 10 180 Td (Contents) Tj 0 -80 Td (Target) Tj ET")
         page[NameObject("/Contents")] = writer._add_object(contents)
         annotations = ArrayObject()
         for action in (
             {"/S": NameObject("/GoTo"), "/D": TextStringObject(internal)},
             {"/S": NameObject("/URI"), "/URI": TextStringObject(url)},
         ):
-            annotation = DictionaryObject({
-                NameObject("/Type"): NameObject("/Annot"),
-                NameObject("/Subtype"): NameObject("/Link"),
-                NameObject("/Rect"): ArrayObject([FloatObject(0)] * 4),
-                NameObject("/A"): DictionaryObject(
-                    {NameObject(key): value for key, value in action.items()}
-                ),
-            })
+            annotation = DictionaryObject(
+                {
+                    NameObject("/Type"): NameObject("/Annot"),
+                    NameObject("/Subtype"): NameObject("/Link"),
+                    NameObject("/Rect"): ArrayObject([FloatObject(n) for n in (10, 98, 45, 112)]),
+                    NameObject("/A"): DictionaryObject(
+                        {NameObject(key): value for key, value in action.items()}
+                    ),
+                }
+            )
             annotations.append(writer._add_object(annotation))
         page[NameObject("/Annots")] = annotations
         with self.path.open("wb") as stream:
@@ -63,8 +71,11 @@ class PaperLinkTests(unittest.TestCase):
 
     def inspect(self, expected=None, routes=None):
         return links.inspect_pdf(
-            self.path, "Contents", {"target"} if expected is None else expected,
-            routes or {}, "https://circle.basil.one"
+            self.path,
+            "Contents",
+            {"target": "Target"} if expected is None else expected,
+            routes or {},
+            "https://circle.basil.one",
         )
 
     def test_real_annotations_and_bookmark_resolve(self):
@@ -77,32 +88,101 @@ class PaperLinkTests(unittest.TestCase):
     def test_source_links_must_survive_in_the_source_section(self):
         self.make_pdf()
         issues, *_ = links.inspect_pdf(
-            self.path, "Contents", {"source", "target"}, {}, "https://circle.basil.one",
-            {"source": {("internal", "target"), ("external", "https://example.com/resource"),
-                        ("internal", "lost")}},
+            self.path,
+            "Contents",
+            {"source": "Source", "target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {
+                "source": {
+                    ("internal", "target"),
+                    ("external", "https://example.com/resource"),
+                    ("internal", "lost"),
+                }
+            },
         )
         self.assertTrue(any("internal link to 'lost' is missing" in i for i in issues))
         self.assertFalse(any("internal link to 'target' is missing" in i for i in issues))
-        self.assertFalse(any("external link to 'https://example.com/resource' is missing" in i
-                             for i in issues))
+        self.assertFalse(
+            any("external link to 'https://example.com/resource' is missing" in i for i in issues)
+        )
 
     def test_broken_internal_target_and_missing_toc_link_are_reported(self):
         self.make_pdf(internal="missing")
         issues, *_ = self.inspect()
-        self.assertTrue(any("named destination 'missing' does not exist" in issue for issue in issues))
-        self.assertTrue(any("Table of contents: link to 'target' is missing" in issue for issue in issues))
+        self.assertTrue(
+            any("named destination 'missing' does not exist" in issue for issue in issues)
+        )
+        self.assertTrue(
+            any("to 'target' is missing or points elsewhere" in issue for issue in issues)
+        )
+
+    def test_toc_entry_pointing_to_wrong_existing_destination_is_rejected(self):
+        self.make_pdf(internal="source")
+        issues, *_ = self.inspect(expected={"target": "Target", "source": "Source"})
+        self.assertTrue(any("'Target' to 'target' is missing" in issue for issue in issues))
+        self.assertTrue(any("'Source' to 'source' is missing" in issue for issue in issues))
+
+    def test_invalid_destination_operands_are_rejected(self):
+        writer = PdfWriter()
+        page = writer.add_blank_page(width=200, height=200)
+        reference = page.indirect_reference
+        refs = {(reference.idnum, reference.generation)}
+        invalid = ArrayObject([reference, NameObject("/FitR")])
+        self.assertIn("operands", links._destination_error(invalid, {}, refs))
+        invalid = ArrayObject([reference, NameObject("/XYZ"), NumberObject(1)])
+        self.assertIn("operands", links._destination_error(invalid, {}, refs))
+        valid = ArrayObject(
+            [reference, NameObject("/XYZ"), NullObject(), NullObject(), NumberObject(1)]
+        )
+        self.assertEqual(links._destination_error(valid, {}, refs), "")
+
+    def test_range_rejection_is_uncertain(self):
+        results = Queue()
+        with patch.object(links, "check_external", return_value=("likely broken", "HTTP 416")):
+            links._external_worker("https://example.com", results)
+        self.assertEqual(results.get()[0], "uncertain")
+
+    def test_config_false_and_normalized_anchor_follow_builder(self):
+        config = (ROOT / "scripts/plop.paper.config.yaml").read_text()
+        config = config.replace("include_abstract_in_toc: true", "include_abstract_in_toc: false")
+        config = config.replace(
+            "include_back_matter_in_toc: true", "include_back_matter_in_toc: false"
+        )
+        config = config.replace(
+            "introduction_anchor: introduction", "introduction_anchor: Intro Heading"
+        )
+        config = config.replace(
+            "introduction_file: content/", f"introduction_file: {ROOT}/scripts/content/"
+        )
+        config = config.replace(
+            "back_matter_file: content/", f"back_matter_file: {ROOT}/scripts/content/"
+        )
+        config_path = Path(self.directory.name) / "paper.yaml"
+        config_path.write_text(config)
+        _, toc, *_ = links.paper_expectations(config_path)
+        self.assertNotIn("abstract", toc)
+        self.assertNotIn("references", toc)
+        self.assertIn("intro-heading", toc)
 
     def test_source_link_to_included_move_must_be_rewritten(self):
-        self.make_pdf(url="https://circle.basil.one/moves/establish/")
-        issues, *_ = self.inspect(routes={"/moves/establish/": "pattern-establish"})
-        self.assertTrue(any("should link to PDF destination 'pattern-establish'" in i for i in issues))
+        for suffix in ("", "index.html", ".html"):
+            self.make_pdf(url=f"https://circle.basil.one/moves/establish/{suffix}")
+            if suffix == ".html":
+                self.make_pdf(url="https://circle.basil.one/moves/establish.html")
+            issues, *_ = self.inspect(routes={"/moves/establish/": "pattern-establish"})
+            self.assertTrue(
+                any("should link to PDF destination 'pattern-establish'" in i for i in issues)
+            )
 
     def test_external_failure_and_uncertainty_are_distinct(self):
         self.make_pdf()
-        expected = ("Contents", {"target"}, {}, "https://circle.basil.one", {})
+        expected = ("Contents", {"target": "Target"}, {}, "https://circle.basil.one", {})
         with patch.object(links, "paper_expectations", return_value=expected):
             report, state = links.audit(
-                self.path, Path("unused"), checker=lambda url, timeout: ("likely broken", "HTTP 404")
+                self.path,
+                Path("unused"),
+                checker=lambda url, timeout: ("likely broken", "HTTP 404"),
             )
             self.assertEqual(state, "failed")
             self.assertIn("Page 1", report)
@@ -120,8 +200,9 @@ class PaperLinkTests(unittest.TestCase):
     def test_skipped_network_is_incomplete_not_passed(self):
         self.make_pdf()
         with patch.object(
-            links, "paper_expectations",
-            return_value=("Contents", {"target"}, {}, "https://circle.basil.one", {}),
+            links,
+            "paper_expectations",
+            return_value=("Contents", {"target": "Target"}, {}, "https://circle.basil.one", {}),
         ):
             report, state = links.audit(self.path, Path("unused"), check_network=False)
         self.assertEqual(state, "incomplete")
@@ -129,8 +210,9 @@ class PaperLinkTests(unittest.TestCase):
 
     def test_missing_pdf_is_not_a_pass(self):
         with patch.object(
-            links, "paper_expectations",
-            return_value=("Contents", {"target"}, {}, "https://circle.basil.one", {}),
+            links,
+            "paper_expectations",
+            return_value=("Contents", {"target": "Target"}, {}, "https://circle.basil.one", {}),
         ):
             with self.assertRaises(FileNotFoundError):
                 links.audit(self.path, Path("unused"))
