@@ -277,6 +277,24 @@ class PaperLinkTests(unittest.TestCase):
         self.assertNotIn("references", toc)
         self.assertIn("intro-heading", toc)
 
+    def test_shared_planning_keeps_collisions_and_non_toc_section_anchors(self):
+        config = (ROOT / "scripts/plop.paper.config.yaml").read_text()
+        config = config.replace("introduction_anchor: introduction", "introduction_anchor: abstract")
+        config = config.replace("include_in_toc: true", "include_in_toc: false", 1)
+        config = config.replace(
+            "introduction_file: content/", f"introduction_file: {ROOT}/scripts/content/"
+        )
+        config = config.replace(
+            "back_matter_file: content/", f"back_matter_file: {ROOT}/scripts/content/"
+        )
+        config_path = Path(self.directory.name) / "paper.yaml"
+        config_path.write_text(config)
+        _, toc, routes, _, _, anchors, _ = links.paper_expectations(config_path)
+        self.assertIn("abstract-2", toc)
+        self.assertIn(routes["/moves/establish/"], anchors)
+        self.assertIn("section-three-guiding-moves", anchors)
+        self.assertNotIn("section-three-guiding-moves", toc)
+
     def test_source_link_to_included_move_must_be_rewritten(self):
         normalizer = links.paper_expectations(ROOT / "scripts/plop.paper.config.yaml")[-1]
         for suffix in ("", "index.html", ".html"):

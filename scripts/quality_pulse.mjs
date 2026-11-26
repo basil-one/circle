@@ -17,7 +17,8 @@ const dimensions = [
   { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'rendering' },
   { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
   { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
-  { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' }
+  { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' },
+  { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml', job: 'paper-link' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -800,7 +801,7 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const results = dimensions.filter((dimension) => dimension.job !== 'paper-content').map(({ job, name }) =>
+  const results = dimensions.filter((dimension) => !['paper-content', 'paper-link'].includes(dimension.job)).map(({ job, name }) =>
     orchestratedJobResult(needs, job, name, run)
   );
   const paperContent = needs?.['paper-content']?.outputs?.status;
@@ -809,6 +810,12 @@ async function buildOrchestratedPulse({
     needs?.['paper-content']?.result, paperContent, run
   );
   results.push(content);
+  const paperLink = needs?.['paper-link']?.outputs?.status;
+  const link = paperValidatorResult(
+    dimensions.find(({ job }) => job === 'paper-link').name,
+    needs?.['paper-link']?.result, paperLink, run
+  );
+  results.push(link);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -912,6 +919,9 @@ async function buildOrchestratedPulse({
   if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(content.result.state)) {
     await applyPaperReport(content, needs?.['paper-content']?.result, paperContent, artifactOptions, repository, runId, 'paper-content-report');
   }
+  if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(link.result.state)) {
+    await applyPaperReport(link, needs?.['paper-link']?.result, paperLink, artifactOptions, repository, runId, 'paper-link-report');
+  }
 
   const markdown = renderPulse({
     date,
@@ -997,6 +1007,12 @@ async function buildPulse({
     legacyContent.result.state = 'unknown';
     legacyContent.result.label = 'Unknown / validator evidence unavailable';
     legacyContent.result.detail = 'Legacy workflow-run lookup cannot establish Content report consistency; use the same-cycle Quality Pulse.';
+  }
+  const legacyLink = results.find((item) => item.name === 'Paper: Link Integrity');
+  if (legacyLink?.result.run?.conclusion === 'success') {
+    legacyLink.result.state = 'unknown';
+    legacyLink.result.label = 'Unknown / validator evidence unavailable';
+    legacyLink.result.detail = 'Legacy workflow-run lookup cannot establish Link report consistency; use the same-cycle Quality Pulse.';
   }
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (

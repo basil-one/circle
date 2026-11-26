@@ -27,13 +27,13 @@ jobs:
         with:
           persist-credentials: false
       - name: Install PDF link audit tools
+        id: tools
         run: |
           python3 -m venv "$RUNNER_TEMP/paper-links-venv"
           "$RUNNER_TEMP/paper-links-venv/bin/python" -m pip install --require-hashes --only-binary=:all: -r scripts/paper-link/requirements.txt
       - name: Build and verify fresh author-edition PDF
+        id: build
         run: bash scripts/build-paper-pdf.sh
-      - name: Test PDF link auditor
-        run: '"$RUNNER_TEMP/paper-links-venv/bin/python" -m unittest discover -s tests -p test_paper_links.py -v'
       - name: Audit fresh PDF links
         id: audit
         run: |
@@ -60,6 +60,10 @@ jobs:
             exit 1
           fi
           echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Test PDF link auditor
+        id: tests
+        if: ${{ always() && steps.build.outcome == 'success' && steps.tools.outcome == 'success' }}
+        run: '"$RUNNER_TEMP/paper-links-venv/bin/python" -m unittest discover -s tests -p test_paper_links.py -v'
       - name: Upload link audit evidence
         id: upload
         if: always()
@@ -77,12 +81,14 @@ jobs:
           SOURCE_SHA: ${{ steps.checkout.outputs.commit }}
           AUDIT_OUTCOME: ${{ steps.audit.outcome }}
           AUDIT_STATUS: ${{ steps.audit.outputs.status }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
           UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`." >> "$GITHUB_STEP_SUMMARY"
-          if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
-            printf '%s\n' '**Verification incomplete:** inspect audit and evidence-upload steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Link tests: **${TEST_OUTCOME:-unavailable}**; report upload: **${UPLOAD_OUTCOME:-unavailable}**." >> "$GITHUB_STEP_SUMMARY"
+          if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$TEST_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
+            printf '%s\n' '**Verification incomplete:** inspect audit, test and evidence-upload steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ -f "$RUNNER_TEMP/paper-link-report.md" ]; then
             cat "$RUNNER_TEMP/paper-link-report.md" >> "$GITHUB_STEP_SUMMARY"

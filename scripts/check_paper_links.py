@@ -40,30 +40,33 @@ def paper_expectations(config: Path):
     abstract_label, abstract, include_abstract = builder._get_framing_abstract_toc_settings()
     intro_text, intro_label, intro_anchor, include_intro = builder._get_body_intro()
     back_text, back_label, back_anchor, include_back = builder._get_body_back_matter()
-    used = {abstract}
-    toc = {abstract: abstract_label} if include_abstract else {}
-    if intro_text:
-        intro = builder._reserve_pdf_anchor(intro_anchor, used)
-        if include_intro:
-            toc[intro] = intro_label
-    core, appendix, routes = [], [], {}
-    sections = builder._plan_pdf_sections(data["sections"], used, core, appendix, routes)
+    discussion_title, discussion_anchor = builder._get_discussion_meta()
+    conclusion_title, conclusion_anchor = builder._get_conclusion_meta()
+    (
+        sections, intro_anchor, discussion_anchor, conclusion_anchor, back_anchor,
+        core, appendix, routes,
+    ) = builder._plan_paper_content(
+        builder._get_pattern_sections(), abstract, intro_text, intro_anchor,
+        discussion_anchor, conclusion_anchor, back_text, back_anchor,
+    )
+    toc = {abstract: abstract_label} if include_abstract and abstract_label and abstract else {}
+    if intro_text.strip() and include_intro and intro_label:
+        toc[intro_anchor] = intro_label
+    toc.update(
+        (item["anchor"], item["label"])
+        for item in builder._build_pdf_toc(
+            core, appendix, discussion_title, discussion_anchor, conclusion_title,
+            conclusion_anchor, back_text.strip(), include_back, back_label, back_anchor,
+        )
+    )
     anchors = {section["anchor"] for section in sections}
     anchors.update(pattern["anchor"] for section in sections for pattern in section["patterns"])
-    toc.update((item["anchor"], item["label"]) for item in core + appendix)
-    for key in ("discussion", "conclusion"):
-        section = data[key]
-        anchor = builder._reserve_pdf_anchor(
-            builder._latex_id(section["anchor"], default=key), used
-        )
-        if section["title"]:
-            toc[anchor] = section["title"]
-    if back_text:
-        anchor = builder._reserve_pdf_anchor(back_anchor, used)
-        if include_back:
-            toc[anchor] = back_label
+    anchors.update((abstract, discussion_anchor, conclusion_anchor))
+    if intro_text.strip():
+        anchors.add(intro_anchor)
+    if back_text.strip():
+        anchors.add(back_anchor)
     source_links = _source_expectations(builder, sections, routes)
-    anchors.update(used)
     return (
         framing["toc_label"],
         toc,
