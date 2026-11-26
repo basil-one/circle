@@ -21,10 +21,16 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Test paper configuration
+        id: tests
         run: python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v
 
       - name: Build and verify fresh author-edition PDF
+        id: build
         run: bash scripts/build-paper-pdf.sh
 
       - name: Upload PDF preview
@@ -36,15 +42,25 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Link preview from workflow summary
+      - name: Summarize paper build
+        if: ${{ always() }}
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-          SOURCE_SHA: ${{ steps.checkout.outputs.commit }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
         run: |
           {
-            echo "## Circle3 Paper: Preview"
+            echo "## Paper: Build Integrity"
             echo
-            echo "Built from proposed revision \`$SOURCE_SHA\`."
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo "Configuration tests: **${TEST_OUTCOME:-unavailable}**; PDF build: **${BUILD_OUTCOME:-unavailable}**; preview upload: **${UPLOAD_OUTCOME:-unavailable}**."
+            echo "Any failed or unavailable step requires inspection of its logs and a rerun."
             echo
-            echo "[Download the preview PDF]($ARTIFACT_URL)"
+            if [ -n "$ARTIFACT_URL" ]; then
+              echo "[Download the preview PDF]($ARTIFACT_URL)"
+            else
+              echo "Preview PDF unavailable."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

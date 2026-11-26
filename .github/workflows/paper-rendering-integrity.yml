@@ -1,0 +1,90 @@
+name: "Paper: Rendering Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      status:
+        description: Paper Rendering validator status
+        value: ${{ jobs.paper-rendering.outputs.status }}
+
+permissions:
+  contents: read
+
+jobs:
+  paper-rendering:
+    name: "Paper: Rendering Integrity"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      status: ${{ steps.rendering.outputs.status }}
+    steps:
+      - name: Checkout intended revision
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Build fresh author-edition PDF
+        id: build
+        run: bash scripts/build-paper-pdf.sh
+      - name: Test real rendering fixtures
+        id: fixtures
+        run: |
+          command -v pdfinfo
+          command -v pdftoppm
+          python3 -m unittest discover -s scripts -p 'test_paper_rendering.py' -v
+      - name: Check rendered paper pages
+        id: rendering
+        run: |
+          set +e
+          python3 scripts/check_paper_rendering.py assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json" > "$RUNNER_TEMP/paper-rendering.log" 2>&1
+          result=$?
+          set -e
+          cat "$RUNNER_TEMP/paper-rendering.log"
+          case "$result" in
+            0) echo "status=success" >> "$GITHUB_OUTPUT" ;;
+            1) echo "status=failure" >> "$GITHUB_OUTPUT" ;;
+            *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
+          esac
+          exit "$result"
+      - name: Upload rendering report
+        id: report
+        if: ${{ always() && steps.rendering.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: paper-rendering-report
+          path: ${{ runner.temp }}/paper-rendering-report.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Summarize rendering verification
+        if: ${{ always() }}
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          FIXTURES_OUTCOME: ${{ steps.fixtures.outcome }}
+          AUDIT_OUTCOME: ${{ steps.rendering.outcome }}
+          REPORT_URL: ${{ steps.report.outputs.artifact-url }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
+        run: |
+          {
+            echo "## Paper: Rendering Integrity"
+            echo "Checked-out revision: ${SOURCE_SHA:-unavailable}."
+            echo "PDF build: $BUILD_OUTCOME; fixtures: $FIXTURES_OUTCOME; rendering audit: $AUDIT_OUTCOME."
+            if [ -f "$RUNNER_TEMP/paper-rendering.log" ]; then
+              echo '```'
+              head -n 8 "$RUNNER_TEMP/paper-rendering.log"
+              if [ "$(wc -l < "$RUNNER_TEMP/paper-rendering.log")" -gt 8 ]; then
+                grep '^[-] Rendering inspection incomplete:' "$RUNNER_TEMP/paper-rendering.log" | tail -n 1 || true
+              fi
+              echo '```'
+            fi
+            if [ -n "$REPORT_URL" ]; then
+              echo "[Download rendering findings]($REPORT_URL)"
+            else
+              echo "Rendering report unavailable; inspect the job logs and rerun."
+            fi
+            echo "Human review remains necessary for images, clipping, and layout."
+          } >> "$GITHUB_STEP_SUMMARY"
