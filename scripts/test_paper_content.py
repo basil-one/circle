@@ -55,6 +55,10 @@ class PaperContentTests(unittest.TestCase):
     def test_unicode_and_wrapped_text_normalize_consistently(self):
         self.assertEqual(content.compact("Circle3™ devel-\noping"), content.compact("Circle3™ developing"))
 
+    def test_short_text_and_image_only_content(self):
+        self.assertEqual(content.evidence("A brief note."), "abriefnote")
+        self.assertEqual(content.evidence("![A decorative illustration](images/example.png)"), "")
+
 
 if __name__ == "__main__":
     unittest.main()
