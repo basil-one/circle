@@ -96,13 +96,14 @@ jobs:
         run: |
           set +e
           "$RUNNER_TEMP/paper-links-venv/bin/python" scripts/check_paper_links.py \
-            assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-link-report.md"
+            assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-link-report.md" \
+            --json-report "$RUNNER_TEMP/paper-link-report.json"
           result=$?
           set -e
           case "$result" in
             0) echo "status=success" >> "$GITHUB_OUTPUT" ;;
             1) echo "status=failure" >> "$GITHUB_OUTPUT"; exit 1 ;;
-            3) echo "status=uncertain" >> "$GITHUB_OUTPUT" ;;
+            3) echo "status=advisory" >> "$GITHUB_OUTPUT" ;;
             *) echo "status=incomplete" >> "$GITHUB_OUTPUT"; exit 1 ;;
           esac
       - name: Upload link audit evidence
@@ -110,7 +111,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: paper-link-report
-          path: ${{ runner.temp }}/paper-link-report.md
+          path: |
+            ${{ runner.temp }}/paper-link-report.md
+            ${{ runner.temp }}/paper-link-report.json
           if-no-files-found: warn
           retention-days: 30
       - name: Summarize link integrity

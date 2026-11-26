@@ -10,7 +10,8 @@ const workflows = [
   ['site-seo-integrity.yml', 'seo', 'Site: SEO Integrity'],
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
-  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity']
+  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
+  ['paper-build-integrity.yml', 'paper-links', 'Paper: Link Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -35,18 +36,24 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
-    assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
+    if (jobId === 'paper-links') {
+      assert.match(job, /^    needs: paper-build$/m);
+    } else {
+      assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
+    }
 
     const condition = job.match(/^    if: (.+)$/m)?.[1];
     if (jobId === 'dependency-review') {
       assert.equal(condition, "github.event_name == 'pull_request'");
+    } else if (jobId === 'paper-links') {
+      assert.equal(condition, '${{ always() && !cancelled() }}');
     } else {
       assert.equal(condition, undefined, `${jobId} cannot be skipped by a job condition`);
     }
   }
 });
 
-test('all eight Common, Site, and Paper checks are required and performance has substantive evidence semantics', async () => {
+test('all nine current Common, Site, and Paper checks have substantive evidence semantics', async () => {
   const file = 'site-performance-integrity.yml';
   const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
   assert.ok(workflows.some(([requiredFile]) => requiredFile === file));
@@ -85,7 +92,8 @@ test('Paper Link Integrity tests and audits the same-cycle PDF without rebuildin
   assert.match(link, /--require-hashes --only-binary=:all: -r scripts\/paper-link\/requirements\.txt/);
   assert.match(link, /unittest discover -s tests -p test_paper_links\.py/);
   assert.match(link, /scripts\/check_paper_links\.py/);
-  assert.match(link, /3\) echo "status=uncertain"/);
+  assert.match(link, /3\) echo "status=advisory"/);
+  assert.match(link, /--json-report/);
   assert.match(link, /name: paper-link-report/);
   assert.doesNotMatch(link, /build-paper-pdf\.sh|build-pdf\.py/);
   assert.match(paper, /links: \$\{\{ needs\.paper-links\.outputs\.status \|\| 'incomplete' \}\}/);

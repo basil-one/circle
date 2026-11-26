@@ -1,4 +1,5 @@
 import importlib
+import json
 import sys
 import tempfile
 import unittest
@@ -301,7 +302,7 @@ class PaperLinkTests(unittest.TestCase):
             None,
         )
         with patch.object(links, "paper_expectations", return_value=expected):
-            report, state = links.audit(
+            report, state, findings = links.audit(
                 self.path,
                 Path("unused"),
                 checker=lambda url, timeout: ("likely broken", "HTTP 404"),
@@ -309,15 +310,75 @@ class PaperLinkTests(unittest.TestCase):
             self.assertEqual(state, "failed")
             self.assertIn("Page 1", report)
             self.assertIn("HTTP 404", report)
-            report, state = links.audit(
+            self.assertTrue(any("HTTP 404" in finding for finding in findings))
+            report, state, _ = links.audit(
                 self.path, Path("unused"), checker=lambda url, timeout: ("uncertain", "HTTP 403")
             )
-            self.assertEqual(state, "incomplete")
+            self.assertEqual(state, "advisory")
             self.assertIn("HTTP 403", report)
-            report, state = links.audit(
+            report, state, _ = links.audit(
                 self.path, Path("unused"), checker=lambda url, timeout: ("healthy", "HTTP 200")
             )
             self.assertEqual(state, "passed")
+
+    def test_confirmed_defect_takes_precedence_over_uncertainty_and_unavailable(self):
+        self.make_pdf(internal="missing")
+        expected = (
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {},
+            {"target"},
+            None,
+        )
+        with patch.object(links, "paper_expectations", return_value=expected):
+            for category in ("uncertain", "unavailable"):
+                with self.subTest(category=category):
+                    report, state, findings = links.audit(
+                        self.path, Path("unused"), checker=lambda url, timeout: (category, "test")
+                    )
+                    self.assertEqual(state, "failed")
+                    self.assertIn("named destination 'missing'", report)
+                    self.assertTrue(any(category in item for item in findings))
+
+    def test_external_failure_takes_precedence_over_uncertainty(self):
+        self.make_pdf()
+        expected = (
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {},
+            {"target"},
+            None,
+        )
+        inspected = (
+            [],
+            {
+                "https://example.com/a": {"Page 1"},
+                "https://example.com/b": {"Page 2"},
+            },
+            1,
+            1,
+            1,
+        )
+        with (
+            patch.object(links, "paper_expectations", return_value=expected),
+            patch.object(links, "inspect_pdf", return_value=inspected),
+        ):
+            _, state, findings = links.audit(
+                self.path,
+                Path("unused"),
+                checker=lambda url, timeout: (
+                    ("likely broken", "HTTP 404")
+                    if url.endswith("/a")
+                    else ("uncertain", "HTTP 403")
+                ),
+            )
+        self.assertEqual(state, "failed")
+        self.assertTrue(any("HTTP 404" in item and "Page 1" in item for item in findings))
+        self.assertTrue(any("HTTP 403" in item and "Page 2" in item for item in findings))
 
     def test_skipped_network_is_incomplete_not_passed(self):
         self.make_pdf()
@@ -334,7 +395,7 @@ class PaperLinkTests(unittest.TestCase):
                 None,
             ),
         ):
-            report, state = links.audit(self.path, Path("unused"), check_network=False)
+            report, state, _ = links.audit(self.path, Path("unused"), check_network=False)
         self.assertEqual(state, "incomplete")
         self.assertIn("network check not requested", report)
 
@@ -359,7 +420,9 @@ class PaperLinkTests(unittest.TestCase):
         argv = ["check_paper_links.py", str(self.path)]
         with (
             patch.object(sys, "argv", argv),
-            patch.object(links, "audit", return_value=("incomplete network\n", "incomplete")),
+            patch.object(
+                links, "audit", return_value=("advisory network\n", "advisory", ["HTTP 403"])
+            ),
         ):
             self.assertEqual(links.main(), 3)
         with (
@@ -367,6 +430,43 @@ class PaperLinkTests(unittest.TestCase):
             patch.object(links, "audit", side_effect=OSError("PDF unavailable")),
         ):
             self.assertEqual(links.main(), 2)
+
+    def test_cli_writes_structured_advisory_and_incomplete_evidence(self):
+        report_path = Path(self.directory.name) / "report.json"
+        argv = ["check_paper_links.py", str(self.path), "--json-report", str(report_path)]
+        for result, expected in (
+            (("summary\n", "advisory", ["Page 1: HTTP 403"]), 3),
+            (OSError("PDF unavailable"), 2),
+        ):
+            with self.subTest(expected=expected), patch.object(sys, "argv", argv):
+                if isinstance(result, Exception):
+                    with patch.object(links, "audit", side_effect=result):
+                        self.assertEqual(links.main(), expected)
+                else:
+                    with patch.object(links, "audit", return_value=result):
+                        self.assertEqual(links.main(), expected)
+                evidence = json.loads(report_path.read_text())
+                self.assertEqual(evidence["status"], "advisory" if expected == 3 else "incomplete")
+                self.assertTrue(evidence["findings"])
+
+    def test_checker_failure_does_not_hide_internal_defect(self):
+        self.make_pdf(internal="missing")
+        expected = (
+            "Contents",
+            {"target": "Target"},
+            {},
+            "https://circle.basil.one",
+            {},
+            {"target"},
+            None,
+        )
+        with patch.object(links, "paper_expectations", return_value=expected):
+            _, state, findings = links.audit(
+                self.path, Path("unused"), checker=lambda url, timeout: 1 / 0
+            )
+        self.assertEqual(state, "failed")
+        self.assertTrue(any("named destination 'missing'" in finding for finding in findings))
+        self.assertTrue(any("network checker failed" in finding for finding in findings))
 
 
 if __name__ == "__main__":

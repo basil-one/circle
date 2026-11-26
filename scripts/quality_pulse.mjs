@@ -590,9 +590,12 @@ function renderPulse({
   orchestrated = false
 }) {
   const needsReview = results.filter((item) => item.result.state !== 'fresh');
-  const aggregate = needsReview.length
+  const blocking = needsReview.filter((item) => item.result.state !== 'advisory');
+  const aggregate = needsReview.length && !blocking.length && orchestrated
+    ? `Cycle successful with ${needsReview.length} advisory dimension(s); not all dimensions passed.`
+    : needsReview.length
     ? orchestrated
-      ? `Cycle incomplete — ${needsReview.length} of ${results.length} dimensions are not confirmed successful.`
+      ? `Cycle ${blocking.some((item) => item.result.state === 'failed') ? 'failed' : 'incomplete'} — ${blocking.length} of ${results.length} dimensions are not confirmed successful.`
       : `Review required — ${needsReview.length} of ${results.length} dimensions are not freshly successful.`
     : orchestrated
       ? `All ${results.length} dimensions passed in this cycle.`
@@ -626,6 +629,8 @@ function renderPulse({
                 ? 'Confirm the skip is expected and arrange a full verification if not.'
               : state === 'incomplete'
                 ? 'Inspect the cancelled or incomplete job and rerun the cycle if appropriate.'
+              : state === 'advisory'
+                ? 'Retry or manually review the uncertain destinations.'
                 : 'Wait for completion or inspect the late run; rerun if it does not finish.';
       lines.push(`- **${item.name} — ${item.result.label}:** ${item.result.detail}${action ? ` ${action}` : ''}`);
     }
@@ -741,8 +746,12 @@ async function buildOrchestratedPulse({
   const linkResult = orchestratedJobResult(
     { links: { result: paperLinks } }, 'links', 'Paper: Link Integrity', run
   );
-  if (['incomplete', 'uncertain'].includes(paperLinks) || paperBuild !== 'success' ||
-      (paperLinksJob !== 'success' && paperLinks !== 'failure')) {
+  if (paperLinks === 'advisory' && paperBuild === 'success' && paperLinksJob === 'success') {
+    linkResult.result.state = 'advisory';
+    linkResult.result.label = 'Advisory / external uncertainty';
+    linkResult.result.detail = 'External destinations could not all be confirmed; retry inaccessible destinations or review them manually.';
+  } else if (paperLinks !== 'failure' && (paperLinks === 'incomplete' || paperBuild !== 'success' ||
+      paperLinksJob !== 'success')) {
     linkResult.result.state = 'incomplete';
     linkResult.result.label = 'Incomplete / link evidence';
     linkResult.result.detail = 'Link verification or the same-cycle PDF was unavailable; inspect the link job report, retry inaccessible destinations or review them manually.';
@@ -849,20 +858,31 @@ async function buildOrchestratedPulse({
     }
   }
 
-  if (paper.result.state !== 'fresh' && ['fresh', 'incomplete'].includes(linkResult.result.state)) {
+  if (paper.result.state !== 'fresh' && ['fresh', 'advisory', 'incomplete'].includes(linkResult.result.state)) {
     linkResult.result.state = 'incomplete';
     linkResult.result.label = 'Incomplete / PDF preview unavailable';
     linkResult.result.detail = 'The same-cycle PDF preview could not be verified; inspect the paper build and rerun.';
   }
 
-  if (paperBuild === 'success' && ['success', 'failure', 'uncertain', 'incomplete'].includes(paperLinks)) {
+  if (['success', 'failure', 'advisory', 'incomplete'].includes(paperLinks)) {
     try {
-      linkResult.result.artifactUrl = await fetchArtifactLink({
-        apiUrl, repository, runId, artifactName: 'paper-link-report', token, fetchImpl
+      const { data: report, artifact } = await fetchArtifactJson({
+        ...artifactOptions, artifactName: 'paper-link-report',
+        fileName: 'paper-link-report.json', includeMetadata: true
       });
-      linkResult.result.detail += ' Open the linked report for page-level destinations and next steps.';
+      const expected = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[paperLinks];
+      if (report?.status !== expected || !Array.isArray(report.findings) || report.findings.length > 500 ||
+          report.findings.some((finding) => typeof finding !== 'string' || finding.length > 2000) ||
+          (expected === 'passed' && report.findings.length !== 0) ||
+          (expected !== 'passed' && report.findings.length === 0)) {
+        throw new Error('link report is malformed or disagrees with the job');
+      }
+      linkResult.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+      if (report.findings.length) {
+        linkResult.result.detail += ` ${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. Open the linked report for all findings and next steps.`;
+      }
     } catch (error) {
-      if (linkResult.result.state === 'fresh') {
+      if (['fresh', 'advisory'].includes(linkResult.result.state)) {
         linkResult.result.state = 'unknown';
         linkResult.result.label = 'Unknown / link report unavailable';
       }
@@ -878,11 +898,7 @@ async function buildOrchestratedPulse({
   });
   return {
     markdown,
-    successful: results.every((item) =>
-      item.result.state === 'fresh' ||
-      (item === linkResult && paperLinks === 'uncertain' && paperLinksJob === 'success' &&
-        paper.result.state === 'fresh' && Boolean(item.result.artifactUrl))
-    )
+    successful: results.every((item) => ['fresh', 'advisory'].includes(item.result.state))
   };
 }
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import multiprocessing
 import queue
 import re
@@ -393,7 +394,7 @@ def bounded_external(url: str, timeout: float):
         try:
             result = results.get(timeout=1)
         except queue.Empty:
-            result = ("uncertain", "network checker produced no evidence")
+            result = ("unavailable", "network checker produced no evidence")
     results.close()
     results.join_thread()
     return result
@@ -411,14 +412,30 @@ def audit(path: Path, config: Path, check_network=True, checker=bounded_external
     for url in sorted(sources):
         remaining = deadline - time.monotonic()
         if not check_network:
-            results[url] = ("uncertain", "network check not requested")
+            results[url] = ("unavailable", "network check not requested")
         elif remaining <= 0:
-            results[url] = ("uncertain", "overall network time budget exhausted")
+            results[url] = ("unavailable", "overall network time budget exhausted before check")
         else:
-            results[url] = checker(url, min(20, remaining))
+            try:
+                results[url] = checker(url, min(20, remaining))
+            except Exception as error:
+                results[url] = ("unavailable", f"network checker failed: {error}")
     broken = [url for url, (category, _) in results.items() if category == "likely broken"]
     uncertain = [url for url, (category, _) in results.items() if category == "uncertain"]
-    state = "failed" if issues or broken else "incomplete" if uncertain else "passed"
+    unavailable = [
+        url
+        for url, (category, _) in results.items()
+        if category not in {"healthy", "likely broken", "uncertain"}
+    ]
+    state = (
+        "failed"
+        if issues or broken
+        else "incomplete"
+        if not check_network or unavailable
+        else "advisory"
+        if uncertain
+        else "passed"
+    )
     lines = [
         "# Paper: Link Integrity",
         "",
@@ -431,22 +448,26 @@ def audit(path: Path, config: Path, check_network=True, checker=bounded_external
         f"- Internal findings: {len(issues)}",
         f"- Likely broken external destinations: {len(broken)}",
         f"- Uncertain external destinations: {len(uncertain)}",
+        f"- Unavailable external checks: {len(unavailable)}",
         "- External URL fragments are not checked.",
         "",
     ]
-    lines.extend(f"- {issue}" for issue in issues)
+    findings = list(issues)
     for url, (category, detail) in results.items():
         if category != "healthy":
-            lines.append(f"- {category}: `{url}` ({', '.join(sorted(sources[url]))}) — {detail}")
+            findings.append(f"{category}: `{url}` ({', '.join(sorted(sources[url]))}) — {detail}")
+    if not check_network and not sources:
+        findings.append("External network verification was skipped.")
+    lines.extend(f"- {finding}" for finding in findings)
     if issues or broken:
         lines.append(
             "- Next step: inspect the cited PDF page and destination; correct the source or generation and rerun."
         )
-    if uncertain:
+    if uncertain or unavailable or not check_network:
         lines.append(
             "- Next step: retry from an unrestricted network or check the destinations manually; do not treat unavailable evidence as a pass."
         )
-    return "\n".join(lines) + "\n", state
+    return "\n".join(lines) + "\n", state, findings
 
 
 def main():
@@ -454,20 +475,32 @@ def main():
     parser.add_argument("pdf", type=Path)
     parser.add_argument("--config", type=Path, default=ROOT / "scripts/plop.paper.config.yaml")
     parser.add_argument("--report", type=Path)
+    parser.add_argument("--json-report", type=Path)
     parser.add_argument("--skip-external", action="store_true")
     args = parser.parse_args()
     try:
-        report, state = audit(args.pdf, args.config, not args.skip_external)
+        report, state, findings = audit(args.pdf, args.config, not args.skip_external)
     except Exception as error:
+        findings = [f"Audit unavailable: {error}; inspect the job and rerun."]
         report, state = (
-            f"# Paper: Link Integrity\n\n**Outcome: incomplete**\n\n- Audit unavailable: {error}\n",
+            f"# Paper: Link Integrity\n\n**Outcome: incomplete**\n\n- {findings[0]}\n",
             "incomplete",
         )
         exit_code = 2
     else:
-        exit_code = {"passed": 0, "failed": 1, "incomplete": 3}[state]
+        exit_code = {"passed": 0, "failed": 1, "incomplete": 2, "advisory": 3}[state]
     if args.report:
         args.report.write_text(report, encoding="utf-8")
+    if args.json_report:
+        bounded_findings = [item[:2000] for item in findings[:499]]
+        if len(findings) > 499:
+            bounded_findings.append(
+                "Additional findings omitted; see the full human-readable report."
+            )
+        args.json_report.write_text(
+            json.dumps({"status": state, "findings": bounded_findings}, ensure_ascii=False),
+            encoding="utf-8",
+        )
     print(report, end="")
     return exit_code
 

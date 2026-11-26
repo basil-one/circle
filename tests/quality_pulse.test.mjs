@@ -702,6 +702,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     capturedAt: `${date}T06:30:00.000Z`,
     source: { eventName: 'schedule', branch: 'main', runId }
   };
+  let linkReport = { status: 'passed', findings: [] };
   const fetchImpl = async (url) => {
     const parsed = new URL(url);
     if (parsed.pathname.endsWith('/actions/runs/888/artifacts')) {
@@ -727,6 +728,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     if (args.at(-1) === 'dependency-posture.json') {
       return JSON.stringify({ status: 'passed', detail: 'No open medium-or-higher alerts' });
     }
+    if (args.at(-1) === 'paper-link-report.json') return JSON.stringify(linkReport);
     throw new Error(`Unexpected artifact file: ${args.at(-1)}`);
   };
   const pulse = await buildOrchestratedPulse({
@@ -772,14 +774,17 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(manualPulse.markdown, /manually dispatched cycle/);
 
   performanceSummary.source.eventName = 'schedule';
-  needs.paper.outputs.links = 'uncertain';
+  needs.paper.outputs.links = 'advisory';
+  linkReport = { status: 'advisory', findings: ['Page 2: HTTP 403'] };
   const uncertain = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
   });
   assert.equal(uncertain.successful, true);
-  assert.match(uncertain.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
+  assert.match(uncertain.markdown, /\| Paper: Link Integrity \| Advisory \/ external uncertainty \|/);
   assert.match(uncertain.markdown, /retry inaccessible destinations or review them manually/);
+  assert.match(uncertain.markdown, /Cycle successful with 1 advisory/);
+  assert.match(uncertain.markdown, /Page 2: HTTP 403/);
   assert.match(uncertain.markdown, /actions\/runs\/888\/artifacts\/457/);
 
   const missingReport = await buildOrchestratedPulse({
@@ -792,7 +797,16 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(missingReport.successful, false);
   assert.match(missingReport.markdown, /Link report unavailable/);
 
+  linkReport = { status: 'passed', findings: ['contradiction'] };
+  const malformedReport = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
+    needs, runId, runUrl, date, fetchImpl, unzipImpl
+  });
+  assert.equal(malformedReport.successful, false);
+  assert.match(malformedReport.markdown, /link report is malformed or disagrees with the job/);
+
   needs.paper.outputs.links = 'success';
+  linkReport = { status: 'passed', findings: [] };
   needs.paper.outputs.links_job = 'failure';
   const failedJob = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
@@ -802,6 +816,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(failedJob.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
 
   needs.paper.outputs.links = 'failure';
+  linkReport = { status: 'failed', findings: ['Page 1: broken destination'] };
   const failed = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
@@ -809,8 +824,20 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(failed.successful, false);
   assert.match(failed.markdown, /\| Paper: Build Integrity \| Passed \|/);
   assert.match(failed.markdown, /\| Paper: Link Integrity \| Failed \|/);
+  assert.match(failed.markdown, /Cycle failed/);
+  const failedWithoutEvidence = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
+    needs, runId, runUrl, date, unzipImpl,
+    fetchImpl: async (url) => new URL(url).searchParams.get('name') === 'paper-link-report'
+      ? { ok: true, json: async () => ({ artifacts: [] }) }
+      : fetchImpl(url)
+  });
+  assert.equal(failedWithoutEvidence.successful, false);
+  assert.match(failedWithoutEvidence.markdown, /\| Paper: Link Integrity \| Failed \|/);
+  assert.match(failedWithoutEvidence.markdown, /Link report unavailable/);
 
   needs.paper.outputs.links = 'incomplete';
+  linkReport = { status: 'incomplete', findings: ['Audit unavailable'] };
   const incomplete = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
     needs, runId, runUrl, date, fetchImpl, unzipImpl
@@ -843,7 +870,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
     }
   });
   assert.equal(pulse.successful, false);
-  assert.match(pulse.markdown, /Cycle incomplete — 9 of 9 dimensions/);
+  assert.match(pulse.markdown, /Cycle failed — 9 of 9 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
