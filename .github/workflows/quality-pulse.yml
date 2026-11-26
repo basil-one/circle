@@ -65,9 +65,9 @@ jobs:
     permissions:
       contents: read
 
-  paper-link:
-    name: "Paper: Link Integrity"
-    uses: ./.github/workflows/paper-link-integrity.yml
+  paper-content:
+    name: "Paper: Content Integrity"
+    uses: ./.github/workflows/paper-content-integrity.yml
     permissions:
       contents: read
 
@@ -83,7 +83,7 @@ jobs:
       - rendering
       - performance
       - paper
-      - paper-link
+      - paper-content
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

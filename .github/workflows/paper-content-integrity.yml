@@ -1,0 +1,88 @@
+name: "Paper: Content Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      status:
+        description: Paper Content validator status
+        value: ${{ jobs.paper-content.outputs.status }}
+
+permissions:
+  contents: read
+
+jobs:
+  paper-content:
+    name: "Paper: Content Integrity"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      status: ${{ steps.content.outputs.status }}
+    steps:
+      - name: Checkout intended revision
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Build fresh PDF for content verification
+        id: build
+        run: bash scripts/build-paper-pdf.sh
+      - name: Check configured paper content
+        id: content
+        run: |
+          set +e
+          python3 scripts/check_paper_content.py scripts/plop.paper.config.yaml assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-content-report.json"
+          result=$?
+          set -e
+          case "$result" in
+            0) echo "status=success" >> "$GITHUB_OUTPUT" ;;
+            1) echo "status=failure" >> "$GITHUB_OUTPUT" ;;
+            *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
+          esac
+          exit "$result"
+      - name: Test content checks on generated PDF
+        id: tests
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        env:
+          PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
+        run: python3 -m unittest discover -s scripts -p 'test_paper_content.py' -v
+      - name: Upload content findings
+        id: upload
+        if: ${{ always() && (steps.content.outcome == 'success' || steps.content.outcome == 'failure') }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: paper-content-report
+          path: ${{ runner.temp }}/paper-content-report.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Summarize content verification
+        if: ${{ always() }}
+        env:
+          STATUS: ${{ steps.content.outputs.status }}
+          CONTENT_OUTCOME: ${{ steps.content.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
+        run: |
+          {
+            echo "## Paper: Content Integrity"
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`"
+            if [ -n "$STATUS" ]; then
+              echo "Validator status: **$STATUS**."
+            else
+              echo "Verification incomplete: checkout or PDF generation did not complete; inspect the job and rerun."
+            fi
+            echo "PDF build: **${BUILD_OUTCOME:-unavailable}**; validator step: **${CONTENT_OUTCOME:-unavailable}**; content tests: **${TEST_OUTCOME:-unavailable}**; report upload: **${UPLOAD_OUTCOME:-unavailable}**."
+            echo "Any failed or unavailable step requires inspection of its logs and a rerun."
+            if [ -n "$ARTIFACT_URL" ]; then
+              echo "[Download content findings]($ARTIFACT_URL)"
+            else
+              echo "Content report unavailable; inspect the job and rerun."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
