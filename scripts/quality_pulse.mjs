@@ -220,7 +220,7 @@ async function fetchRuns({ apiUrl, repository, workflow, token, date, fetchImpl 
   return data.workflow_runs;
 }
 
-async function fetchArtifactLink({
+async function fetchRunArtifact({
   apiUrl,
   repository,
   runId,
@@ -250,10 +250,14 @@ async function fetchArtifactLink({
   const artifact = data.artifacts.find(
     (item) => item.name === artifactName && !item.expired
   );
-  if (!artifact || !Number.isInteger(artifact.id)) {
-    throw new Error(`${artifactName} artifact is missing, expired, or invalid`);
-  }
-  return `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+  if (!artifact) throw new Error(`${artifactName} artifact is missing or expired`);
+  if (!Number.isInteger(artifact.id)) throw new Error(`${artifactName} artifact ID is invalid`);
+  return artifact;
+}
+
+async function fetchArtifactLink(options) {
+  const artifact = await fetchRunArtifact(options);
+  return `https://github.com/${options.repository}/actions/runs/${options.runId}/artifacts/${artifact.id}`;
 }
 
 async function fetchRunCompletion({ apiUrl, repository, runId, token, fetchImpl }) {
@@ -450,21 +454,14 @@ async function fetchArtifactJson({
     Authorization: ['Bearer', token].join(' '),
     'X-GitHub-Api-Version': '2022-11-28'
   };
-  const artifactsUrl = new URL(
-    `/repos/${repository}/actions/runs/${runId}/artifacts`,
-    apiUrl
-  );
-  artifactsUrl.search = new URLSearchParams({ name: artifactName, per_page: '100' });
-  const listResponse = await fetchImpl(artifactsUrl, {
-    headers,
-    signal: AbortSignal.timeout(15_000)
+  const artifact = await fetchRunArtifact({
+    apiUrl,
+    repository,
+    runId,
+    artifactName,
+    token,
+    fetchImpl
   });
-  if (!listResponse.ok) throw new Error(`Artifacts API returned HTTP ${listResponse.status}`);
-  const artifact = (await listResponse.json()).artifacts?.find(
-    (item) => item.name === artifactName && !item.expired
-  );
-  if (!artifact) throw new Error(`${artifactName} artifact is missing or expired`);
-  if (!Number.isInteger(artifact.id)) throw new Error(`${artifactName} artifact ID is invalid`);
   const downloadUrl = new URL(
     `/repos/${repository}/actions/artifacts/${artifact.id}/zip`,
     apiUrl

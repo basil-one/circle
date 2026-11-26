@@ -1,5 +1,7 @@
 import importlib.util
+import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -95,16 +97,53 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
 
     def test_failed_pdf_generation_is_not_reported_as_success(self):
         with tempfile.TemporaryDirectory() as directory:
-            self.builder.config["output"]["directory"] = directory
-            failure = subprocess.CompletedProcess(
-                ["pandoc"], 1, b"", b"deliberate generation failure"
-            )
-            with (
-                patch.object(self.builder, "_check_dependencies", return_value=True),
-                patch.object(BUILD_PDF.subprocess, "run", return_value=failure),
+            temporary = Path(directory)
+            fake_bin = temporary / "bin"
+            fake_bin.mkdir()
+            for command in ("pandoc", "xelatex"):
+                executable = fake_bin / command
+                output = (
+                    "printf '%s\\n' 'deliberate generation failure' >&2\n"
+                    if command == "pandoc"
+                    else ""
+                )
+                executable.write_text(
+                    f"#!/bin/sh\n{output}exit 1\n", encoding="utf-8"
+                )
+                executable.chmod(0o755)
+
+            output = temporary / "output"
+            for name, target in (
+                ("content", ROOT / "scripts/content"),
+                ("_moves", ROOT / "_moves"),
+                ("_lenses", ROOT / "_lenses"),
+                ("images", ROOT / "images"),
             ):
-                self.assertFalse(self.builder.build())
-            self.assertFalse((Path(directory) / "circle3-paper.pdf").exists())
+                (temporary / name).symlink_to(target, target_is_directory=True)
+            config = temporary / "paper.yaml"
+            config_text = (ROOT / "scripts/plop.paper.config.yaml").read_text()
+            config.write_text(
+                config_text.replace("directory: assets/pdfs", f"directory: {output}"),
+                encoding="utf-8",
+            )
+            (temporary / "template.tex").write_text(
+                (ROOT / "scripts/template.tex").read_text(), encoding="utf-8"
+            )
+            environment = os.environ.copy()
+            environment["PATH"] = f"{fake_bin}{os.pathsep}{environment['PATH']}"
+
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/build-pdf.py"), str(config)],
+                cwd=ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("deliberate generation failure", result.stderr)
+            self.assertFalse((output / "circle3-paper.pdf").exists())
 
     def test_template_places_only_configured_notice_in_existing_slot(self):
         template = (ROOT / "scripts/template.tex").read_text()

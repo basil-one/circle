@@ -33,6 +33,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          cp scripts/build-paper-pdf.sh "$RUNNER_TEMP/build-paper-pdf.sh"
           test "$GITHUB_REF" = "refs/heads/main" || {
             echo "::error::Paper: Publish can only run from main."
             exit 1
@@ -62,29 +63,12 @@ jobs:
             echo "mode=new" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install PDF build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            pandoc \
-            texlive-xetex \
-            texlive-latex-recommended \
-            texlive-latex-extra \
-            texlive-fonts-recommended \
-            fontconfig \
-            fonts-noto-core \
-            fonts-noto-ui-core \
-            poppler-utils
-          fc-cache -f -v
-
       - name: Build and validate paper PDF
         env:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
-          test -s assets/pdfs/circle3-paper.pdf
-          pdfinfo -isodates assets/pdfs/circle3-paper.pdf >/dev/null
+          bash "$RUNNER_TEMP/build-paper-pdf.sh"
           python3 scripts/paper_release.py notes \
             --version "$VERSION" \
             --output /tmp/release-notes.md

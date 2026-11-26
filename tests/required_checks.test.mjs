@@ -72,8 +72,6 @@ test('all eight Common, Site, and Paper checks are required and performance has 
 
   const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
   assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
-  assert.match(paper, /rm -f assets\/pdfs\/circle3-paper\.pdf/);
-  assert.match(paper, /test -s assets\/pdfs\/circle3-paper\.pdf/);
-  assert.match(paper, /pdfinfo -isodates assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
 });
