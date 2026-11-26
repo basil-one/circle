@@ -66,6 +66,33 @@ class PaperContentTests(unittest.TestCase):
             )
         self.assertTrue(any("does not match" in error for error in errors))
 
+    def test_matched_marker_lost_during_conversion_is_incomplete(self):
+        self.builder.config["citations"] = [{"text": "source", "annotation": "[9]"}]
+        rule = self.builder._get_citation_annotations()[0]
+        incomplete = []
+        with patch.object(content, "plain_text", return_value="source"):
+            errors = content.check_citation(
+                self.builder,
+                0,
+                rule,
+                [("p", "a", "source")],
+                {"a": (1, 1, "source")},
+                {"1": "reference"},
+                incomplete,
+            )
+        self.assertIn("no numbered References entry", errors[0])
+        self.assertIn("lost during text conversion", incomplete[0])
+
+    def test_unsupported_numeric_references_are_explicit(self):
+        for back in ("# Other\n\n[1] Entry", "# References\n\n[1] Entry"):
+            with self.subTest(back=back), self.assertRaisesRegex(ValueError, "References"):
+                content.reference_entries(back)
+
+    def test_same_page_boundaries_remain_inclusive(self):
+        blocks = [("one", "a", ""), ("two", "b", "")]
+        scopes = content.block_text(blocks, ["shared", "next"], {"a": 1, "b": 1})
+        self.assertEqual(scopes["a"][2], "shared")
+
     def test_subprocess_timeout_is_bounded(self):
         with patch.object(
             content.subprocess, "run", side_effect=subprocess.TimeoutExpired("x", 60)
@@ -86,6 +113,26 @@ class PaperContentTests(unittest.TestCase):
                 ):
                     self.assertEqual(content.main(), 2)
                 self.assertEqual(json.loads(Path(report).read_text())["status"], "incomplete")
+
+    def test_confirmed_failure_retains_incomplete_findings(self):
+        def result(_builder, _text, _destinations, incomplete):
+            incomplete.append("citation conversion unavailable")
+            return ["discussion fragment missing"]
+
+        with tempfile.TemporaryDirectory() as directory:
+            report = str(Path(directory) / "report.json")
+            with (
+                patch.object(content.sys, "argv", ["check", "config", "pdf", "--report", report]),
+                patch.object(content.BUILD_PDF, "CirclePDFBuilder"),
+                patch.object(content, "run_tool", return_value=""),
+                patch.object(content, "check_content", side_effect=result),
+            ):
+                self.assertEqual(content.main(), 1)
+            data = json.loads(Path(report).read_text())
+            self.assertEqual(data["status"], "failed")
+            self.assertEqual(
+                data["findings"], ["discussion fragment missing", "citation conversion unavailable"]
+            )
 
     def test_builder_normalizes_abstract_and_reserves_collisions(self):
         self.builder.config["framing"]["abstract_anchor"] = "Abstract heading!"

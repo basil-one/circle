@@ -10,7 +10,8 @@ const workflows = [
   ['site-seo-integrity.yml', 'seo', 'Site: SEO Integrity'],
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
-  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity']
+  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
+  ['paper-build-integrity.yml', 'paper-content', 'Paper: Content Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -35,18 +36,26 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
-    assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
+    if (jobId === 'paper-content') {
+      assert.match(job, /^    needs: paper-build$/m);
+      assert.match(job, /python3 scripts\/check_paper_content\.py/);
+    } else {
+      assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
+    }
 
     const condition = job.match(/^    if: (.+)$/m)?.[1];
     if (jobId === 'dependency-review') {
       assert.equal(condition, "github.event_name == 'pull_request'");
+    } else if (jobId === 'paper-content') {
+      assert.equal(condition, '${{ always() && !cancelled() }}');
     } else {
       assert.equal(condition, undefined, `${jobId} cannot be skipped by a job condition`);
     }
   }
 });
 
-test('all eight Common, Site, and Paper checks are required and performance has substantive evidence semantics', async () => {
+test('all nine current Common, Site, and Paper checks have substantive evidence semantics', async () => {
+  assert.equal(workflows.length, 9);
   const file = 'site-performance-integrity.yml';
   const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
   assert.ok(workflows.some(([requiredFile]) => requiredFile === file));
@@ -82,4 +91,12 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(paper, /content_job: \$\{\{ needs\.paper-content\.result \}\}/);
   assert.match(paper, /PAPER_PDF_PATH: assets\/pdfs\/circle3-paper\.pdf/);
   assert.match(paper, /name: paper-content-report/);
+});
+
+test('manual paper preview only builds and uploads the shared PDF', async () => {
+  const yaml = await readFile(new URL('../.github/workflows/paper-preview.yml', import.meta.url), 'utf8');
+  assert.match(yaml, /run: bash scripts\/build-paper-pdf\.sh/);
+  assert.match(yaml, /name: circle3-paper-preview/);
+  assert.match(yaml, /actions\/upload-artifact@v6/);
+  assert.doesNotMatch(yaml, /paper-build-integrity\.yml|check_paper_content|quality-pulse/);
 });

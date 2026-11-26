@@ -123,15 +123,23 @@ def source_errors(blocks, scopes):
 def reference_entries(back):
     section = re.search(r"(?ms)^#{1,6}\s+References\s*$\n(.*?)(?=^#{1,6}\s|\Z)", back)
     if not section:
-        return {}
-    return dict(re.findall(r"(?m)^\s*(\d+)\.\s+(.+)$", section.group(1)))
+        raise ValueError("Numeric citations require a References heading and numbered list")
+    entries = re.findall(r"(?m)^\s*(\d+)\.\s+(.+)$", section.group(1))
+    if not entries or len(entries) != len(dict(entries)):
+        raise ValueError("Unsupported References format: expected unique '1. entry' lines")
+    return dict(entries)
 
 
-def citation_errors(builder, sections, scopes, back):
+def citation_errors(builder, sections, scopes, back, incomplete):
     errors = []
     original = builder.config.get("citations")
     rules = builder._get_citation_annotations()
-    references = reference_entries(back)
+    references = {}
+    if any(re.fullmatch(r"\[\d+\]", rule["annotation"]) for rule in rules):
+        try:
+            references = reference_entries(back)
+        except ValueError as error:
+            incomplete.append(str(error))
     try:
         builder.config["citations"] = []
         patterns = [
@@ -145,7 +153,12 @@ def citation_errors(builder, sections, scopes, back):
         ]
         for index, rule in enumerate(rules):
             builder.config["citations"] = [original[index]]
-            errors.extend(check_citation(builder, index, rule, patterns, scopes, references))
+            try:
+                errors.extend(
+                    check_citation(builder, index, rule, patterns, scopes, references, incomplete)
+                )
+            except (OSError, ValueError, subprocess.SubprocessError) as error:
+                incomplete.append(f"citations[{index}]: verification unavailable: {error}")
     finally:
         if original is None:
             builder.config.pop("citations", None)
@@ -154,7 +167,9 @@ def citation_errors(builder, sections, scopes, back):
     return errors
 
 
-def check_citation(builder, index, rule, patterns, scopes, references):
+def check_citation(builder, index, rule, patterns, scopes, references, incomplete=None):
+    if incomplete is None:
+        incomplete = []
     errors = []
     matched = False
     annotation = rule["annotation"]
@@ -166,8 +181,19 @@ def check_citation(builder, index, rule, patterns, scopes, references):
         if annotated == body:
             continue
         matched = True
-        rendered = plain_text(annotated)
-        for match in re.finditer(re.escape(annotation), rendered):
+        try:
+            rendered = plain_text(annotated)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            incomplete.append(f"citations[{index}] in {label}: conversion unavailable: {error}")
+            continue
+        matches = list(re.finditer(re.escape(annotation), rendered))
+        if not matches:
+            incomplete.append(
+                f"citations[{index}] in {label}: marker {annotation} was lost during text "
+                "conversion; inspect citation syntax"
+            )
+            continue
+        for match in matches:
             before = re.findall(r"\w+", rendered[max(0, match.start() - 150) : match.start()])
             context = " ".join(before[-6:])
             start, end, pdf_text = scopes[anchor]
@@ -183,16 +209,25 @@ def check_citation(builder, index, rule, patterns, scopes, references):
     return errors
 
 
-def check_content(builder, pdf_text, destinations):
+def check_content(builder, pdf_text, destinations, incomplete=None):
+    if incomplete is None:
+        incomplete = []
     blocks, sections, back = plan(builder)
     pages = pdf_text.split("\f")
     if pages[-1] == "":
         pages.pop()
     scopes = block_text(blocks, pages, destinations)
     errors = source_errors(blocks, scopes)
-    errors.extend(citation_errors(builder, sections, scopes, back))
+    errors.extend(citation_errors(builder, sections, scopes, back, incomplete))
     back_anchor = next((anchor for label, anchor, _ in blocks if label == "back matter"), None)
-    if back_anchor:
+    if (
+        back_anchor
+        and not incomplete
+        and any(
+            re.fullmatch(r"\[\d+\]", rule["annotation"])
+            for rule in builder._get_citation_annotations()
+        )
+    ):
         for number, entry in reference_entries(back).items():
             pdf_reference = re.search(rf"(?m)^\s*{re.escape(number)}\.\s+", scopes[back_anchor][2])
             following = scopes[back_anchor][2][pdf_reference.end() :] if pdf_reference else ""
@@ -210,6 +245,7 @@ def main():
     parser.add_argument("--report")
     args = parser.parse_args()
     status = "passed"
+    incomplete = []
     try:
         builder = BUILD_PDF.CirclePDFBuilder(args.config)
         text = run_tool(["pdftotext", "-layout", args.pdf, "-"])
@@ -218,7 +254,7 @@ def main():
             name: int(page)
             for page, name in re.findall(r'(?m)^\s*(\d+)\s+\[.*?\]\s+"([^"]+)"\s*$', dests)
         }
-        errors = check_content(builder, text, destinations)
+        errors = check_content(builder, text, destinations, incomplete)
     except (
         OSError,
         ValueError,
@@ -229,6 +265,10 @@ def main():
     ) as error:
         status = "incomplete"
         errors = [f"Extraction or configuration unavailable: {error}; inspect logs and rerun"]
+    if incomplete:
+        if not errors:
+            status = "incomplete"
+        errors.extend(incomplete)
     if errors:
         if status != "incomplete":
             status = "failed"
@@ -243,8 +283,12 @@ def main():
             "Reference numbering is checked only for numeric markers and a numbered References list."
         )
     if args.report:
+        findings = [error[:2000] for error in errors[:99]]
+        if len(errors) > 99:
+            findings.append(f"{len(errors) - 99} additional findings; inspect the job log")
         Path(args.report).write_text(
-            json.dumps({"status": status, "findings": errors}, ensure_ascii=False), encoding="utf-8"
+            json.dumps({"status": status, "findings": findings}, ensure_ascii=False),
+            encoding="utf-8",
         )
     return {"passed": 0, "failed": 1, "incomplete": 2}[status]
 

@@ -9,14 +9,15 @@ import {
 } from './site_performance_policy.mjs';
 
 const dimensions = [
-  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml' },
-  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml' },
-  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml' },
-  { name: 'Common: Code Quality', file: 'common-code-quality.yml' },
-  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml' },
-  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml' },
-  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml' },
-  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml' }
+  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build' },
+  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'link' },
+  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml', job: 'seo' },
+  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'code-quality' },
+  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'dependency-security' },
+  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'rendering' },
+  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper', output: 'build' },
+  { name: 'Paper: Content Integrity', file: 'paper-build-integrity.yml', job: 'paper', output: 'content' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -589,11 +590,15 @@ function renderPulse({
   cutoff = cutoffTime,
   orchestrated = false
 }) {
-  const needsReview = results.filter((item) => item.result.state !== 'fresh');
+  const needsReview = results.filter((item) => !['fresh', 'advisory'].includes(item.result.state));
+  const advisories = results.filter((item) => item.result.state === 'advisory');
+  const findings = [...needsReview, ...advisories];
   const aggregate = needsReview.length
     ? orchestrated
       ? `Cycle incomplete — ${needsReview.length} of ${results.length} dimensions are not confirmed successful.`
       : `Review required — ${needsReview.length} of ${results.length} dimensions are not freshly successful.`
+    : orchestrated && advisories.length
+      ? `Cycle successful with advisories — ${advisories.length} of ${results.length} dimensions require attention.`
     : orchestrated
       ? `All ${results.length} dimensions passed in this cycle.`
       : `All ${results.length} dimensions have fresh successful scheduled checks.`;
@@ -609,10 +614,12 @@ function renderPulse({
     '## Findings',
     ''
   ];
-  if (needsReview.length) {
-    for (const item of needsReview) {
+  if (findings.length) {
+    for (const item of findings) {
       const state = item.result.state;
-      const action = state === 'failed'
+      const action = state === 'advisory'
+        ? 'Review the reported external uncertainty.'
+        : state === 'failed'
         ? item.name === 'Site: Performance Integrity' && item.result.run?.cycle
           ? ''
           : 'Open the run and address the reported failure.'
@@ -700,11 +707,15 @@ function orchestratedJobResult(needs, jobId, name, run) {
   };
 }
 
-function paperContentResult(build, job, status, run) {
+function paperValidatorResult(name, build, job, status, run) {
   const result = orchestratedJobResult(
-    { content: { result: status } }, 'content', 'Paper: Content Integrity', run
+    { validator: { result: status } }, 'validator', name, run
   );
-  if (build !== 'success') {
+  if (status === 'failure' && ['failure', 'cancelled'].includes(job)) {
+    result.result.state = 'failed';
+    result.result.label = 'Failed';
+    result.result.detail = 'Confirmed findings require correction; inspect the report and rerun.';
+  } else if (build !== 'success') {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / build unavailable';
     result.result.detail = 'The same-cycle paper build did not establish a successful PDF; content verification cannot pass.';
@@ -712,10 +723,10 @@ function paperContentResult(build, job, status, run) {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / cancelled';
     result.result.detail = 'Content job was cancelled; rerun the paper workflow.';
-  } else if (job === 'failure' && status === 'failure') {
-    result.result.state = 'failed';
-    result.result.label = 'Failed';
-    result.result.detail = 'Content findings require correction; inspect the content report and regenerate the PDF.';
+  } else if (job === 'success' && status === 'advisory') {
+    result.result.state = 'advisory';
+    result.result.label = 'Advisory';
+    result.result.detail = 'Verification completed with external uncertainty; review the findings.';
   } else if (job === 'failure' && ['success', 'incomplete', '', undefined].includes(status)) {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / content verification';
@@ -726,6 +737,37 @@ function paperContentResult(build, job, status, run) {
     result.result.detail = 'Content job and validator outcomes are missing or inconsistent; inspect the job and rerun.';
   }
   return result;
+}
+
+function validPaperReport(report, expectedStatus) {
+  return report?.status === expectedStatus &&
+    Array.isArray(report.findings) && report.findings.length <= 100 &&
+    report.findings.every((finding) => typeof finding === 'string' && finding.length > 0 && finding.length <= 2000) &&
+    (expectedStatus === 'passed' ? report.findings.length === 0 : report.findings.length > 0);
+}
+
+async function applyPaperReport(item, status, artifactOptions, repository, runId, artifactName) {
+  const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
+  if (!expectedStatus) return;
+  try {
+    const { data: report, artifact } = await fetchArtifactJson({
+      ...artifactOptions,
+      artifactName,
+      fileName: `${artifactName}.json`,
+      includeMetadata: true
+    });
+    if (!validPaperReport(report, expectedStatus)) throw new Error('report is malformed or disagrees with the validator');
+    item.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+    if (report.findings.length) {
+      item.result.detail += ` ${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. See the report for all findings.`;
+    }
+  } catch (error) {
+    if (['fresh', 'advisory'].includes(item.result.state)) {
+      item.result.state = 'unknown';
+      item.result.label = 'Unknown / content evidence unavailable';
+    }
+    item.result.detail += ` ${artifactName} unavailable or invalid (${error.message}); inspect the job and rerun.`;
+  }
 }
 
 async function buildOrchestratedPulse({
@@ -747,34 +789,29 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const jobMap = [
-    ['site-build', 'Site: Build Integrity'],
-    ['link', 'Site: Link Integrity'],
-    ['seo', 'Site: SEO Integrity'],
-    ['code-quality', 'Common: Code Quality'],
-    ['dependency-security', 'Common: Dependency Security'],
-    ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity']
-  ];
-  const results = jobMap.map(([jobId, name]) =>
-    orchestratedJobResult(needs, jobId, name, run)
+  const results = dimensions.filter((dimension) => dimension.job !== 'paper').map(({ job, name }) =>
+    orchestratedJobResult(needs, job, name, run)
   );
   const paperNeeds = needs?.paper;
   const paperOutputs = paperNeeds?.outputs;
   const paperBuild = paperOutputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
   const paperContent = paperOutputs?.content;
   results.push(orchestratedJobResult(
-    { build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run
+    { build: { result: paperBuild } }, 'build', dimensions.find(({ output }) => output === 'build').name, run
   ));
-  const content = paperContentResult(paperBuild, paperOutputs?.content_job, paperContent, run);
+  const content = paperValidatorResult(dimensions.find(({ output }) => output === 'content').name, paperBuild, paperOutputs?.content_job, paperContent, run);
   if (paperNeeds?.result === 'cancelled') {
     for (const item of [results[results.length - 1], content]) {
-      item.result.state = 'incomplete';
-      item.result.label = 'Incomplete / cancelled';
-      item.result.detail = 'The reusable paper workflow was cancelled; rerun the cycle.';
+      if (item.result.state !== 'failed') {
+        item.result.state = 'incomplete';
+        item.result.label = 'Incomplete / cancelled';
+        item.result.detail = 'The reusable paper workflow was cancelled; rerun the cycle.';
+      } else {
+        item.result.detail += ' The reusable workflow was also cancelled.';
+      }
     }
   } else if (paperNeeds?.result !== 'success' && paperBuild === 'success' &&
-             paperOutputs?.content_job === 'success' && paperContent === 'success') {
+             paperOutputs?.content_job === 'success' && ['success', 'advisory'].includes(paperContent)) {
     content.result.state = 'unknown';
     content.result.label = 'Unknown outcome';
     content.result.detail = 'The reusable workflow outcome disagrees with its successful job outputs; inspect and rerun.';
@@ -880,37 +917,13 @@ async function buildOrchestratedPulse({
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
   }
-  if (paper.result.state !== 'fresh' && content.result.state === 'fresh') {
+  if (paper.result.state !== 'fresh' && ['fresh', 'advisory'].includes(content.result.state)) {
     content.result.state = 'unknown';
     content.result.label = 'Unknown / PDF preview unavailable';
     content.result.detail = 'Same-cycle PDF evidence is unavailable; content verification cannot be established.';
   }
-  if (['fresh', 'failed'].includes(content.result.state)) {
-    try {
-      const { data: report, artifact } = await fetchArtifactJson({
-        ...artifactOptions,
-        artifactName: 'paper-content-report',
-        fileName: 'paper-content-report.json',
-        includeMetadata: true
-      });
-      const expectedStatus = content.result.state === 'fresh' ? 'passed' : 'failed';
-      if (report?.status !== expectedStatus || !Array.isArray(report.findings) ||
-          report.findings.some((finding) => typeof finding !== 'string' || finding.length > 2000) ||
-          (expectedStatus === 'passed' && report.findings.length !== 0) ||
-          (expectedStatus === 'failed' && report.findings.length === 0)) {
-        throw new Error('content report is malformed or disagrees with the job');
-      }
-      content.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
-      if (expectedStatus === 'failed') {
-        content.result.detail = `${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n]/g, ' ')).join('; ')}. See the report for all findings.`;
-      }
-    } catch (error) {
-      if (content.result.state === 'fresh') {
-        content.result.state = 'unknown';
-        content.result.label = 'Unknown / content evidence unavailable';
-      }
-      content.result.detail += ` Content report unavailable or invalid (${error.message}); inspect the job and rerun.`;
-    }
+  if (['fresh', 'failed', 'incomplete', 'advisory'].includes(content.result.state)) {
+    await applyPaperReport(content, paperContent, artifactOptions, repository, runId, 'paper-content-report');
   }
 
   const markdown = renderPulse({
@@ -921,7 +934,7 @@ async function buildOrchestratedPulse({
   });
   return {
     markdown,
-    successful: results.every((item) => item.result.state === 'fresh')
+    successful: results.every((item) => ['fresh', 'advisory'].includes(item.result.state))
   };
 }
 
@@ -935,7 +948,7 @@ async function buildPulse({
   unzipImpl = execFileSync
 }) {
   const results = await Promise.all(
-    dimensions.map(async (dimension) => {
+    dimensions.filter((dimension) => dimension.output !== 'content').map(async (dimension) => {
       try {
         const runs = await fetchRuns({
           apiUrl,
@@ -1108,6 +1121,8 @@ export {
   formatTrendDelta,
   homepageTrendRows,
   isPerformanceComparison,
+  paperValidatorResult,
+  validPaperReport,
   renderPerformanceTrends,
   renderPulse
 };
