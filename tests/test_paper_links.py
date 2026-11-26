@@ -468,6 +468,22 @@ class PaperLinkTests(unittest.TestCase):
         self.assertTrue(any("named destination 'missing'" in finding for finding in findings))
         self.assertTrue(any("network checker failed" in finding for finding in findings))
 
+    def test_json_findings_are_bounded(self):
+        report_path = Path(self.directory.name) / "report.json"
+        with (
+            patch.object(
+                sys,
+                "argv",
+                ["check_paper_links.py", str(self.path), "--json-report", str(report_path)],
+            ),
+            patch.object(links, "audit", return_value=("report\n", "failed", ["x" * 3000] * 101)),
+        ):
+            self.assertEqual(links.main(), 1)
+        findings = json.loads(report_path.read_text())["findings"]
+        self.assertEqual(len(findings), 100)
+        self.assertTrue(all(0 < len(item) <= 2000 for item in findings))
+        self.assertIn("omitted", findings[-1])
+
 
 if __name__ == "__main__":
     unittest.main()

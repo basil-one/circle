@@ -114,7 +114,7 @@ jobs:
           path: |
             ${{ runner.temp }}/paper-link-report.md
             ${{ runner.temp }}/paper-link-report.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
       - name: Summarize link integrity
         if: always()
