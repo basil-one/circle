@@ -18,11 +18,14 @@ jobs:
       - name: Checkout intended revision
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
 
-      - name: Test paper configuration and release logic
-        run: python3 -m unittest discover -s scripts -p 'test_paper_*.py' -v
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Test paper configuration
+        run: python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v
 
       - name: Build and verify fresh author-edition PDF
         run: bash scripts/build-paper-pdf.sh
@@ -39,12 +42,12 @@ jobs:
       - name: Link preview from workflow summary
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
         run: |
           {
             echo "## Circle3 Paper: Preview"
             echo
-            echo "Built from proposed revision \`$SOURCE_SHA\`."
+            echo "Built from checked-out revision \`$SOURCE_SHA\`."
             echo
             echo "[Download the preview PDF]($ARTIFACT_URL)"
           } >> "$GITHUB_STEP_SUMMARY"

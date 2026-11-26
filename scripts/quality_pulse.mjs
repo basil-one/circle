@@ -590,11 +590,15 @@ function renderPulse({
   cutoff = cutoffTime,
   orchestrated = false
 }) {
-  const needsReview = results.filter((item) => item.result.state !== 'fresh');
+  const needsReview = results.filter((item) => !['fresh', 'advisory'].includes(item.result.state));
+  const advisories = results.filter((item) => item.result.state === 'advisory');
+  const findings = [...needsReview, ...advisories];
   const aggregate = needsReview.length
     ? orchestrated
       ? `Cycle incomplete — ${needsReview.length} of ${results.length} dimensions are not confirmed successful.`
       : `Review required — ${needsReview.length} of ${results.length} dimensions are not freshly successful.`
+    : orchestrated && advisories.length
+      ? `Cycle successful with advisories — ${advisories.length} of ${results.length} dimensions require attention.`
     : orchestrated
       ? `All ${results.length} dimensions passed in this cycle.`
       : `All ${results.length} dimensions have fresh successful scheduled checks.`;
@@ -610,10 +614,12 @@ function renderPulse({
     '## Findings',
     ''
   ];
-  if (needsReview.length) {
-    for (const item of needsReview) {
+  if (findings.length) {
+    for (const item of findings) {
       const state = item.result.state;
-      const action = state === 'failed'
+      const action = state === 'advisory'
+        ? 'Review the reported external uncertainty.'
+        : state === 'failed'
         ? item.name === 'Site: Performance Integrity' && item.result.run?.cycle
           ? ''
           : 'Open the run and address the reported failure.'
@@ -907,7 +913,7 @@ async function buildOrchestratedPulse({
   });
   return {
     markdown,
-    successful: results.every((item) => item.result.state === 'fresh')
+    successful: results.every((item) => ['fresh', 'advisory'].includes(item.result.state))
   };
 }
 

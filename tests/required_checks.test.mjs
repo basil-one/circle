@@ -72,12 +72,21 @@ test('all nine Common, Site, and Paper checks are required and performance has s
   assert.match(summary, /performanceMeasurementExitCode/);
 
   const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
-  assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
+  assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_config\.py' -v/);
+  assert.doesNotMatch(paper, /test_paper_(rendering|release)\.py|test_paper_\*\.py/);
+  const common = await readFile(new URL('../.github/workflows/common-code-quality.yml', import.meta.url), 'utf8');
+  assert.match(common, /python3 -m unittest discover -s scripts -p 'test_paper_release\.py' -v/);
   assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
+  assert.doesNotMatch(paper, /ref:|pull_request\.head\.sha/);
+  assert.match(paper, /sha=\$\(git rev-parse HEAD\)/);
+  assert.match(paper, /SOURCE_SHA: \$\{\{ steps\.revision\.outputs\.sha \}\}/);
   assert.doesNotMatch(paper, /paper-rendering|paper-results/);
   const rendering = await readFile(new URL('../.github/workflows/paper-rendering-integrity.yml', import.meta.url), 'utf8');
-  assert.match(rendering, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.doesNotMatch(rendering, /ref:|pull_request\.head\.sha/);
+  assert.match(rendering, /sha=\$\(git rev-parse HEAD\)/);
+  assert.match(rendering, /SOURCE_SHA: \$\{\{ steps\.revision\.outputs\.sha \}\}/);
+  assert.match(rendering, /Checked-out revision: \$\{SOURCE_SHA:-unavailable\}/);
   assert.match(rendering, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(rendering, /command -v pdfinfo\n          command -v pdftoppm\n          python3 -m unittest discover -s scripts -p 'test_paper_rendering\.py' -v/);
   assert.match(rendering, /python3 scripts\/check_paper_rendering\.py assets\/pdfs\/circle3-paper\.pdf --report/);

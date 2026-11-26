@@ -250,6 +250,20 @@ test('partial pulse highlights missing coverage and exact run evidence', () => {
   assert.match(summary, /late or missing runs are not replaced with prior green results/);
 });
 
+test('Pulse distinguishes advisory-only cycles from both passes and incomplete cycles', () => {
+  const results = [
+    { name: 'Paper: Link Integrity', result: { state: 'advisory', label: 'Advisory', detail: 'External URL uncertain.' } },
+    { name: 'Paper: Rendering Integrity', result: { state: 'fresh', label: 'Passed', detail: 'Rendered.' } }
+  ];
+  const summarize = () => renderPulse({ date, generatedAt: `${date}T10:17:00Z`, results, orchestrated: true });
+  assert.match(summarize(), /Cycle successful with advisories — 1 of 2 dimensions/);
+  assert.match(summarize(), /Review the reported external uncertainty/);
+  assert.doesNotMatch(summarize(), /All 2 dimensions passed/);
+  results[1].result = { state: 'incomplete', label: 'Incomplete', detail: 'Missing evidence.' };
+  assert.match(summarize(), /Cycle incomplete — 1 of 2 dimensions/);
+  assert.match(summarize(), /External URL uncertain/);
+});
+
 test('permission-denied Actions API is reported as unknown, not passed', async () => {
   const markdown = await buildPulse({
     apiUrl: 'https://api.github.com',
