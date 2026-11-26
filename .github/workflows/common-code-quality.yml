@@ -64,6 +64,8 @@ jobs:
         run: npm run test:required-checks
       - name: Test generated-site route discovery
         run: npm run test:site-routes
+      - name: Test rendering summary and coverage
+        run: npm run test:rendering-summary
       - name: Super-Linter
         id: super_linter
         uses: super-linter/super-linter/slim@v9.0.0
