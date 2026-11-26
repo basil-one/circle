@@ -39,8 +39,43 @@ def evidence(markdown):
     return compact(" ".join(fallback[:12]))
 
 
-def check_content(builder, pdf_text, destinations):
+def citation_errors(builder, sections):
     errors = []
+    config = builder.config
+    rules = builder._get_citation_annotations()
+    original = config.get("citations")
+    try:
+        config["citations"] = []
+        bodies = [
+            builder._read_and_clean_pattern(pattern["file"])[1]
+            for section in sections for pattern in section["patterns"]
+        ]
+        for index, rule in enumerate(rules):
+            config["citations"] = [original[index]]
+            if not any(builder._apply_citation_annotations(body) != body for body in bodies):
+                errors.append(f"citations[{index}]: configured target does not match any pattern body")
+    finally:
+        if original is None:
+            config.pop("citations", None)
+        else:
+            config["citations"] = original
+    return errors
+
+
+def output_errors(expected, anchors, pdf_text, destinations):
+    errors = []
+    for label, value in anchors:
+        if value not in destinations:
+            errors.append(f"{label}: PDF destination '{value}' is missing")
+    output = compact(pdf_text)
+    for label, markdown in expected:
+        fragment = evidence(markdown)
+        if fragment and fragment not in output:
+            errors.append(f"{label}: configured source text evidence is missing from PDF")
+    return errors
+
+
+def check_content(builder, pdf_text, destinations):
     config = builder.config
     expected = []
     anchors = []
@@ -79,33 +114,8 @@ def check_content(builder, pdf_text, destinations):
         anchor("back matter", back_anchor)
         expected.append(("back matter", back))
 
-    for label, value in anchors:
-        if value not in destinations:
-            errors.append(f"{label}: PDF destination '{value}' is missing")
-
-    output = compact(pdf_text)
-    for label, markdown in expected:
-        fragment = evidence(markdown)
-        if fragment and fragment not in output:
-            errors.append(f"{label}: configured source text evidence is missing from PDF")
-
-    rules = builder._get_citation_annotations()
-    original = config.get("citations")
-    try:
-        config["citations"] = []
-        bodies = [
-            builder._read_and_clean_pattern(pattern["file"])[1]
-            for section in sections for pattern in section["patterns"]
-        ]
-        for index, rule in enumerate(rules):
-            config["citations"] = [original[index]]
-            if not any(builder._apply_citation_annotations(body) != body for body in bodies):
-                errors.append(f"citations[{index}]: configured target does not match any pattern body")
-    finally:
-        if original is None:
-            config.pop("citations", None)
-        else:
-            config["citations"] = original
+    errors = output_errors(expected, anchors, pdf_text, destinations)
+    errors.extend(citation_errors(builder, sections))
     return errors
 
 
