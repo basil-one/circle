@@ -11,7 +11,7 @@ const workflows = [
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
   ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
-  ['paper-build-integrity.yml', 'paper-links', 'Paper: Link Integrity']
+  ['paper-link-integrity.yml', 'paper-links', 'Paper: Link Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -36,17 +36,11 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
-    if (jobId === 'paper-links') {
-      assert.match(job, /^    needs: paper-build$/m);
-    } else {
-      assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
-    }
+    assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
 
     const condition = job.match(/^    if: (.+)$/m)?.[1];
     if (jobId === 'dependency-review') {
       assert.equal(condition, "github.event_name == 'pull_request'");
-    } else if (jobId === 'paper-links') {
-      assert.equal(condition, '${{ always() && !cancelled() }}');
     } else {
       assert.equal(condition, undefined, `${jobId} cannot be skipped by a job condition`);
     }
@@ -83,20 +77,19 @@ test('all nine current Common, Site, and Paper checks have substantive evidence 
   assert.match(paper, /name: circle3-paper-preview/);
 });
 
-test('Paper Link Integrity tests and audits the same-cycle PDF without rebuilding', async () => {
-  const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
-  const link = paper.split('\n  paper-links:\n')[1].split('\n  paper-results:\n')[0];
+test('Paper Link Integrity independently builds, tests and audits a fresh PDF', async () => {
+  const link = await readFile(new URL('../.github/workflows/paper-link-integrity.yml', import.meta.url), 'utf8');
   assert.match(link, /name: "Paper: Link Integrity"/);
-  assert.match(link, /needs: paper-build/);
-  assert.match(link, /actions\/download-artifact@v7[\s\S]*name: circle3-paper-preview/);
+  assert.doesNotMatch(link, /needs:|actions\/download-artifact|circle3-paper-preview/);
+  assert.match(link, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.match(link, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(link, /--require-hashes --only-binary=:all: -r scripts\/paper-link\/requirements\.txt/);
   assert.match(link, /unittest discover -s tests -p test_paper_links\.py/);
   assert.match(link, /scripts\/check_paper_links\.py/);
-  assert.match(link, /3\) echo "status=advisory"/);
+  assert.match(link, /3\) status=advisory/);
   assert.match(link, /--json-report/);
   assert.match(link, /name: paper-link-report/);
   assert.match(link, /if-no-files-found: error/);
-  assert.doesNotMatch(link, /build-paper-pdf\.sh|build-pdf\.py/);
-  assert.match(paper, /links: \$\{\{ needs\.paper-links\.outputs\.status \|\| 'incomplete' \}\}/);
-  assert.match(paper, /links_job: \$\{\{ needs\.paper-links\.result \}\}/);
+  assert.match(link, /report\.get\("status"\) != expected/);
+  assert.match(link, /value: \$\{\{ jobs\.paper-links\.outputs\.status \}\}/);
 });

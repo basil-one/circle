@@ -4,16 +4,6 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
-    outputs:
-      build:
-        description: Same-cycle Paper Build job result
-        value: ${{ jobs.paper-results.outputs.build }}
-      links:
-        description: Same-cycle Paper Link audit result
-        value: ${{ jobs.paper-results.outputs.links }}
-      links_job:
-        description: Same-cycle Paper Link job result
-        value: ${{ jobs.paper-results.outputs.links_job }}
   workflow_dispatch:
 
 permissions:
@@ -58,82 +48,3 @@ jobs:
             echo
             echo "[Download the preview PDF]($ARTIFACT_URL)"
           } >> "$GITHUB_STEP_SUMMARY"
-
-  paper-links:
-    name: "Paper: Link Integrity"
-    needs: paper-build
-    if: ${{ always() && !cancelled() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    outputs:
-      status: ${{ steps.audit.outputs.status }}
-    steps:
-      - name: Require a successful same-cycle build
-        if: ${{ needs.paper-build.result != 'success' }}
-        run: |
-          echo "Link verification incomplete: the same-cycle paper build did not succeed."
-          exit 1
-      - name: Checkout intended revision
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-      - name: Download the same-cycle PDF
-        uses: actions/download-artifact@v7
-        with:
-          name: circle3-paper-preview
-          path: assets/pdfs
-      - name: Install PDF link audit tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y poppler-utils
-          python3 -m venv "$RUNNER_TEMP/paper-links-venv"
-          "$RUNNER_TEMP/paper-links-venv/bin/python" -m pip install --require-hashes --only-binary=:all: -r scripts/paper-link/requirements.txt
-      - name: Test PDF link auditor
-        run: '"$RUNNER_TEMP/paper-links-venv/bin/python" -m unittest discover -s tests -p test_paper_links.py -v'
-      - name: Audit same-cycle PDF links
-        id: audit
-        run: |
-          set +e
-          "$RUNNER_TEMP/paper-links-venv/bin/python" scripts/check_paper_links.py \
-            assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-link-report.md" \
-            --json-report "$RUNNER_TEMP/paper-link-report.json"
-          result=$?
-          set -e
-          case "$result" in
-            0) echo "status=success" >> "$GITHUB_OUTPUT" ;;
-            1) echo "status=failure" >> "$GITHUB_OUTPUT"; exit 1 ;;
-            3) echo "status=advisory" >> "$GITHUB_OUTPUT" ;;
-            *) echo "status=incomplete" >> "$GITHUB_OUTPUT"; exit 1 ;;
-          esac
-      - name: Upload link audit evidence
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: paper-link-report
-          path: |
-            ${{ runner.temp }}/paper-link-report.md
-            ${{ runner.temp }}/paper-link-report.json
-          if-no-files-found: error
-          retention-days: 30
-      - name: Summarize link integrity
-        if: always()
-        run: |
-          if [ -f "$RUNNER_TEMP/paper-link-report.md" ]; then
-            cat "$RUNNER_TEMP/paper-link-report.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            printf '%s\n' '# Paper: Link Integrity' '' '**Outcome: incomplete**' \
-              'Audit evidence unavailable. Inspect earlier steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-  paper-results:
-    name: "Paper: Cycle Results"
-    needs: [paper-build, paper-links]
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    outputs:
-      build: ${{ needs.paper-build.result }}
-      links: ${{ needs.paper-links.outputs.status || 'incomplete' }}
-      links_job: ${{ needs.paper-links.result }}
-    steps:
-      - run: echo "Paper Build and Link outcomes are available to Quality Pulse."

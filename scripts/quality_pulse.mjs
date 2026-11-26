@@ -16,7 +16,8 @@ const dimensions = [
   { name: 'Common: Dependency Security', file: 'common-dependency-security.yml' },
   { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml' },
   { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml' },
-  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml' }
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml' },
+  { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -731,30 +732,27 @@ async function buildOrchestratedPulse({
     ['code-quality', 'Common: Code Quality'],
     ['dependency-security', 'Common: Dependency Security'],
     ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity']
+    ['performance', 'Site: Performance Integrity'],
+    ['paper', 'Paper: Build Integrity']
   ];
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
-  const paperNeeds = needs?.paper;
-  const paperBuild = paperNeeds?.outputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
-  const paperLinks = paperNeeds?.outputs?.links;
-  const paperLinksJob = paperNeeds?.outputs?.links_job;
-  results.push(paperNeeds
-    ? orchestratedJobResult({ build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run)
-    : orchestratedJobResult(needs, 'paper', 'Paper: Build Integrity', run));
-  const linkResult = orchestratedJobResult(
-    { links: { result: paperLinks } }, 'links', 'Paper: Link Integrity', run
-  );
-  if (paperLinks === 'advisory' && paperBuild === 'success' && paperLinksJob === 'success') {
+  const paperLinks = needs?.['paper-links']?.outputs?.status;
+  const paperLinksJob = needs?.['paper-links']?.result;
+  const linkResult = orchestratedJobResult(needs, 'paper-links', 'Paper: Link Integrity', run);
+  if (paperLinks === 'failure') {
+    linkResult.result.state = 'failed';
+    linkResult.result.label = 'Failed';
+    linkResult.result.detail = 'The link audit found a confirmed defect; inspect the report and correct it.';
+  } else if (paperLinks === 'advisory' && paperLinksJob === 'success') {
     linkResult.result.state = 'advisory';
     linkResult.result.label = 'Advisory / external uncertainty';
     linkResult.result.detail = 'External destinations could not all be confirmed; retry inaccessible destinations or review them manually.';
-  } else if (paperLinks !== 'failure' && (paperLinks === 'incomplete' || paperBuild !== 'success' ||
-      paperLinksJob !== 'success')) {
+  } else if (paperLinksJob !== undefined && (paperLinks !== 'success' || paperLinksJob !== 'success')) {
     linkResult.result.state = 'incomplete';
     linkResult.result.label = 'Incomplete / link evidence';
-    linkResult.result.detail = 'Link verification or the same-cycle PDF was unavailable; inspect the link job report, retry inaccessible destinations or review them manually.';
+    linkResult.result.detail = 'Link verification was unavailable or its job outcome disagreed; inspect the link job and rerun.';
   }
   results.push(linkResult);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
@@ -858,12 +856,6 @@ async function buildOrchestratedPulse({
     }
   }
 
-  if (paper.result.state !== 'fresh' && ['fresh', 'advisory', 'incomplete'].includes(linkResult.result.state)) {
-    linkResult.result.state = 'incomplete';
-    linkResult.result.label = 'Incomplete / PDF preview unavailable';
-    linkResult.result.detail = 'The same-cycle PDF preview could not be verified; inspect the paper build and rerun.';
-  }
-
   if (['success', 'failure', 'advisory', 'incomplete'].includes(paperLinks)) {
     try {
       const { data: report, artifact } = await fetchArtifactJson({
@@ -962,6 +954,12 @@ async function buildPulse({
       }
     })
   );
+  const legacyLink = results.find((item) => item.name === 'Paper: Link Integrity');
+  if (legacyLink && ['fresh', 'prior'].includes(legacyLink.result.state)) {
+    legacyLink.result.state = 'unknown';
+    legacyLink.result.label = 'Unknown / link outcome unavailable';
+    legacyLink.result.detail = 'Workflow-run lookup cannot distinguish a passed audit from an advisory; use Quality Pulse.';
+  }
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (
     performance?.result.run?.id &&

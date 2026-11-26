@@ -1,0 +1,101 @@
+name: "Paper: Link Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      status:
+        description: Paper Link audit outcome
+        value: ${{ jobs.paper-links.outputs.status }}
+
+permissions:
+  contents: read
+
+jobs:
+  paper-links:
+    name: "Paper: Link Integrity"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      status: ${{ steps.audit.outputs.status }}
+    steps:
+      - name: Checkout intended revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Install PDF link audit tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/paper-links-venv"
+          "$RUNNER_TEMP/paper-links-venv/bin/python" -m pip install --require-hashes --only-binary=:all: -r scripts/paper-link/requirements.txt
+      - name: Build and verify fresh author-edition PDF
+        run: bash scripts/build-paper-pdf.sh
+      - name: Test PDF link auditor
+        run: '"$RUNNER_TEMP/paper-links-venv/bin/python" -m unittest discover -s tests -p test_paper_links.py -v'
+      - name: Audit fresh PDF links
+        id: audit
+        run: |
+          set +e
+          "$RUNNER_TEMP/paper-links-venv/bin/python" scripts/check_paper_links.py \
+            assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-link-report.md" \
+            --json-report "$RUNNER_TEMP/paper-link-report.json"
+          result=$?
+          set -e
+          case "$result" in
+            0) status=success ;;
+            1) status=failure ;;
+            3) status=advisory ;;
+            *) status=incomplete ;;
+          esac
+          if [ "$status" = failure ] || [ "$status" = incomplete ]; then
+            echo "status=$status" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          if ! "$RUNNER_TEMP/paper-links-venv/bin/python" -c '
+          import json, os, sys
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "paper-link-report.json"), encoding="utf-8") as file:
+              report = json.load(file)
+          expected = {"success": "passed", "advisory": "advisory"}[sys.argv[1]]
+          findings = report.get("findings")
+          if (report.get("status") != expected or not isinstance(findings, list)
+              or len(findings) > 100 or any(not isinstance(f, str) or not f or len(f) > 2000 for f in findings)
+              or (expected == "passed" and findings) or (expected == "advisory" and not findings)):
+              raise ValueError("Invalid or inconsistent link report")
+          ' "$status"; then
+            echo "status=incomplete" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Upload link audit evidence
+        id: upload
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: paper-link-report
+          path: ${{ runner.temp }}/paper-link-report.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Summarize link integrity
+        if: always()
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+          AUDIT_STATUS: ${{ steps.audit.outputs.status }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          echo "Audited revision \`$SOURCE_SHA\`." >> "$GITHUB_STEP_SUMMARY"
+          if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
+            printf '%s\n' '**Verification incomplete:** inspect audit and evidence-upload steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -f "$RUNNER_TEMP/paper-link-report.md" ]; then
+            cat "$RUNNER_TEMP/paper-link-report.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s\n' '# Paper: Link Integrity' '' '**Outcome: incomplete**' \
+              'Audit evidence unavailable. Inspect earlier steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "$UPLOAD_OUTCOME" = success ]; then
+            echo "[Download the JSON findings]($ARTIFACT_URL)" >> "$GITHUB_STEP_SUMMARY"
+          fi
