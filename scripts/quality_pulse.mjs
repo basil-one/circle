@@ -716,7 +716,7 @@ function paperContentResult(build, job, status, run) {
     result.result.state = 'failed';
     result.result.label = 'Failed';
     result.result.detail = 'Content findings require correction; inspect the content report and regenerate the PDF.';
-  } else if (job === 'failure' && (status === 'incomplete' || !status)) {
+  } else if (job === 'failure' && ['success', 'incomplete', '', undefined].includes(status)) {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / content verification';
     result.result.detail = 'Setup, extraction, or evidence upload failed; inspect the content job and rerun.';

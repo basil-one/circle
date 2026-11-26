@@ -28,7 +28,7 @@ class PaperContentTests(unittest.TestCase):
 
     def test_page_scope_does_not_accept_other_sections(self):
         blocks = [("one", "a", "missing"), ("two", "b", "present")]
-        scopes = content.block_text(blocks, ["first", "second", "missing"], {"a": 1, "b": 2})
+        scopes = content.block_text(blocks, ["first", "missing"], {"a": 1, "b": 2})
         with patch.object(content, "evidence", return_value=["missing"]):
             errors = content.source_errors(blocks[:1], scopes)
         self.assertIn("one", errors[0])
@@ -108,6 +108,20 @@ class ActualPaperTests(unittest.TestCase):
             self.builder, self.text.replace(annotation, ""), self.destinations
         )
         self.assertTrue(any("citations[0]" in error and "marker" in error for error in errors))
+
+    def test_actual_pdf_wrong_reference_number_fails(self):
+        _, _, back = content.plan(self.builder)
+        number, entry = next(iter(content.reference_entries(back).items()))
+        first_word = re.search(r"\w+", entry).group()
+        corrupted, replacements = re.subn(
+            rf"(?m)^(\s*){re.escape(number)}\.(\s+{re.escape(first_word)})",
+            r"\g<1>999.\2",
+            self.text,
+            count=1,
+        )
+        self.assertEqual(replacements, 1)
+        errors = content.check_content(self.builder, corrupted, self.destinations)
+        self.assertTrue(any(f"reference {number} number" in error for error in errors))
 
 
 if __name__ == "__main__":

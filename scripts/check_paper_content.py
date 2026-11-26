@@ -101,7 +101,7 @@ def block_text(blocks, pages, destinations):
             if next_page:
                 if next_page < start:
                     raise ValueError(f"{label}: destination {anchor!r} is out of document order")
-                end = next_page
+                end = max(start, next_page - 1)
                 break
         result[label] = (start, end, "\n".join(pages[start - 1 : end]))
     return result
@@ -189,9 +189,13 @@ def check_content(builder, pdf_text, destinations):
     errors.extend(citation_errors(builder, sections, scopes, back))
     if "back matter" in scopes:
         for number, entry in reference_entries(back).items():
-            if compact(entry)[:50] not in compact(scopes["back matter"][2]):
+            pdf_reference = re.search(
+                rf"(?m)^\s*{re.escape(number)}\.\s+", scopes["back matter"][2]
+            )
+            following = scopes["back matter"][2][pdf_reference.end() :] if pdf_reference else ""
+            if not compact(following).startswith(compact(entry)[:50]):
                 errors.append(
-                    f"back matter: reference {number} source evidence missing; regenerate PDF"
+                    f"back matter: reference {number} number or source evidence missing; regenerate PDF"
                 )
     return errors
 

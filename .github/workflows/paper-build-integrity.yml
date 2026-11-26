@@ -87,10 +87,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc poppler-utils
-      - name: Test content checks on same-cycle PDF
-        env:
-          PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
-        run: python3 -m unittest discover -s scripts -p 'test_paper_content.py' -v
       - name: Check configured paper content
         id: content
         run: |
@@ -104,6 +100,10 @@ jobs:
             *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
           esac
           exit "$result"
+      - name: Test content checks on same-cycle PDF
+        env:
+          PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
+        run: python3 -m unittest discover -s scripts -p 'test_paper_content.py' -v
       - name: Upload content findings
         if: ${{ always() && steps.content.outcome != 'skipped' }}
         uses: actions/upload-artifact@v6
