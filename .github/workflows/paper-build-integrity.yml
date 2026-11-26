@@ -21,6 +21,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Test paper configuration
+        run: python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v
+
       - name: Build and verify fresh author-edition PDF
         run: bash scripts/build-paper-pdf.sh
 
