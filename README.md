@@ -12,7 +12,7 @@ Our [quality stance and practice](.github/QUALITY.md) describes the quality doma
 
 ## Development
 
-1. Open in GitHub Codespaces (uses the provided dev container), or use Ruby 3.3 with Bundler locally.
+1. Open in GitHub Codespaces (uses the provided dev container), or use Ruby with Bundler locally.
 2. Install dependencies via terminal: `bundle install`
 3. Run locally via terminal: `bundle exec jekyll serve`
 
