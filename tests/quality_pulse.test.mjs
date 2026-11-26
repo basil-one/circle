@@ -696,6 +696,11 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'performance',
     'paper'
   ].map((jobId) => [jobId, { result: 'success' }]));
+  needs.paper.outputs = {
+    build: 'success',
+    rendering: 'success',
+    rendering_evidence: JSON.stringify({ status: 'success', detail: '', findings: [] })
+  };
   const performanceSummary = {
     complete: true,
     capturedAt: `${date}T06:30:00.000Z`,
@@ -742,9 +747,10 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   });
 
   assert.equal(pulse.successful, true);
-  assert.match(pulse.markdown, /All 8 dimensions passed in this cycle/);
+  assert.match(pulse.markdown, /All 9 dimensions passed in this cycle/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/458/);
   assert.match(pulse.markdown, /\[same-cycle run\]\(https:\/\/github\.com\/basil-one\/circle\/actions\/runs\/888\)/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/456/);
@@ -794,7 +800,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
     }
   });
   assert.equal(pulse.successful, false);
-  assert.match(pulse.markdown, /Cycle incomplete — 8 of 8 dimensions/);
+  assert.match(pulse.markdown, /Cycle incomplete — 9 of 9 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
@@ -813,7 +819,8 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
   });
   assert.equal(missing.successful, false);
   assert.match(missing.markdown, /\| Site: Build Integrity \| Missing \|/);
-  assert.match(missing.markdown, /\| Paper: Build Integrity \| Missing \|/);
+  assert.match(missing.markdown, /\| Paper: Build Integrity \| Unknown outcome \|/);
+  assert.match(missing.markdown, /\| Paper: Rendering Integrity \| Incomplete \/ build unavailable \|/);
 });
 
 test('orchestrated Pulse reports confirmed performance detail and distinguishes incomplete or legacy evidence', async () => {
@@ -832,7 +839,8 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     'dependency-security': { result: 'success' },
     rendering: { result: 'success' },
     performance: { result: 'failure' },
-    paper: { result: 'success' }
+    paper: { result: 'success', outputs: { build: 'success', rendering: 'success',
+      rendering_evidence: JSON.stringify({ status: 'success', detail: '', findings: [] }) } }
   };
   const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -947,7 +955,8 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
       'dependency-security': { result: 'success' },
       rendering: { result: 'success' },
       performance: { result: 'success' },
-      paper: { result: 'success' }
+      paper: { result: 'success', outputs: { build: 'success', rendering: 'success',
+        rendering_evidence: JSON.stringify({ status: 'success', detail: '', findings: [] }) } }
     },
     runId: '891',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/891',
@@ -958,6 +967,50 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
   assert.match(pulse.markdown, /\| Common: Dependency Security \| Unknown \/ posture artifact unavailable \|/);
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Unknown \/ performance evidence unavailable \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(pulse.markdown, /no clean result is inferred/);
   assert.match(pulse.markdown, /no comparison or pass is inferred/);
+});
+
+test('paper rendering preserves findings and never infers success from missing evidence', async () => {
+  const outputs = { build: 'success', rendering: 'failure',
+    rendering_evidence: JSON.stringify({
+      status: 'failure', detail: '', findings: ['page 2: rendered completely blank']
+    }) };
+  const build = async () => buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    token: 'test-token',
+    needs: { paper: { result: 'failure', outputs } },
+    runId: '893',
+    runUrl: 'https://github.com/basil-one/circle/actions/runs/893',
+    date,
+    fetchImpl: async () => ({
+      ok: true, json: async () => ({
+        artifacts: [{ name: 'circle3-paper-preview', expired: false, id: 1 }]
+      })
+    })
+  });
+  let pulse = await build();
+  assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \|/);
+  assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /page 2: rendered completely blank/);
+
+  outputs.rendering = 'incomplete';
+  outputs.rendering_evidence = JSON.stringify({
+    status: 'incomplete', detail: 'page 3: renderer timed out',
+    findings: ['page 2: rendered completely blank']
+  });
+  pulse = await build();
+  assert.match(pulse.markdown, /Incomplete \/ rendering verification/);
+  assert.match(pulse.markdown, /page 3: renderer timed out; page 2: rendered completely blank/);
+
+  outputs.rendering = 'success';
+  outputs.rendering_evidence = '';
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+
+  outputs.build = 'failure';
+  pulse = await build();
+  assert.match(pulse.markdown, /Incomplete \/ build unavailable/);
 });

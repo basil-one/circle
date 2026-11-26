@@ -726,12 +726,51 @@ async function buildOrchestratedPulse({
     ['code-quality', 'Common: Code Quality'],
     ['dependency-security', 'Common: Dependency Security'],
     ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity'],
-    ['paper', 'Paper: Build Integrity']
+    ['performance', 'Site: Performance Integrity']
   ];
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
+  const paperNeeds = needs?.paper;
+  const paperOutputs = paperNeeds?.outputs;
+  const paperBuild = paperOutputs?.build ?? (paperNeeds?.result === 'cancelled' ? 'cancelled' : undefined);
+  const paperRendering = paperOutputs?.rendering;
+  results.push(orchestratedJobResult(
+    { build: { result: paperBuild } }, 'build', 'Paper: Build Integrity', run
+  ));
+  const paperRender = orchestratedJobResult(
+    { rendering: { result: paperRendering } }, 'rendering', 'Paper: Rendering Integrity', run
+  );
+  if (paperRendering === 'incomplete') {
+    paperRender.result.state = 'incomplete';
+    paperRender.result.label = 'Incomplete / rendering verification';
+    paperRender.result.detail = 'Rendering verification could not complete; inspect the rendering job and rerun.';
+  }
+  if (paperBuild !== 'success') {
+    paperRender.result.state = 'incomplete';
+    paperRender.result.label = 'Incomplete / build unavailable';
+    paperRender.result.detail = 'The same-cycle paper build did not establish a successful PDF; rendering verification cannot pass.';
+  } else if (['success', 'failure', 'incomplete'].includes(paperRendering)) {
+    try {
+      const evidence = JSON.parse(paperOutputs?.rendering_evidence);
+      if (evidence?.status !== paperRendering || typeof evidence.detail !== 'string' ||
+          !Array.isArray(evidence.findings) ||
+          evidence.findings.some((finding) => typeof finding !== 'string') ||
+          (paperRendering === 'failure' && evidence.findings.length === 0)) {
+        throw new Error('invalid rendering evidence');
+      }
+      const details = [evidence.detail, ...evidence.findings].filter(Boolean)
+        .map((item) => item.replace(/[\r\n]+/g, ' ').slice(0, 600));
+      if (details.length) paperRender.result.detail = details.join('; ');
+    } catch {
+      if (paperRender.result.state === 'fresh') {
+        paperRender.result.state = 'unknown';
+        paperRender.result.label = 'Unknown / rendering evidence unavailable';
+      }
+      paperRender.result.detail += ' Rendering evidence unavailable or invalid; inspect the rendering job logs.';
+    }
+  }
+  results.push(paperRender);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -830,6 +869,11 @@ async function buildOrchestratedPulse({
       paper.result.state = 'unknown';
       paper.result.label = 'Unknown / PDF preview unavailable';
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
+    }
+    if (paper.result.state !== 'fresh' && paperRender.result.state === 'fresh') {
+      paperRender.result.state = 'unknown';
+      paperRender.result.label = 'Unknown / PDF preview unavailable';
+      paperRender.result.detail = 'Same-cycle PDF evidence is unavailable; rendering verification cannot be established.';
     }
   }
 

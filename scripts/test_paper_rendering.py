@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 import sys
@@ -74,6 +75,51 @@ class RenderingUnitTests(unittest.TestCase):
         with patch.object(rendering.subprocess, "run", side_effect=FileNotFoundError("pdfinfo")):
             with self.assertRaisesRegex(rendering.IncompleteCheck, "pdfinfo"):
                 rendering.run_poppler(["pdfinfo"])
+
+    def test_timeout_is_incomplete(self):
+        with patch.object(
+            rendering.subprocess, "run", side_effect=subprocess.TimeoutExpired("pdftoppm", 1)
+        ):
+            with self.assertRaisesRegex(rendering.IncompleteCheck, "pdftoppm"):
+                rendering.run_poppler(["pdftoppm"])
+
+    def test_incomplete_preserves_earlier_findings_in_report(self):
+        info = subprocess.CompletedProcess([], 0, b"Pages: 2\n", b"")
+        blank = subprocess.CompletedProcess([], 0, b"P6\n1 1\n255\n\xff\xff\xff", b"")
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "paper.pdf"
+            report = Path(directory) / "report.json"
+            pdf.write_bytes(b"fixture")
+            with (
+                patch.object(
+                    rendering,
+                    "run_poppler",
+                    side_effect=[info, blank, rendering.IncompleteCheck("renderer timed out")],
+                ),
+                patch.object(sys, "argv", [str(CHECK), str(pdf), "--report", str(report)]),
+            ):
+                self.assertEqual(rendering.main(), 2)
+            data = json.loads(report.read_text())
+        self.assertEqual(data["status"], "incomplete")
+        self.assertIn("page 2", data["detail"])
+        self.assertIn("page 1: rendered completely blank", data["findings"][0])
+
+    def test_time_limit_reports_incomplete(self):
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "paper.pdf"
+            pdf.write_bytes(b"fixture")
+            with self.assertRaisesRegex(rendering.IncompleteCheck, "time limit"):
+                rendering.check_rendering(pdf, time_limit=0)
+
+    def test_invalid_raster_is_a_page_failure(self):
+        info = subprocess.CompletedProcess([], 0, b"Pages: 1\n", b"")
+        raster = subprocess.CompletedProcess([], 0, b"not a raster", b"")
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "paper.pdf"
+            pdf.write_bytes(b"fixture")
+            with patch.object(rendering, "run_poppler", side_effect=[info, raster]):
+                _, findings = rendering.check_rendering(pdf)
+        self.assertIn("page 1: rendering error: invalid PPM header", findings)
 
     def test_renderer_error_is_reported_even_with_zero_exit(self):
         info = subprocess.CompletedProcess([], 0, b"Pages: 1\n", b"")
