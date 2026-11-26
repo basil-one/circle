@@ -747,7 +747,7 @@ function validPaperReport(report, expectedStatus) {
 async function applyPaperReport(item, job, status, artifactOptions, repository, runId, artifactName) {
   const domain = item.name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
-  if (!expectedStatus && job !== 'failure') return;
+  if (!expectedStatus && !['failure', 'cancelled'].includes(job)) return;
   try {
     const { data: report, artifact } = await fetchArtifactJson({
       ...artifactOptions,
@@ -760,7 +760,7 @@ async function applyPaperReport(item, job, status, artifactOptions, repository, 
       throw new Error('report is malformed');
     }
     const confirmedReportFailure = report.status === 'failed' &&
-      (job === 'failure' || (job === 'success' && status === 'failure'));
+      (['failure', 'cancelled'].includes(job) || (job === 'success' && status === 'failure'));
     if (report.status !== expectedStatus && !confirmedReportFailure) {
       throw new Error('report disagrees with the validator');
     }

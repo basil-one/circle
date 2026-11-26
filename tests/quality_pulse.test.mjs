@@ -1087,6 +1087,57 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
   assert.match(pulse.markdown, /no comparison or pass is inferred/);
 });
 
+test('cancelled paper validators retain confirmed report failures and cancellation', async () => {
+  for (const [job, name] of [
+    ['paper-content', 'Paper: Content Integrity'],
+    ['paper-link', 'Paper: Link Integrity']
+  ]) {
+    const needs = { [job]: { result: 'cancelled' } };
+    let report = { status: 'failed', findings: ['Page 8: confirmed defect; correct and rerun'] };
+    let available = true;
+    const options = {
+      apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
+      needs, runId: '895', runUrl: 'https://github.com/basil-one/circle/actions/runs/895', date,
+      fetchImpl: async (url) => {
+        const parsed = new URL(url);
+        if (parsed.pathname.endsWith('/zip')) return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) };
+        return { ok: true, json: async () => ({
+          artifacts: available ? [{ name: parsed.searchParams.get('name'), expired: false, id: 1 }] : []
+        }) };
+      },
+      unzipImpl: () => JSON.stringify(report)
+    };
+    for (const outputs of [undefined, { status: '' }, { status: 'success' }]) {
+      needs[job].outputs = outputs;
+      const pulse = await buildOrchestratedPulse(options);
+      assert.equal(pulse.successful, false);
+      assert.ok(pulse.markdown.includes(`| ${name} | Failed |`));
+      assert.match(pulse.markdown, /job was cancelled/);
+      assert.match(pulse.markdown, /Page 8: confirmed defect; correct and rerun/);
+      assert.match(pulse.markdown, /actions\/runs\/895\/artifacts\/1/);
+    }
+
+    needs[job].outputs = undefined;
+    report = { status: 'failed', findings: [] };
+    let pulse = await buildOrchestratedPulse(options);
+    assert.ok(pulse.markdown.includes(`| ${name} | Incomplete / cancelled |`));
+    assert.match(pulse.markdown, /report unavailable or invalid/);
+    available = false;
+    pulse = await buildOrchestratedPulse(options);
+    assert.ok(pulse.markdown.includes(`| ${name} | Incomplete / cancelled |`));
+    assert.match(pulse.markdown, /report unavailable or invalid/);
+
+    needs[job] = { result: 'success', outputs: { status: 'success' } };
+    pulse = await buildOrchestratedPulse(options);
+    assert.equal(pulse.successful, false);
+    assert.ok(pulse.markdown.includes(`| ${name} | Unknown /`));
+    available = true;
+    pulse = await buildOrchestratedPulse(options);
+    assert.equal(pulse.successful, false);
+    assert.ok(pulse.markdown.includes(`| ${name} | Unknown /`));
+  }
+});
+
 test('paper build, content failure, and missing evidence remain distinct', async () => {
   const needs = {
     paper: { result: 'success' },
@@ -1239,7 +1290,9 @@ test('paper build, content failure, and missing evidence remain distinct', async
   needs['paper-content'].result = 'cancelled';
   needs['paper-content'].outputs.status = 'success';
   pulse = await buildOrchestratedPulse(options);
-  assert.match(pulse.markdown, /\| Paper: Content Integrity \| Incomplete \/ cancelled \|/);
+  assert.match(pulse.markdown, /\| Paper: Content Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /job was cancelled/);
+  assert.match(pulse.markdown, /_moves\/establish\.md page 8/);
 
   needs['paper-content'].result = 'success';
   needs['paper-content'].outputs.status = 'success';
