@@ -1383,7 +1383,6 @@ class CirclePDFBuilder:
         # Core content appears before back matter; appendix sections are rendered after back matter.
         core_sections = [s for s in planned_sections if not bool(s.get("is_appendix"))]
         appendix_sections = [s for s in planned_sections if bool(s.get("is_appendix"))]
-        planned_sections = core_sections + appendix_sections
 
         discussion_anchor = self._reserve_pdf_anchor(discussion_anchor, used_anchors)
         conclusion_anchor = self._reserve_pdf_anchor(conclusion_anchor, used_anchors)
@@ -1391,10 +1390,6 @@ class CirclePDFBuilder:
         # Optionally add back matter (e.g., References/Acknowledgements) as the last body section.
         if back_matter_markdown:
             back_matter_anchor = self._reserve_pdf_anchor(back_matter_anchor, used_anchors)
-
-            if include_back_matter_in_toc and back_matter_label:
-                # Back matter should appear in the TOC but not be emphasized like the main content sections.
-                pass
 
         toc_items.extend(
             self._build_pdf_toc(
@@ -1444,7 +1439,7 @@ class CirclePDFBuilder:
             )
             page_break_needed = True
 
-        # Render appendix sections after back matter (if any), before conclusion.
+        # Render appendix sections after conclusion and back matter (if any).
         self._render_pdf_appendix(chunks, appendix_sections, permalink_to_anchor, page_break_needed)
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
