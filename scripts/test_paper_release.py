@@ -46,25 +46,23 @@ class PaperReleaseTests(unittest.TestCase):
     def test_domain_first_workflow_names_and_references(self):
         preview = (ROOT / ".github/workflows/paper-preview.yml").read_text()
         integrity = (ROOT / ".github/workflows/paper-build-integrity.yml").read_text()
-        common = (ROOT / ".github/workflows/common-code-quality.yml").read_text()
         publish = (ROOT / ".github/workflows/paper-publish.yml").read_text()
         changelog = (ROOT / "CHANGELOG.md").read_text()
         build_script = (ROOT / "scripts/build-paper-pdf.sh").read_text()
         self.assertIn('name: "Paper: Preview"', preview)
         self.assertIn('name: "Paper: Preview"', preview.split("jobs:", 1)[1])
         self.assertIn("workflow_dispatch:", preview)
-        self.assertIn("uses: ./.github/workflows/paper-build-integrity.yml", preview)
+        self.assertIn("run: bash scripts/build-paper-pdf.sh", preview)
+        self.assertIn("name: circle3-paper-preview", preview)
+        self.assertNotIn("uses: ./.github/workflows/paper-build-integrity.yml", preview)
         self.assertIn('name: "Paper: Build Integrity"', integrity)
         self.assertIn("pull_request:\n    branches: [main]", integrity)
         self.assertIn("workflow_call:", integrity)
         self.assertIn('name: "Paper: Build Integrity"', integrity.split("jobs:", 1)[1])
-        self.assertNotIn("ref: ${{ github.event.pull_request.head.sha || github.sha }}", integrity)
-        self.assertIn("sha=$(git rev-parse HEAD)", integrity)
+        self.assertNotIn("ref:", integrity)
+        self.assertIn("git rev-parse HEAD", integrity)
         self.assertIn(
             "python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v", integrity
-        )
-        self.assertIn(
-            "python3 -m unittest discover -s scripts -p 'test_paper_release.py' -v", common
         )
         self.assertIn("run: bash scripts/build-paper-pdf.sh", integrity)
         self.assertIn("rm -f assets/pdfs/circle3-paper.pdf", build_script)

@@ -44,12 +44,14 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Loading performance, responsiveness, and visual stability across representative pages. |
 | [Site: Publish](workflows/site-publish.yml) | Automatic publication of the website using the verified build environment. |
 | [Paper: Build Integrity](workflows/paper-build-integrity.yml) | Reliable generation of a fresh, readable paper PDF. |
-| [Paper: Preview](workflows/paper-preview.yml) | On-demand PDF generation for human review. |
+| [Paper: Content Integrity](workflows/paper-content-integrity.yml) | Verification of sampled source content and citation evidence in the generated PDF. |
+| [Paper: Link Integrity](workflows/paper-link-integrity.yml) | Internal navigation, preserved source links, and external destinations in the generated PDF; uncertain external responses are reported as advisories. |
+| [Paper: Preview](workflows/paper-preview.yml) | On-demand PDF generation for human review, independent of full quality verification. |
 | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
 
 ## Quality Gate
 
-Required checks protect against known defects before changes are merged. All Common, Site, and Paper quality safeguards are required.
+Required checks protect against known defects before changes are merged. Quality safeguards that verify proposed changes are required; safeguards that verify existing published experiences run over time.
 
 Performance Integrity protects against confirmed budget violations and substantial loading regressions against a compatible reviewed reference. Rolling comparisons inform human judgment.
 
@@ -61,9 +63,9 @@ The website is published automatically following an approved merge. The paper is
 
 ## Quality Pulse
 
-A [daily workflow](workflows/quality-pulse.yml) runs the Common, Site, and Paper safeguards in parallel and provides a coherent view of quality. It can also be run on demand.
+A [daily workflow](workflows/quality-pulse.yml) coordinates the Common, Site, and Paper safeguards in a single verification cycle and provides a coherent view of quality. It can also be run on demand.
 
-Failures, incomplete checks, and unavailable evidence remain distinguishable from success. Findings bring actionable evidence to human judgment.
+Passed checks, nonblocking advisories, confirmed failures, incomplete checks, and unavailable evidence remain distinguishable. Findings bring actionable evidence to human judgment. A cycle with advisories may succeed, but is not reported as an unconditional pass.
 
 Performance measurements are compared against a reviewed reference and recent compatible measurements.
 
