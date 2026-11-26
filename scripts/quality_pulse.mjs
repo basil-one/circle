@@ -701,6 +701,67 @@ function orchestratedJobResult(needs, jobId, name, run) {
   };
 }
 
+function paperValidatorResult(name, job, status, run) {
+  const domain = name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
+  const result = orchestratedJobResult(
+    { validator: { result: status } }, 'validator', name, run
+  );
+  if (status === 'failure' && ['failure', 'cancelled'].includes(job)) {
+    result.result.state = 'failed';
+    result.result.label = 'Failed';
+    result.result.detail = `Confirmed findings require correction; inspect the report and rerun.${job === 'cancelled' ? ' The workflow was also cancelled.' : ''}`;
+  } else if (job === 'cancelled') {
+    result.result.state = 'incomplete';
+    result.result.label = 'Incomplete / cancelled';
+    result.result.detail = `${name} job was cancelled; rerun the paper workflow.`;
+  } else if (job === 'success' && status === 'advisory') {
+    result.result.state = 'advisory';
+    result.result.label = 'Advisory';
+    result.result.detail = 'Verification completed with external uncertainty; review the findings.';
+  } else if (job === 'failure' && ['success', 'incomplete', '', undefined].includes(status)) {
+    result.result.state = 'incomplete';
+    result.result.label = `Incomplete / ${domain} verification`;
+    result.result.detail = `Setup, extraction, or evidence upload failed; inspect the ${domain} job and rerun.`;
+  } else if (job !== 'success' || status !== 'success') {
+    result.result.state = 'unknown';
+    result.result.label = 'Unknown outcome';
+    result.result.detail = `${name} job and validator outcomes are missing or inconsistent; inspect the job and rerun.`;
+  }
+  return result;
+}
+
+function validPaperReport(report, expectedStatus) {
+  return report?.status === expectedStatus &&
+    Array.isArray(report.findings) && report.findings.length <= 100 &&
+    report.findings.every((finding) => typeof finding === 'string' && finding.length > 0 && finding.length <= 2000) &&
+    (expectedStatus === 'passed' ? report.findings.length === 0 : report.findings.length > 0);
+}
+
+async function applyPaperReport(item, status, artifactOptions, repository, runId, artifactName) {
+  const domain = item.name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
+  const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
+  if (!expectedStatus) return;
+  try {
+    const { data: report, artifact } = await fetchArtifactJson({
+      ...artifactOptions, artifactName, fileName: `${artifactName}.json`, includeMetadata: true
+    });
+    if (!validPaperReport(report, expectedStatus)) throw new Error('report is malformed or disagrees with the validator');
+    item.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+    const details = report.findings.slice(0, 3);
+    const last = report.findings.at(-1);
+    if (report.findings.length > 3 && last.startsWith('Rendering inspection incomplete:')) details.push(last);
+    if (details.length) {
+      item.result.detail += ` ${details.map((finding) => finding.replace(/[\r\n|]/g, ' ').slice(0, 600)).join('; ')}. See the report for all findings.`;
+    }
+  } catch (error) {
+    if (['fresh', 'advisory'].includes(item.result.state)) {
+      item.result.state = 'unknown';
+      item.result.label = `Unknown / ${domain} evidence unavailable`;
+    }
+    item.result.detail += ` ${artifactName} unavailable or invalid (${error.message}); inspect the job and rerun.`;
+  }
+}
+
 async function buildOrchestratedPulse({
   apiUrl,
   repository,
@@ -725,27 +786,14 @@ async function buildOrchestratedPulse({
   );
   const renderingNeeds = needs?.['paper-rendering'];
   const paperRendering = renderingNeeds?.outputs?.status;
-  const renderingJob = renderingNeeds?.result;
   const paperRender = results.find((item) => item.name === 'Paper: Rendering Integrity');
-  if (paperRendering === 'failure' && ['failure', 'cancelled'].includes(renderingJob)) {
-    paperRender.result.state = 'failed';
-    paperRender.result.label = 'Failed';
-    paperRender.result.detail = 'Rendering findings require correction; inspect the rendering job and report.';
-    if (renderingJob === 'cancelled') {
-      paperRender.result.detail += ' The job was cancelled after the finding; inspect and rerun.';
+  if (renderingNeeds) {
+    paperRender.result = paperValidatorResult(paperRender.name, renderingNeeds.result, paperRendering, run).result;
+    if (paperRender.result.state === 'advisory') {
+      paperRender.result.state = 'unknown';
+      paperRender.result.label = 'Unknown outcome';
+      paperRender.result.detail = 'Rendering does not produce advisory outcomes; inspect the job and rerun.';
     }
-  } else if (renderingJob === 'cancelled') {
-    paperRender.result.state = 'incomplete';
-    paperRender.result.label = 'Incomplete / cancelled';
-    paperRender.result.detail = 'Rendering job was cancelled; inspect and rerun.';
-  } else if (renderingJob === 'failure' && ['success', 'incomplete', '', undefined].includes(paperRendering)) {
-    paperRender.result.state = 'incomplete';
-    paperRender.result.label = 'Incomplete / rendering verification';
-    paperRender.result.detail = 'PDF generation, fixtures, rendering, or evidence upload did not complete; inspect the rendering job and rerun.';
-  } else if (renderingNeeds && (renderingJob !== 'success' || paperRendering !== 'success')) {
-    paperRender.result.state = 'unknown';
-    paperRender.result.label = 'Unknown outcome';
-    paperRender.result.detail = 'Rendering job and validator outcomes are missing or inconsistent; inspect and rerun.';
   }
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
@@ -848,35 +896,7 @@ async function buildOrchestratedPulse({
     }
   }
   if (['success', 'failure', 'incomplete'].includes(paperRendering)) {
-    try {
-      const { data: report, artifact } = await fetchArtifactJson({
-        ...artifactOptions,
-        artifactName: 'paper-rendering-report',
-        fileName: 'paper-rendering-report.json',
-        includeMetadata: true
-      });
-      const expectedStatus = { success: 'passed', failure: 'failed', incomplete: 'incomplete' }[paperRendering];
-      if (report?.status !== expectedStatus || !Array.isArray(report.findings) ||
-          report.findings.length > 100 ||
-          report.findings.some((finding) => typeof finding !== 'string' || finding.length === 0 || finding.length > 2000) ||
-          (expectedStatus === 'passed' && report.findings.length !== 0) ||
-          (expectedStatus !== 'passed' && report.findings.length === 0)) {
-        throw new Error('rendering report is malformed or disagrees with the validator');
-      }
-      paperRender.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
-      const details = report.findings.slice(0, 3);
-      const last = report.findings.at(-1);
-      if (report.findings.length > 3 && last.startsWith('Rendering inspection incomplete:')) details.push(last);
-      if (details.length) {
-        paperRender.result.detail += ` ${details.map((item) => item.replace(/[\r\n|]+/g, ' ').slice(0, 600)).join('; ')}. See the report for all findings.`;
-      }
-    } catch (error) {
-      if (paperRender.result.state === 'fresh') {
-        paperRender.result.state = 'unknown';
-        paperRender.result.label = 'Unknown / rendering evidence unavailable';
-      }
-      paperRender.result.detail += ` Rendering report unavailable or invalid (${error.message}); inspect the job and rerun.`;
-    }
+    await applyPaperReport(paperRender, paperRendering, artifactOptions, repository, runId, 'paper-rendering-report');
   }
 
   const markdown = renderPulse({

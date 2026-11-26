@@ -1035,7 +1035,7 @@ test('paper rendering preserves findings and never infers success from missing e
   workflowResult = 'cancelled';
   pulse = await build();
   assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
-  assert.match(pulse.markdown, /job was cancelled/);
+  assert.match(pulse.markdown, /workflow was also cancelled/);
   workflowResult = 'failure';
   outputs.status = 'incomplete';
   report = { status: 'incomplete', findings: ['page 3: renderer timed out'] };
@@ -1071,11 +1071,18 @@ test('paper rendering preserves findings and never infers success from missing e
   assert.match(pulse.markdown, /Unknown outcome/);
 
   outputs.status = 'failure';
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown outcome/);
+  outputs.status = 'advisory';
+  pulse = await build();
+  assert.match(pulse.markdown, /Rendering does not produce advisory outcomes/);
+
+  outputs.status = 'failure';
   workflowResult = 'failure';
   reportAvailable = false;
   pulse = await build();
   assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Failed \|/);
-  assert.match(pulse.markdown, /Rendering report unavailable or invalid/);
+  assert.match(pulse.markdown, /paper-rendering-report unavailable or invalid/);
 
   outputs.status = '';
   pulse = await build();
