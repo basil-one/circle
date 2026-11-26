@@ -226,17 +226,39 @@ def check_publication():
     assets = validate_metadata(version, current, tagged, release, latest)
     stable_name = "circle3-paper.pdf"
     versioned_name = f"circle3-paper-{tag}.pdf"
-    stable = public_pdf(f"{DOWNLOAD}/latest/download/{stable_name}", stable_name)
-    versioned = public_pdf(f"{DOWNLOAD}/download/{tag}/{versioned_name}", versioned_name)
+    downloads = {}
+    mismatches = []
+    unavailable = []
     with tempfile.TemporaryDirectory() as temporary:
-        for name, data in ((stable_name, stable), (versioned_name, versioned)):
-            validate_pdf(data, name, Path(temporary))
+        for name, url in (
+            (stable_name, f"{DOWNLOAD}/latest/download/{stable_name}"),
+            (versioned_name, f"{DOWNLOAD}/download/{tag}/{versioned_name}"),
+        ):
+            try:
+                data = public_pdf(url, name)
+            except Mismatch as error:
+                mismatches.append(str(error))
+                continue
+            except Unavailable as error:
+                unavailable.append(str(error))
+                continue
             digest = f"sha256:{hashlib.sha256(data).hexdigest()}"
             if len(data) != assets[name]["size"] or (
                 assets[name].get("digest") and assets[name]["digest"] != digest
             ):
-                raise Mismatch(f"Public download {name} differs from its release asset metadata.")
-    if stable != versioned:
+                mismatches.append(f"Public download {name} differs from its release asset metadata.")
+            try:
+                validate_pdf(data, name, Path(temporary))
+            except Mismatch as error:
+                mismatches.append(str(error))
+            except Unavailable as error:
+                unavailable.append(str(error))
+            downloads[name] = data
+    if mismatches:
+        raise Mismatch(" ".join(mismatches + unavailable))
+    if unavailable:
+        raise Unavailable(" ".join(unavailable))
+    if downloads[stable_name] != downloads[versioned_name]:
         raise Mismatch(f"Stable and versioned public PDFs for {tag} differ.")
     return f"{tag} at published main {main_sha}: release, changelog and readable public PDFs agree."
 

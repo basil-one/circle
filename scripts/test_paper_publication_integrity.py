@@ -40,7 +40,7 @@ def release():
 
 
 class PublicationIntegrityTests(unittest.TestCase):
-    def check(self, data=None, stable=b"pdf", versioned=b"pdf"):
+    def check(self, data=None, stable=b"pdf", versioned=b"pdf", pdf_error=None):
         data = release() if data is None else data
 
         def fetch(url, _limit):
@@ -49,10 +49,14 @@ class PublicationIntegrityTests(unittest.TestCase):
             if url.endswith("/releases/latest"):
                 return json.dumps({"tag_name": TAG}).encode()
             if url.endswith("/latest/download/circle3-paper.pdf"):
-                return stable
-            if url.endswith(f"/download/{TAG}/{VERSIONED}"):
-                return versioned
-            raise AssertionError(url)
+                result = stable
+            elif url.endswith(f"/download/{TAG}/{VERSIONED}"):
+                result = versioned
+            else:
+                raise AssertionError(url)
+            if isinstance(result, Exception):
+                raise result
+            return result
 
         def git(command, **_kwargs):
             output = MAIN_SHA if command[1] == "rev-parse" else CHANGELOG
@@ -62,7 +66,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             patch.object(publication, "git_tags", return_value=["v0.2.1", TAG]),
             patch.object(publication.subprocess, "run", side_effect=git) as run,
             patch.object(publication, "fetch", side_effect=fetch),
-            patch.object(publication, "validate_pdf"),
+            patch.object(publication, "validate_pdf", side_effect=pdf_error),
         ):
             result = publication.check_publication()
             self.assertIn(
@@ -94,6 +98,63 @@ class PublicationIntegrityTests(unittest.TestCase):
         data["assets"][0]["digest"] = "sha256:" + "0" * 64
         with self.assertRaisesRegex(publication.Mismatch, "metadata"):
             self.check(data)
+
+    def test_available_download_defects_survive_other_download_unavailability(self):
+        for defective in (STABLE, VERSIONED):
+            for kind in ("empty", "unreadable", "metadata"):
+                with self.subTest(defective=defective, kind=kind):
+                    other = VERSIONED if defective == STABLE else STABLE
+                    values = {defective: b"bad", other: publication.Unavailable(f"{other} offline")}
+                    if kind == "empty":
+                        values[defective] = b""
+
+                    def validate(data, name, _directory):
+                        if kind == "empty" and not data:
+                            raise publication.Mismatch(f"Downloaded {name} is empty.")
+                        if kind == "unreadable" and name == defective:
+                            raise publication.Mismatch(f"Downloaded {name} is not a readable PDF.")
+
+                    data = release()
+                    if kind == "metadata":
+                        next(asset for asset in data["assets"] if asset["name"] == defective)[
+                            "digest"
+                        ] = "sha256:" + "0" * 64
+                    with self.assertRaises(publication.Mismatch) as caught:
+                        self.check(data, values[STABLE], values[VERSIONED], validate)
+                    self.assertIn(defective, str(caught.exception))
+                    self.assertIn(f"{other} offline", str(caught.exception))
+                    self.assertIn(
+                        {"empty": "empty", "unreadable": "not a readable PDF", "metadata": "metadata"}[
+                            kind
+                        ],
+                        str(caught.exception),
+                    )
+
+    def test_unavailable_download_without_defect_remains_unknown(self):
+        for missing in (STABLE, VERSIONED):
+            values = {STABLE: b"pdf", VERSIONED: b"pdf"}
+            values[missing] = publication.Unavailable(f"{missing} offline")
+            with self.subTest(missing=missing), self.assertRaisesRegex(
+                publication.Unavailable, f"{missing} offline"
+            ):
+                self.check(stable=values[STABLE], versioned=values[VERSIONED])
+
+    def test_metadata_mismatch_survives_unavailable_pdf_inspection(self):
+        data = release()
+        data["assets"][0]["digest"] = "sha256:" + "0" * 64
+        with self.assertRaises(publication.Mismatch) as caught:
+            self.check(data, pdf_error=publication.Unavailable("pdfinfo unavailable"))
+        self.assertIn(f"{STABLE} differs from its release asset metadata", str(caught.exception))
+        self.assertIn("pdfinfo unavailable", str(caught.exception))
+
+    def test_confirmed_missing_download_survives_other_unavailable_download(self):
+        with self.assertRaises(publication.Mismatch) as caught:
+            self.check(
+                stable=publication.Mismatch(f"{STABLE} missing"),
+                versioned=publication.Unavailable(f"{VERSIONED} offline"),
+            )
+        self.assertIn(f"{STABLE} missing", str(caught.exception))
+        self.assertIn(f"{VERSIONED} offline", str(caught.exception))
 
     def test_version_tag_changelog_and_notes_consistency(self):
         data = release()
