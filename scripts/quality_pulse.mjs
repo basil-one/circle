@@ -9,14 +9,15 @@ import {
 } from './site_performance_policy.mjs';
 
 const dimensions = [
-  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml' },
-  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml' },
-  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml' },
-  { name: 'Common: Code Quality', file: 'common-code-quality.yml' },
-  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml' },
-  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml' },
-  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml' },
-  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml' }
+  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build' },
+  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'link' },
+  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml', job: 'seo' },
+  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'code-quality' },
+  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'dependency-security' },
+  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'rendering' },
+  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
+  { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -589,11 +590,15 @@ function renderPulse({
   cutoff = cutoffTime,
   orchestrated = false
 }) {
-  const needsReview = results.filter((item) => item.result.state !== 'fresh');
+  const needsReview = results.filter((item) => !['fresh', 'advisory'].includes(item.result.state));
+  const advisories = results.filter((item) => item.result.state === 'advisory');
+  const findings = [...needsReview, ...advisories];
   const aggregate = needsReview.length
     ? orchestrated
       ? `Cycle incomplete — ${needsReview.length} of ${results.length} dimensions are not confirmed successful.`
       : `Review required — ${needsReview.length} of ${results.length} dimensions are not freshly successful.`
+    : orchestrated && advisories.length
+      ? `Cycle successful with advisories — ${advisories.length} of ${results.length} dimensions require attention.`
     : orchestrated
       ? `All ${results.length} dimensions passed in this cycle.`
       : `All ${results.length} dimensions have fresh successful scheduled checks.`;
@@ -609,10 +614,12 @@ function renderPulse({
     '## Findings',
     ''
   ];
-  if (needsReview.length) {
-    for (const item of needsReview) {
+  if (findings.length) {
+    for (const item of findings) {
       const state = item.result.state;
-      const action = state === 'failed'
+      const action = state === 'advisory'
+        ? 'Review the reported external uncertainty.'
+        : state === 'failed'
         ? item.name === 'Site: Performance Integrity' && item.result.run?.cycle
           ? ''
           : 'Open the run and address the reported failure.'
@@ -700,6 +707,80 @@ function orchestratedJobResult(needs, jobId, name, run) {
   };
 }
 
+function paperValidatorResult(name, job, status, run) {
+  const domain = name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
+  const result = orchestratedJobResult(
+    { validator: { result: status } }, 'validator', name, run
+  );
+  if (status === 'failure' && ['failure', 'cancelled'].includes(job)) {
+    result.result.state = 'failed';
+    result.result.label = 'Failed';
+    result.result.detail = `Confirmed findings require correction; inspect the report and rerun.${job === 'cancelled' ? ' The workflow was also cancelled.' : ''}`;
+  } else if (job === 'cancelled') {
+    result.result.state = 'incomplete';
+    result.result.label = 'Incomplete / cancelled';
+    result.result.detail = `${name} job was cancelled; rerun the paper workflow.`;
+  } else if (job === 'success' && status === 'advisory' && name === 'Paper: Link Integrity') {
+    result.result.state = 'advisory';
+    result.result.label = 'Advisory';
+    result.result.detail = 'Verification completed with external uncertainty; review the findings.';
+  } else if (job === 'failure' && ['success', 'incomplete', '', undefined, ...(name === 'Paper: Link Integrity' ? ['advisory'] : [])].includes(status)) {
+    result.result.state = 'incomplete';
+    result.result.label = `Incomplete / ${domain} verification`;
+    result.result.detail = `Setup, PDF generation, validator tests, or evidence upload failed; inspect the ${domain} job and rerun.`;
+  } else if (job !== 'success' || status !== 'success') {
+    result.result.state = 'unknown';
+    result.result.label = 'Unknown outcome';
+    result.result.detail = `${name} job and validator outcomes are missing or inconsistent; inspect the job and rerun.`;
+  }
+  return result;
+}
+
+function validPaperReport(report, expectedStatus) {
+  return report?.status === expectedStatus &&
+    Array.isArray(report.findings) && report.findings.length <= 100 &&
+    report.findings.every((finding) => typeof finding === 'string' && finding.length > 0 && finding.length <= 2000) &&
+    (expectedStatus === 'passed' ? report.findings.length === 0 : report.findings.length > 0);
+}
+
+async function applyPaperReport(item, job, status, artifactOptions, repository, runId, artifactName) {
+  const domain = item.name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
+  const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
+  if (!expectedStatus && job !== 'failure') return;
+  try {
+    const { data: report, artifact } = await fetchArtifactJson({
+      ...artifactOptions,
+      artifactName,
+      fileName: `${artifactName}.json`,
+      includeMetadata: true
+    });
+    if (!['passed', 'failed', 'incomplete', 'advisory'].includes(report?.status) ||
+        !validPaperReport(report, report.status)) {
+      throw new Error('report is malformed');
+    }
+    const confirmedReportFailure = report.status === 'failed' &&
+      (job === 'failure' || (job === 'success' && status === 'failure'));
+    if (report.status !== expectedStatus && !confirmedReportFailure) {
+      throw new Error('report disagrees with the validator');
+    }
+    item.result.artifactUrl = `https://github.com/${repository}/actions/runs/${runId}/artifacts/${artifact.id}`;
+    if (confirmedReportFailure && item.result.state !== 'failed') {
+      item.result.state = 'failed';
+      item.result.label = 'Failed';
+      item.result.detail += ' The failed report establishes a defect; inspect the missing or contradictory job/validator outcome.';
+    }
+    if (report.findings.length) {
+      item.result.detail += ` ${report.findings.slice(0, 3).map((finding) => finding.replace(/[\r\n|]/g, ' ')).join('; ')}. See the report for all findings.`;
+    }
+  } catch (error) {
+    if (['fresh', 'advisory'].includes(item.result.state)) {
+      item.result.state = 'unknown';
+      item.result.label = `Unknown / ${domain} evidence unavailable`;
+    }
+    item.result.detail += ` ${artifactName} unavailable or invalid (${error.message}); inspect the job and rerun.`;
+  }
+}
+
 async function buildOrchestratedPulse({
   apiUrl,
   repository,
@@ -719,19 +800,15 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const jobMap = [
-    ['site-build', 'Site: Build Integrity'],
-    ['link', 'Site: Link Integrity'],
-    ['seo', 'Site: SEO Integrity'],
-    ['code-quality', 'Common: Code Quality'],
-    ['dependency-security', 'Common: Dependency Security'],
-    ['rendering', 'Site: Rendering Integrity'],
-    ['performance', 'Site: Performance Integrity'],
-    ['paper', 'Paper: Build Integrity']
-  ];
-  const results = jobMap.map(([jobId, name]) =>
-    orchestratedJobResult(needs, jobId, name, run)
+  const results = dimensions.filter((dimension) => dimension.job !== 'paper-content').map(({ job, name }) =>
+    orchestratedJobResult(needs, job, name, run)
   );
+  const paperContent = needs?.['paper-content']?.outputs?.status;
+  const content = paperValidatorResult(
+    dimensions.find(({ job }) => job === 'paper-content').name,
+    needs?.['paper-content']?.result, paperContent, run
+  );
+  results.push(content);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {
@@ -832,6 +909,9 @@ async function buildOrchestratedPulse({
       paper.result.detail += ` PDF preview evidence unavailable (${error.message}); no successful artifact is inferred.`;
     }
   }
+  if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(content.result.state)) {
+    await applyPaperReport(content, needs?.['paper-content']?.result, paperContent, artifactOptions, repository, runId, 'paper-content-report');
+  }
 
   const markdown = renderPulse({
     date,
@@ -841,7 +921,7 @@ async function buildOrchestratedPulse({
   });
   return {
     markdown,
-    successful: results.every((item) => item.result.state === 'fresh')
+    successful: results.every((item) => ['fresh', 'advisory'].includes(item.result.state))
   };
 }
 
@@ -905,6 +985,19 @@ async function buildPulse({
       }
     })
   );
+  // Legacy workflow lookup cannot validate required paper artifacts and validator status.
+  const legacyBuild = results.find((item) => item.name === 'Paper: Build Integrity');
+  if (legacyBuild?.result.run?.conclusion === 'success') {
+    legacyBuild.result.state = 'unknown';
+    legacyBuild.result.label = 'Unknown / PDF evidence unavailable';
+    legacyBuild.result.detail = 'Legacy workflow-run lookup cannot establish PDF artifact evidence; use the same-cycle Quality Pulse.';
+  }
+  const legacyContent = results.find((item) => item.name === 'Paper: Content Integrity');
+  if (legacyContent?.result.run?.conclusion === 'success') {
+    legacyContent.result.state = 'unknown';
+    legacyContent.result.label = 'Unknown / validator evidence unavailable';
+    legacyContent.result.detail = 'Legacy workflow-run lookup cannot establish Content report consistency; use the same-cycle Quality Pulse.';
+  }
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (
     performance?.result.run?.id &&
@@ -1020,6 +1113,8 @@ export {
   formatTrendDelta,
   homepageTrendRows,
   isPerformanceComparison,
+  paperValidatorResult,
+  validPaperReport,
   renderPerformanceTrends,
   renderPulse
 };

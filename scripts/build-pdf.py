@@ -1298,6 +1298,50 @@ class CirclePDFBuilder:
         toc_items.extend(toc_appendix_items)
         return toc_items
 
+    def _plan_paper_content(
+        self,
+        pattern_sections,
+        abstract_anchor,
+        intro_markdown,
+        intro_anchor,
+        discussion_anchor,
+        conclusion_anchor,
+        back_matter_markdown,
+        back_matter_anchor,
+    ):
+        used_anchors = {self._latex_id(str(abstract_anchor).strip(), default="abstract")}
+        intro_anchor = str(intro_anchor).strip()
+        if textwrap.dedent(intro_markdown).strip():
+            intro_anchor = self._reserve_pdf_anchor(intro_anchor, used_anchors)
+        toc_core_items, toc_appendix_items, permalink_to_anchor = [], [], {}
+        sections = self._plan_pdf_sections(
+            pattern_sections,
+            used_anchors,
+            toc_core_items,
+            toc_appendix_items,
+            permalink_to_anchor,
+        )
+        discussion_anchor = self._reserve_pdf_anchor(
+            self._latex_id(str(discussion_anchor).strip(), default="discussion"), used_anchors
+        )
+        conclusion_anchor = self._reserve_pdf_anchor(
+            self._latex_id(str(conclusion_anchor).strip(), default="conclusion"), used_anchors
+        )
+        if textwrap.dedent(back_matter_markdown).strip():
+            back_matter_anchor = self._reserve_pdf_anchor(
+                str(back_matter_anchor).strip(), used_anchors
+            )
+        return (
+            sections,
+            intro_anchor,
+            discussion_anchor,
+            conclusion_anchor,
+            back_matter_anchor,
+            toc_core_items,
+            toc_appendix_items,
+            permalink_to_anchor,
+        )
+
     def _build_markdown_for_pandoc(
         self,
         pattern_sections: List[Dict[str, Any]],
@@ -1331,19 +1375,9 @@ class CirclePDFBuilder:
         """
 
         toc_items: List[Dict[str, str]] = []
-        toc_core_items: List[Dict[str, str]] = []
-        toc_appendix_items: List[Dict[str, str]] = []
-        used_anchors: set[str] = set()
-        permalink_to_anchor: Dict[str, str] = {}
-
         abstract_label = str(abstract_label).strip()
         abstract_anchor = self._latex_id(str(abstract_anchor).strip(), default="abstract")
         include_abstract_in_toc = bool(include_abstract_in_toc)
-
-        # The abstract anchor is created in the LaTeX template (not in the markdown body),
-        # but we reserve it here so later anchors cannot collide with it.
-        if abstract_anchor:
-            used_anchors.add(abstract_anchor)
 
         if include_abstract_in_toc and abstract_label and abstract_anchor:
             toc_items.append(
@@ -1366,30 +1400,31 @@ class CirclePDFBuilder:
         conclusion_image = str(conclusion_image).strip()
         conclusion_main_markdown = textwrap.dedent(conclusion_main_markdown).strip()
 
-        if intro_markdown:
-            intro_anchor = self._reserve_pdf_anchor(intro_anchor, used_anchors)
-
-            if include_intro_in_toc and intro_label:
-                toc_items.append({"kind": "section", "label": intro_label, "anchor": intro_anchor})
-
-        planned_sections = self._plan_pdf_sections(
-            pattern_sections,
-            used_anchors,
+        (
+            planned_sections,
+            intro_anchor,
+            discussion_anchor,
+            conclusion_anchor,
+            back_matter_anchor,
             toc_core_items,
             toc_appendix_items,
             permalink_to_anchor,
+        ) = self._plan_paper_content(
+            pattern_sections,
+            abstract_anchor,
+            intro_markdown,
+            intro_anchor,
+            discussion_anchor,
+            conclusion_anchor,
+            back_matter_markdown,
+            back_matter_anchor,
         )
+        if intro_markdown and include_intro_in_toc and intro_label:
+            toc_items.append({"kind": "section", "label": intro_label, "anchor": intro_anchor})
 
         # Core content appears before back matter; appendix sections are rendered after back matter.
         core_sections = [s for s in planned_sections if not bool(s.get("is_appendix"))]
         appendix_sections = [s for s in planned_sections if bool(s.get("is_appendix"))]
-
-        discussion_anchor = self._reserve_pdf_anchor(discussion_anchor, used_anchors)
-        conclusion_anchor = self._reserve_pdf_anchor(conclusion_anchor, used_anchors)
-
-        # Optionally add back matter (e.g., References/Acknowledgements) as the last body section.
-        if back_matter_markdown:
-            back_matter_anchor = self._reserve_pdf_anchor(back_matter_anchor, used_anchors)
 
         toc_items.extend(
             self._build_pdf_toc(

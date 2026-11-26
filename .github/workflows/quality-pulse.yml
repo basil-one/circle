@@ -65,6 +65,12 @@ jobs:
     permissions:
       contents: read
 
+  paper-content:
+    name: "Paper: Content Integrity"
+    uses: ./.github/workflows/paper-content-integrity.yml
+    permissions:
+      contents: read
+
   pulse:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
@@ -77,6 +83,7 @@ jobs:
       - rendering
       - performance
       - paper
+      - paper-content
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

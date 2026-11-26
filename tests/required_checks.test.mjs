@@ -10,15 +10,63 @@ const workflows = [
   ['site-seo-integrity.yml', 'seo', 'Site: SEO Integrity'],
   ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
   ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity'],
-  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity']
+  ['paper-build-integrity.yml', 'paper-build', 'Paper: Build Integrity'],
+  ['paper-content-integrity.yml', 'paper-content', 'Paper: Content Integrity']
 ];
+
+const capabilities = [
+  ...workflows.map(([file, , name]) => [name, `workflows/${file}`]),
+  ['Site: Publish', 'workflows/site-publish.yml'],
+  ['Paper: Preview', 'workflows/paper-preview.yml'],
+  ['Paper: Publish', 'workflows/paper-publish.yml']
+];
+
+function assertQualityLinks(quality, files) {
+  const section = quality.split('## Capabilities in Operation\n')[1]?.split('\n## ')[0];
+  assert.ok(section, 'capability table exists');
+  const rows = section.split('\n').filter((line) => /^\| (?!Capability \||---)/.test(line));
+  const links = rows.map((row) => {
+    const match = row.match(/^\| \[([^\]]+)\]\(([^)]+)\) \|/);
+    assert.ok(match, `capability row must link a workflow: ${row}`);
+    return [match[1], match[2]];
+  });
+  assert.equal(new Set(links.map(([name]) => name)).size, links.length, 'capability names are unique');
+  assert.deepEqual([...links].sort(), [...capabilities].sort());
+  for (const [name, path] of links) {
+    assert.ok(files.has(path), `${path} exists`);
+    const title = files.get(path).match(/^name:\s*["']?([^"'\n]+)["']?\s*$/m)?.[1];
+    assert.equal(title, name, `${path} has the matching workflow name`);
+  }
+  assert.match(quality, /\[daily workflow\]\(workflows\/quality-pulse\.yml\)/);
+  assert.match(files.get('workflows/quality-pulse.yml') ?? '', /^name: Quality Pulse$/m);
+}
+
+test('quality capability table links the current named workflows', async () => {
+  const quality = await readFile(new URL('../.github/QUALITY.md', import.meta.url), 'utf8');
+  const files = new Map(await Promise.all(
+    [...capabilities.map(([, path]) => path), 'workflows/quality-pulse.yml'].map(async (path) =>
+      [path, await readFile(new URL(`../.github/${path}`, import.meta.url), 'utf8')]
+    )
+  ));
+  assertQualityLinks(quality, files);
+  assert.throws(() => assertQualityLinks(quality.replace('workflows/paper-preview.yml', 'workflows/missing.yml'), files));
+  assert.throws(() => assertQualityLinks(quality.replace('[Paper: Preview](workflows/paper-preview.yml)', 'Paper: Preview'), files));
+  assert.throws(() => assertQualityLinks(quality.replace('[Paper: Preview](workflows/paper-preview.yml)', '[Paper: Publish](workflows/paper-preview.yml)'), files));
+  const missing = new Map(files);
+  missing.delete('workflows/paper-preview.yml');
+  assert.throws(() => assertQualityLinks(quality, missing));
+  const mismatched = new Map(files);
+  mismatched.set('workflows/paper-preview.yml', 'name: "Wrong name"\n');
+  assert.throws(() => assertQualityLinks(quality, mismatched));
+  assert.throws(() => assertQualityLinks(quality.replace('workflows/quality-pulse.yml', 'workflows/missing.yml'), files));
+});
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
   for (const [file, jobId, displayName] of workflows) {
     const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
     assert.match(yaml, /^  pull_request:\n    branches: \[main\]$/m, `${file} checks PRs targeting main`);
     assert.match(yaml, /^  workflow_dispatch:$/m, `${file} supports manual diagnostics`);
-    assert.match(yaml, /^  workflow_call:$/m, `${file} can be called by Quality Pulse`);
+    assert.match(yaml, /^  workflow_call:\s*$/m, `${file} can be called by Quality Pulse`);
     assert.doesNotMatch(yaml, /^  schedule:$/m, `${file} has no independent schedule`);
 
     const jobsStart = yaml.indexOf('\njobs:\n') + '\njobs:\n'.length;
@@ -31,11 +79,11 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
     assert.equal(namedJobs.filter((name) => name === displayName).length, 1, `${file} emits one canonical job`);
 
     const header = jobHeaders.find(([line]) => line === `  ${jobId}:`);
-    const nextHeader = jobHeaders.find(([, , offset]) => offset > header.index);
+    const nextHeader = jobHeaders.find((match) => match.index > header.index);
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
     assert.match(job, new RegExp(`^    name: "${displayName.replaceAll(':', '\\:')}"$`, 'm'));
     assert.match(job, /^    steps:\s*$/m, `${jobId} has substantive steps`);
-    assert.doesNotMatch(job, /^    needs:/m, `${jobId} is not a proxy job`);
+    assert.doesNotMatch(job, /^    needs:/m, `${jobId} is independent, not a proxy job`);
 
     const condition = job.match(/^    if: (.+)$/m)?.[1];
     if (jobId === 'dependency-review') {
@@ -46,7 +94,8 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
   }
 });
 
-test('all eight Common, Site, and Paper checks are required and performance has substantive evidence semantics', async () => {
+test('all nine current Common, Site, and Paper checks have substantive evidence semantics', async () => {
+  assert.equal(workflows.length, 9);
   const file = 'site-performance-integrity.yml';
   const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
   assert.ok(workflows.some(([requiredFile]) => requiredFile === file));
@@ -71,7 +120,31 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(summary, /performanceMeasurementExitCode/);
 
   const paper = await readFile(new URL('../.github/workflows/paper-build-integrity.yml', import.meta.url), 'utf8');
-  assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_\*\.py' -v/);
+  assert.match(paper, /python3 -m unittest discover -s scripts -p 'test_paper_config\.py' -v/);
   assert.match(paper, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(paper, /name: circle3-paper-preview/);
+  assert.doesNotMatch(paper, /paper-content:|paper-results:/);
+  const content = await readFile(new URL('../.github/workflows/paper-content-integrity.yml', import.meta.url), 'utf8');
+  assert.match(content, /run: bash scripts\/build-paper-pdf\.sh/);
+  for (const workflow of [paper, content]) {
+    assert.doesNotMatch(workflow, /^\s+ref:/m);
+    assert.match(workflow, /git rev-parse HEAD/);
+    assert.match(workflow, /SOURCE_SHA: \$\{\{ steps\.revision\.outputs\.sha \}\}/);
+  }
+  assert.match(content, /python3 scripts\/check_paper_content\.py scripts\/plop\.paper\.config\.yaml assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(content, /value: \$\{\{ jobs\.paper-content\.outputs\.status \}\}/);
+  assert.match(content, /PAPER_PDF_PATH: assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(content, /if: \$\{\{ always\(\) && steps\.build\.outcome == 'success' \}\}/);
+  assert.match(content, /name: paper-content-report/);
+  assert.doesNotMatch(content, /download-artifact|name: circle3-paper-preview|paper-results:/);
+  const common = await readFile(new URL('../.github/workflows/common-code-quality.yml', import.meta.url), 'utf8');
+  assert.match(common, /python3 -m unittest discover -s scripts -p 'test_paper_release\.py' -v/);
+});
+
+test('manual paper preview only builds and uploads the shared PDF', async () => {
+  const yaml = await readFile(new URL('../.github/workflows/paper-preview.yml', import.meta.url), 'utf8');
+  assert.match(yaml, /run: bash scripts\/build-paper-pdf\.sh/);
+  assert.match(yaml, /name: circle3-paper-preview/);
+  assert.match(yaml, /actions\/upload-artifact@v6/);
+  assert.doesNotMatch(yaml, /paper-build-integrity\.yml|check_paper_content|quality-pulse/);
 });
