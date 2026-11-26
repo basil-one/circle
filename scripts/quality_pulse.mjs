@@ -708,6 +708,7 @@ function orchestratedJobResult(needs, jobId, name, run) {
 }
 
 function paperValidatorResult(name, build, job, status, run) {
+  const domain = name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const result = orchestratedJobResult(
     { validator: { result: status } }, 'validator', name, run
   );
@@ -718,23 +719,23 @@ function paperValidatorResult(name, build, job, status, run) {
   } else if (build !== 'success') {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / build unavailable';
-    result.result.detail = 'The same-cycle paper build did not establish a successful PDF; content verification cannot pass.';
+    result.result.detail = `The same-cycle paper build did not establish a successful PDF; ${domain} verification cannot pass.`;
   } else if (job === 'cancelled') {
     result.result.state = 'incomplete';
     result.result.label = 'Incomplete / cancelled';
-    result.result.detail = 'Content job was cancelled; rerun the paper workflow.';
+    result.result.detail = `${name} job was cancelled; rerun the paper workflow.`;
   } else if (job === 'success' && status === 'advisory') {
     result.result.state = 'advisory';
     result.result.label = 'Advisory';
     result.result.detail = 'Verification completed with external uncertainty; review the findings.';
   } else if (job === 'failure' && ['success', 'incomplete', '', undefined].includes(status)) {
     result.result.state = 'incomplete';
-    result.result.label = 'Incomplete / content verification';
-    result.result.detail = 'Setup, extraction, or evidence upload failed; inspect the content job and rerun.';
+    result.result.label = `Incomplete / ${domain} verification`;
+    result.result.detail = `Setup, extraction, or evidence upload failed; inspect the ${domain} job and rerun.`;
   } else if (job !== 'success' || status !== 'success') {
     result.result.state = 'unknown';
     result.result.label = 'Unknown outcome';
-    result.result.detail = 'Content job and validator outcomes are missing or inconsistent; inspect the job and rerun.';
+    result.result.detail = `${name} job and validator outcomes are missing or inconsistent; inspect the job and rerun.`;
   }
   return result;
 }
@@ -747,6 +748,7 @@ function validPaperReport(report, expectedStatus) {
 }
 
 async function applyPaperReport(item, status, artifactOptions, repository, runId, artifactName) {
+  const domain = item.name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const expectedStatus = { success: 'passed', failure: 'failed', advisory: 'advisory', incomplete: 'incomplete' }[status];
   if (!expectedStatus) return;
   try {
@@ -764,7 +766,7 @@ async function applyPaperReport(item, status, artifactOptions, repository, runId
   } catch (error) {
     if (['fresh', 'advisory'].includes(item.result.state)) {
       item.result.state = 'unknown';
-      item.result.label = 'Unknown / content evidence unavailable';
+      item.result.label = `Unknown / ${domain} evidence unavailable`;
     }
     item.result.detail += ` ${artifactName} unavailable or invalid (${error.message}); inspect the job and rerun.`;
   }

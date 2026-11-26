@@ -813,6 +813,9 @@ test('paper validator outcomes and bounded reports never infer a pass', () => {
   assert.equal(validPaperReport({ status: 'passed', findings: [] }, 'failed'), false);
   assert.equal(validPaperReport({ status: 'failed', findings: Array(101).fill('x') }, 'failed'), false);
   assert.equal(validPaperReport({ status: 'failed', findings: ['x'.repeat(2001)] }, 'failed'), false);
+  const linkIncomplete = paperValidatorResult('Paper: Link Integrity', 'success', 'failure', 'incomplete', run);
+  assert.equal(linkIncomplete.result.label, 'Incomplete / link verification');
+  assert.match(linkIncomplete.result.detail, /link job/);
   const mixed = renderPulse({
     date, generatedAt: `${date}T06:40:00Z`, orchestrated: true,
     results: [
