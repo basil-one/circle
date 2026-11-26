@@ -511,6 +511,22 @@ class CirclePDFBuilder:
 
         return re.sub(r'\[([^\]]+)\]\((/[^)]+)\)', replace_link, content)
 
+    def _site_path_from_url(self, url: str, parsed: Any) -> str | None:
+        """Return the site path for a local URL, or None for a non-local URL."""
+        if parsed.scheme and parsed.scheme not in ('http', 'https'):
+            return None
+
+        root_url = self._get_root_url()
+        if parsed.scheme in ('http', 'https'):
+            if root_url and url.startswith(root_url + '/'):
+                return '/' + url[len(root_url) + 1 :]
+            return None
+
+        path = parsed.path or ''
+        if not path:
+            return None
+        return path if path.startswith('/') else '/' + path
+
     def _normalize_site_path(self, raw_url: str) -> str | None:
         """Normalize a site URL/path to a canonical permalink like '/moves/establish/'.
 
@@ -535,24 +551,9 @@ class CirclePDFBuilder:
             url = url[1:-1].strip()
 
         parsed = urlparse(url)
-
-        # Non-http(s) schemes are never in-doc navigations.
-        if parsed.scheme and parsed.scheme not in ('http', 'https'):
+        path = self._site_path_from_url(url, parsed)
+        if path is None:
             return None
-
-        root_url = self._get_root_url()
-
-        if parsed.scheme in ('http', 'https'):
-            if root_url and url.startswith(root_url + '/'):
-                path = '/' + url[len(root_url) + 1 :]
-            else:
-                return None
-        else:
-            path = parsed.path or ''
-            if not path:
-                return None
-            if not path.startswith('/'):
-                path = '/' + path
 
         # Ignore obvious assets (except html).
         trimmed = path.rstrip('/')
@@ -756,88 +757,57 @@ class CirclePDFBuilder:
             logger.error(f"Error reading pattern file '{pattern_file}': {e}")
             sys.exit(1)
 
+    def _normalize_pattern_items(
+        self, raw_patterns: Any, section_idx: int, section: Dict[str, Any]
+    ) -> List[Dict[str, str]]:
+        if not isinstance(raw_patterns, list) or not raw_patterns:
+            raise ValueError(
+                "Each sections item must include a non-empty 'patterns' list. "
+                f"Got: {section}"
+            )
+
+        patterns: List[Dict[str, str]] = []
+        for pattern_idx, item in enumerate(raw_patterns):
+            if not isinstance(item, dict):
+                raise ValueError(
+                    f"Unsupported patterns item in sections[{section_idx}] at index "
+                    f"{pattern_idx}: expected mapping/object, got {type(item)}"
+                )
+            pattern = {
+                str(key): str(value)
+                for key, value in item.items()
+                if value is not None
+            }
+            if 'file' not in pattern:
+                raise ValueError(
+                    "Each patterns item must include 'file'. "
+                    f"Got: {pattern} (in sections[{section_idx}])"
+                )
+            patterns.append(pattern)
+        return patterns
+
     def _get_pattern_sections(self) -> List[Dict[str, Any]]:
-        """Return ordered sectioned-pattern configuration.
-
-        Preferred config shape:
-
-        sections:
-          - title: Moves
-            intro_image: images/full/moves.png      # optional
-            patterns:
-              - file: moves/establish.md
-                intro_image: images/full/move-establish.png
-                            - file: moves/integrate.md
-                              intro_image: images/full/move-integrate.png
-              - file: moves/reconcile.md
-                intro_image: images/full/move-reconcile.png
-
-          - title: Lenses
-            intro_image: images/full/lenses.png     # optional
-            patterns:
-              - file: lenses/sense.md
-                intro_image: images/full/lens-sense.png
-              - file: lenses/energy.md
-                intro_image: images/full/lens-energy.png
-              - file: lenses/paradigm.md
-                intro_image: images/full/lens-paradigm.png
-
-        """
-
+        """Return ordered sectioned-pattern configuration."""
         raw_sections = self.config.get('sections')
         if not isinstance(raw_sections, list) or not raw_sections:
             raise ValueError("Missing required config value: sections (must be a non-empty list)")
 
         sections: List[Dict[str, Any]] = []
+        for idx, item in enumerate(raw_sections):
+            if not isinstance(item, dict):
+                raise ValueError(
+                    f"Unsupported sections item at index {idx}: "
+                    f"expected mapping/object, got {type(item)}"
+                )
 
-        if isinstance(raw_sections, list) and raw_sections:
-            for idx, item in enumerate(raw_sections):
-                if not isinstance(item, dict):
-                    raise ValueError(
-                        f"Unsupported sections item at index {idx}: expected mapping/object, got {type(item)}"
-                    )
-
-                # Copy top-level section keys (stringify), then coerce patterns.
-                section: Dict[str, Any] = {}
-                for k, v in item.items():
-                    if v is None:
-                        continue
-                    section[str(k)] = v
-
-                raw_patterns = section.get('patterns')
-                if not isinstance(raw_patterns, list) or not raw_patterns:
-                    raise ValueError(
-                        "Each sections item must include a non-empty 'patterns' list. "
-                        f"Got: {item}"
-                    )
-
-                patterns: List[Dict[str, str]] = []
-                for p_idx, p in enumerate(raw_patterns):
-                    if not isinstance(p, dict):
-                        raise ValueError(
-                            f"Unsupported patterns item in sections[{idx}] at index {p_idx}: expected mapping/object, got {type(p)}"
-                        )
-
-                    pattern: Dict[str, str] = {}
-                    for pk, pv in p.items():
-                        if pv is None:
-                            continue
-                        pattern[str(pk)] = str(pv)
-                    patterns.append(pattern)
-
-                for p in patterns:
-                    if 'file' not in p:
-                        raise ValueError(
-                            "Each patterns item must include 'file'. "
-                            f"Got: {p} (in sections[{idx}])"
-                        )
-
-                section['patterns'] = patterns
-                sections.append(section)
-
-            return sections
-
-        raise ValueError("Missing required config value: sections (must be a non-empty list)")
+            section = {
+                str(key): value for key, value in item.items() if value is not None
+            }
+            section['patterns'] = self._normalize_pattern_items(
+                section.get('patterns'), idx, section
+            )
+            sections.append(section)
+        return sections
 
     def _slugify(self, text: str) -> str:
         """Create a stable anchor slug for LaTeX hypertargets."""

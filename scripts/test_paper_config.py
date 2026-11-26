@@ -145,5 +145,46 @@ description: |
                 BUILD_PDF.simple_yaml_load(content)
 
 
+class PatternConfigurationTests(unittest.TestCase):
+    def setUp(self):
+        self.builder = BUILD_PDF.CirclePDFBuilder(
+            str(ROOT / "scripts/plop.paper.config.yaml"), str(ROOT)
+        )
+
+    def test_site_path_normalization_keeps_local_routes_and_ignores_assets(self):
+        self.assertEqual(
+            self.builder._normalize_site_path("/moves/establish/index.html"),
+            "/moves/establish/",
+        )
+        self.assertEqual(
+            self.builder._normalize_site_path("https://circle.basil.one/moves/establish/"),
+            "/moves/establish/",
+        )
+        self.assertIsNone(self.builder._normalize_site_path("/images/example.png"))
+        self.assertIsNone(self.builder._normalize_site_path("https://other.example/moves/"))
+
+    def test_pattern_sections_keep_string_coercion_and_required_file_validation(self):
+        self.builder.config["sections"] = [
+            {
+                "title": "Moves",
+                "ignored": None,
+                "patterns": [{"file": "moves/example.md", "count": 3, "ignored": None}],
+            }
+        ]
+        self.assertEqual(
+            self.builder._get_pattern_sections(),
+            [
+                {
+                    "title": "Moves",
+                    "patterns": [{"file": "moves/example.md", "count": "3"}],
+                }
+            ],
+        )
+
+        self.builder.config["sections"][0]["patterns"] = [{"title": "No file"}]
+        with self.assertRaisesRegex(ValueError, "must include 'file'"):
+            self.builder._get_pattern_sections()
+
+
 if __name__ == "__main__":
     unittest.main()
