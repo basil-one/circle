@@ -837,6 +837,14 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(failedWithoutEvidence.markdown, /\| Paper: Link Integrity \| Failed \|/);
   assert.match(failedWithoutEvidence.markdown, /Link report unavailable/);
 
+  needs['paper-links'].result = 'success';
+  const contradictory = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',
+    needs, runId, runUrl, date, fetchImpl, unzipImpl
+  });
+  assert.equal(contradictory.successful, false);
+  assert.match(contradictory.markdown, /\| Paper: Link Integrity \| Incomplete \/ link evidence \|/);
+  needs['paper-links'].result = 'failure';
   needs.paper.result = 'failure';
   const independent = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com', repository: 'basil-one/circle', token: 'test-token',

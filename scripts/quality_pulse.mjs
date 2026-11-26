@@ -741,7 +741,7 @@ async function buildOrchestratedPulse({
   const paperLinks = needs?.['paper-links']?.outputs?.status;
   const paperLinksJob = needs?.['paper-links']?.result;
   const linkResult = orchestratedJobResult(needs, 'paper-links', 'Paper: Link Integrity', run);
-  if (paperLinks === 'failure') {
+  if (paperLinks === 'failure' && ['failure', 'cancelled'].includes(paperLinksJob)) {
     linkResult.result.state = 'failed';
     linkResult.result.label = 'Failed';
     linkResult.result.detail = 'The link audit found a confirmed defect; inspect the report and correct it.';

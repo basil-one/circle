@@ -86,7 +86,7 @@ jobs:
           UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
-          echo "Audited revision \`$SOURCE_SHA\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Intended revision: \`$SOURCE_SHA\`." >> "$GITHUB_STEP_SUMMARY"
           if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
             printf '%s\n' '**Verification incomplete:** inspect audit and evidence-upload steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
           fi
