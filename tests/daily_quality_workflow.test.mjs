@@ -28,7 +28,9 @@ test('one daily workflow owns the schedule and fans out to all eight reusable ch
   assert.match(orchestrator, /^  workflow_dispatch:$/m);
   assert.match(orchestrator, /paper-publication:\n    name: "Paper: Publication Integrity"/);
   assert.match(orchestrator, /python3 scripts\/paper_publication_integrity\.py/);
-  assert.match(orchestrator, /ref: main\n          fetch-depth: 0\n          persist-credentials: false/);
+  assert.match(orchestrator, /fetch-depth: 0\n          persist-credentials: false/);
+  assert.match(orchestrator, /refs\/heads\/main:refs\/remotes\/origin\/main/);
+  assert.doesNotMatch(orchestrator, /ref: main\n/);
   for (const [file, jobId] of children) {
     const child = await readFile(new URL(file, workflowDirectory), 'utf8');
     assert.match(child, /^  workflow_call:$/m, `${file} can be called`);

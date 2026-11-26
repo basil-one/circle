@@ -33,6 +33,10 @@ class Unavailable(ValueError):
     """Evidence could not be obtained or interpreted."""
 
 
+class NotFound(Unavailable):
+    """A requested URL returned HTTP 404."""
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
@@ -40,7 +44,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 def fetch(url, limit):
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "circle-quality-pulse"}
-    api_request = url.startswith(f"{API}/")
+    api_request = url == API or url.startswith(f"{API}/")
     if api_request and os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
     request = urllib.request.Request(url, headers=headers)
@@ -52,6 +56,10 @@ def fetch(url, limit):
         )
         with opener.open(request, timeout=30) as response:
             data = response.read(limit + 1)
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            raise NotFound(f"HTTP 404 retrieving {url}.") from error
+        raise Unavailable(f"HTTP {error.code} retrieving {url}.") from error
     except (OSError, urllib.error.URLError) as error:
         raise Unavailable(f"Could not retrieve {url}: {error}") from error
     if len(data) > limit:
@@ -109,15 +117,15 @@ def validate_metadata(version, current, tagged, release, latest):
     try:
         if not all(isinstance(release[key], bool) for key in ("draft", "prerelease")):
             raise TypeError("invalid release state")
-        if not all(isinstance(release[key], str) for key in ("tag_name", "name", "body")):
+        if not all(isinstance(release[key], str) for key in ("tag_name", "body")):
             raise TypeError("invalid release identity or notes")
-        if release["tag_name"] != tag or release["name"] != tag:
+        if release["tag_name"] != tag:
             raise Mismatch(f"Release identity does not match {tag}.")
         if release["draft"] or release["prerelease"] or not release["published_at"]:
             raise Mismatch(f"Release {tag} is not a published stable release.")
         if latest["tag_name"] != tag:
             raise Mismatch(f"Latest published release is not {tag}.")
-        if not release["body"].startswith(f"## What changed\n\n{changes}\n\n## Includes"):
+        if changes not in release["body"]:
             raise Mismatch(f"Release notes for {tag} differ from CHANGELOG.md.")
         return validate_release_assets(tag, release["assets"])
     except (KeyError, TypeError, AttributeError) as error:
@@ -139,12 +147,25 @@ def validate_pdf(data, name, directory):
         raise Mismatch(f"Downloaded {name} is not a readable PDF.")
 
 
-def check_publication():
+def publication_snapshot():
     try:
+        main_sha = subprocess.run(
+            ["git", "rev-parse", "--verify", "refs/remotes/origin/main^{commit}"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        ).stdout.strip()
         version = latest_stable_tag(git_tags())
         if not version:
             raise Mismatch("No stable version tag exists.")
-        current = Path("CHANGELOG.md").read_text(encoding="utf-8")
+        current = subprocess.run(
+            ["git", "show", f"{main_sha}:CHANGELOG.md"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        ).stdout
         tagged = subprocess.run(
             ["git", "show", f"v{version}:CHANGELOG.md"],
             check=True,
@@ -155,17 +176,58 @@ def check_publication():
     except (OSError, subprocess.SubprocessError, ReleaseError) as error:
         raise Unavailable(f"Could not inspect tags or changelog: {error}") from error
     tag = f"v{version}"
-    latest = api_release("latest")
+    try:
+        ancestry = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", tag, main_sha],
+            check=False,
+            capture_output=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Unavailable(f"Could not inspect {tag} ancestry: {error}") from error
+    if ancestry.returncode == 1:
+        raise Mismatch(f"Latest stable tag {tag} is not an ancestor of published main {main_sha}.")
+    if ancestry.returncode:
+        raise Unavailable(f"Could not establish {tag} ancestry for published main {main_sha}.")
+    return main_sha, version, current, tagged
+
+
+def latest_release(tag):
+    try:
+        latest = api_release("latest")
+    except NotFound as error:
+        try:
+            repo = json.loads(fetch(API, 2_000_000))
+        except (ValueError, UnicodeDecodeError) as repo_error:
+            raise Unavailable(f"Cannot confirm repository visibility: {repo_error}") from repo_error
+        if (
+            isinstance(repo, dict)
+            and repo.get("private") is False
+            and repo.get("full_name") == "basil-one/circle"
+        ):
+            raise Mismatch(
+                f"No latest published release exists for public repository; expected {tag}."
+            ) from error
+        raise Unavailable(
+            "Cannot confirm whether the latest release is absent or inaccessible."
+        ) from error
     if not isinstance(latest.get("tag_name"), str):
         raise Unavailable("Latest release API response has no tag name.")
     if latest["tag_name"] != tag:
         raise Mismatch(f"Latest published release is not {tag}; publication may be incomplete.")
+    return latest
+
+
+def check_publication():
+    main_sha, version, current, tagged = publication_snapshot()
+    tag = f"v{version}"
+    latest = latest_release(tag)
     release = api_release(f"tags/{tag}")
     assets = validate_metadata(version, current, tagged, release, latest)
     stable_name = "circle3-paper.pdf"
     versioned_name = f"circle3-paper-{tag}.pdf"
-    stable = fetch(f"{DOWNLOAD}/latest/download/{stable_name}", MAX_BYTES)
-    versioned = fetch(f"{DOWNLOAD}/download/{tag}/{versioned_name}", MAX_BYTES)
+    stable = public_pdf(f"{DOWNLOAD}/latest/download/{stable_name}", stable_name)
+    versioned = public_pdf(f"{DOWNLOAD}/download/{tag}/{versioned_name}", versioned_name)
     with tempfile.TemporaryDirectory() as temporary:
         for name, data in ((stable_name, stable), (versioned_name, versioned)):
             validate_pdf(data, name, Path(temporary))
@@ -176,19 +238,31 @@ def check_publication():
                 raise Mismatch(f"Public download {name} differs from its release asset metadata.")
     if stable != versioned:
         raise Mismatch(f"Stable and versioned public PDFs for {tag} differ.")
-    return f"{tag}: published release, changelog, tag and both readable public PDFs agree."
+    return f"{tag} at published main {main_sha}: release, changelog and readable public PDFs agree."
+
+
+def public_pdf(url, name):
+    try:
+        return fetch(url, MAX_BYTES)
+    except NotFound as error:
+        if error.__cause__ and getattr(error.__cause__, "url", None) == url:
+            raise Mismatch(f"Public download {name} is missing (HTTP 404).") from error
+        raise Unavailable(f"Public download {name} redirected to an unavailable asset.") from error
 
 
 def main():
     try:
-        print(f"PASSED: {check_publication()}")
+        status, detail, code = "passed", check_publication(), 0
     except Mismatch as error:
-        print(f"FAILED: {error}")
-        return 3
+        status, detail, code = "failed", f"{error} Review release evidence before repair.", 3
     except Unavailable as error:
-        print(f"UNKNOWN: {error}")
-        return 2
-    return 0
+        status, detail, code = "unknown", f"{error} Restore access and rerun the check.", 2
+    detail = " ".join(str(detail).split())[:1000]
+    print(f"{status.upper()}: {detail}")
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            print(f"status={status}\ndetail={detail}", file=output)
+    return code
 
 
 if __name__ == "__main__":

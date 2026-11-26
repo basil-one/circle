@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 import tempfile
@@ -14,6 +15,7 @@ from paper_release import (
     validate_new_release,
     validate_resume,
     verify_asset_parity,
+    verify_downloaded_assets,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,7 +45,7 @@ class PaperReleaseTests(unittest.TestCase):
             {
                 "tagName": "v0.2.1",
                 "isDraft": draft,
-                "assets": [{"name": name, "size": 11} for name in assets],
+                "assets": [{"name": name, "size": 11, "state": "uploaded"} for name in assets],
             }
         )
         return subprocess.CompletedProcess(["gh"], returncode, stdout, stderr)
@@ -339,9 +341,22 @@ class PaperReleaseTests(unittest.TestCase):
                 "paper_release.download_release_assets", return_value={"a": first, "b": second}
             ):
                 with self.assertRaisesRegex(ReleaseError, "differ"):
-                    verify_asset_parity("v0.2.1", Path(directory))
+                    verify_asset_parity(
+                        "v0.2.1",
+                        {
+                            "assetMetadata": {
+                                "a": {"size": 8, "state": "uploaded"},
+                                "b": {"size": 5, "state": "uploaded"},
+                            }
+                        },
+                        Path(directory),
+                    )
                 second.write_bytes(b"released")
-                verify_asset_parity("v0.2.1", Path(directory))
+                verify_asset_parity(
+                    "v0.2.1",
+                    {"assetMetadata": dict.fromkeys(("a", "b"), {"size": 8, "state": "uploaded"})},
+                    Path(directory),
+                )
 
     def test_partial_recovery_uses_surviving_asset_not_rebuild(self):
         names = ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")
@@ -352,11 +367,17 @@ class PaperReleaseTests(unittest.TestCase):
                 pdf.write_bytes(b"new build")
                 surviving = root / "surviving.pdf"
                 surviving.write_bytes(b"original release")
-                initial = {"isDraft": True, "assetNames": {existing}, "assetSizes": {existing: 16}}
+                initial = {
+                    "isDraft": True,
+                    "assetNames": {existing},
+                    "assetSizes": {existing: 16},
+                    "assetMetadata": {existing: {"size": 16, "state": "uploaded"}},
+                }
                 complete = {
                     "isDraft": True,
                     "assetNames": set(names),
                     "assetSizes": dict.fromkeys(names, 16),
+                    "assetMetadata": dict.fromkeys(names, {"size": 16, "state": "uploaded"}),
                 }
                 published = dict(complete, isDraft=False)
                 uploads = {}
@@ -383,7 +404,12 @@ class PaperReleaseTests(unittest.TestCase):
 
     def test_mismatch_or_inaccessible_existing_assets_never_publishes(self):
         names = {"circle3-paper.pdf", "circle3-paper-v0.2.1.pdf"}
-        state = {"isDraft": True, "assetNames": names, "assetSizes": dict.fromkeys(names, 11)}
+        state = {
+            "isDraft": True,
+            "assetNames": names,
+            "assetSizes": dict.fromkeys(names, 11),
+            "assetMetadata": dict.fromkeys(names, {"size": 11, "state": "uploaded"}),
+        }
         with tempfile.TemporaryDirectory() as directory:
             pdf = Path(directory) / "circle3-paper.pdf"
             pdf.write_bytes(b"new build")
@@ -405,6 +431,50 @@ class PaperReleaseTests(unittest.TestCase):
                         changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
                         publish_release("0.2.1", pdf, changelog, ["v0.2.1"])
                     publish.assert_not_called()
+
+    def test_downloaded_asset_matches_size_digest_and_upload_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "asset.pdf"
+            path.write_bytes(b"released")
+            metadata = {
+                "size": 8,
+                "state": "uploaded",
+                "digest": "sha256:" + hashlib.sha256(b"released").hexdigest(),
+            }
+            release = {"assetMetadata": {"asset.pdf": metadata}}
+            verify_downloaded_assets("v0.2.1", release, {"asset.pdf": path})
+            for key, value in (("size", 9), ("digest", "sha256:" + "0" * 64), ("state", "new")):
+                with self.subTest(key=key):
+                    bad = {"assetMetadata": {"asset.pdf": dict(metadata, **{key: value})}}
+                    with self.assertRaises(ReleaseError):
+                        verify_downloaded_assets("v0.2.1", bad, {"asset.pdf": path})
+            metadata["digest"] = None
+            verify_downloaded_assets("v0.2.1", release, {"asset.pdf": path})
+
+    def test_bad_survivor_digest_causes_no_upload_or_publish(self):
+        name = "circle3-paper.pdf"
+        state = {
+            "isDraft": False,
+            "assetNames": {name},
+            "assetSizes": {name: 8},
+            "assetMetadata": {
+                name: {"size": 8, "state": "uploaded", "digest": "sha256:" + "0" * 64}
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / name
+            path.write_bytes(b"released")
+            with (
+                patch("paper_release.get_release", return_value=state),
+                patch("paper_release.download_release_assets", return_value={name: path}),
+                patch("paper_release.upload_missing_release_assets") as upload,
+                patch("paper_release.mark_release_published") as publish,
+            ):
+                with self.assertRaisesRegex(ReleaseError, "digest"):
+                    changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
+                    publish_release("0.2.1", path, changelog, ["v0.2.1"])
+                upload.assert_not_called()
+                publish.assert_not_called()
 
 
 if __name__ == "__main__":

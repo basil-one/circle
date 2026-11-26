@@ -309,8 +309,23 @@ def verify_asset_sizes(tag: str, release: dict[str, object], names: set[str]) ->
             raise ReleaseError(f"Asset {name} for {tag} has a missing, empty, or oversized length.")
 
 
-def verify_asset_parity(tag: str, directory: Path) -> None:
+def verify_downloaded_assets(tag: str, release: dict[str, object], assets: dict[str, Path]) -> None:
+    for name, path in assets.items():
+        metadata = release["assetMetadata"][name]
+        data = path.read_bytes()
+        if metadata.get("state") != "uploaded" or len(data) != metadata.get("size"):
+            raise ReleaseError(f"Asset {name} for {tag} differs from its release metadata.")
+        digest = metadata.get("digest")
+        if digest is not None:
+            if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+                raise ReleaseError(f"Asset {name} for {tag} has an unverifiable digest.")
+            if f"sha256:{hashlib.sha256(data).hexdigest()}" != digest:
+                raise ReleaseError(f"Asset {name} for {tag} differs from its release digest.")
+
+
+def verify_asset_parity(tag: str, release: dict[str, object], directory: Path) -> None:
     assets = download_release_assets(tag, required_asset_names(tag), directory)
+    verify_downloaded_assets(tag, release, assets)
     digests = {hashlib.sha256(path.read_bytes()).digest() for path in assets.values()}
     if len(digests) != 1:
         raise ReleaseError(
@@ -376,6 +391,15 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
         verify_asset_sizes(tag, release, existing)
         with tempfile.TemporaryDirectory(dir=temporary) as download_dir:
             recovered = download_release_assets(tag, existing, Path(download_dir))
+            verify_downloaded_assets(tag, release, recovered)
+            if len(existing) == 2:
+                digests = {
+                    hashlib.sha256(path.read_bytes()).digest() for path in recovered.values()
+                }
+                if len(digests) != 1:
+                    raise ReleaseError(
+                        f"Release {tag} PDF assets differ; decide how to repair them."
+                    )
             if len(existing) == 1:
                 source = next(iter(recovered.values()))
             else:
@@ -389,7 +413,7 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
         verified = verify_release_assets(tag, get_release(tag))
         verify_asset_sizes(tag, verified, required_asset_names(tag))
         with tempfile.TemporaryDirectory(dir=temporary) as download_dir:
-            verify_asset_parity(tag, Path(download_dir))
+            verify_asset_parity(tag, verified, Path(download_dir))
         mark_release_published(tag, notes_file.name, verified)
         verify_release_assets(tag, get_release(tag), published=True)
 
@@ -409,17 +433,23 @@ def get_release(tag: str) -> dict[str, object] | None:
         data = json.loads(result.stdout)
         if data["tagName"] != tag or not isinstance(data["isDraft"], bool):
             raise ValueError("invalid tag or draft state")
-        sizes = {asset["name"]: asset["size"] for asset in data["assets"]}
+        metadata = {asset["name"]: asset for asset in data["assets"]}
+        sizes = {name: asset["size"] for name, asset in metadata.items()}
         if len(sizes) != len(data["assets"]):
             raise ValueError("duplicate asset names")
-        return {"isDraft": data["isDraft"], "assetNames": set(sizes), "assetSizes": sizes}
+        return {
+            "isDraft": data["isDraft"],
+            "assetNames": set(sizes),
+            "assetSizes": sizes,
+            "assetMetadata": metadata,
+        }
     except (KeyError, ValueError, TypeError) as error:
         raise ReleaseError(f"Unable to read release state for {tag}.") from error
 
 
 def git_tags() -> list[str]:
     result = subprocess.run(
-        ["git", "tag", "--list", "v*"], check=True, text=True, capture_output=True
+        ["git", "tag", "--list", "v*"], check=True, text=True, capture_output=True, timeout=30
     )
     return result.stdout.splitlines()
 

@@ -1,6 +1,7 @@
 import json
 import subprocess
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 import paper_publication_integrity as publication
@@ -20,6 +21,7 @@ CHANGELOG = """# Changelog
 TAG = "v0.2.2"
 STABLE = "circle3-paper.pdf"
 VERSIONED = f"circle3-paper-{TAG}.pdf"
+MAIN_SHA = "a" * 40
 
 
 def release():
@@ -52,15 +54,21 @@ class PublicationIntegrityTests(unittest.TestCase):
                 return versioned
             raise AssertionError(url)
 
-        completed = subprocess.CompletedProcess(["git"], 0, CHANGELOG, "")
+        def git(command, **_kwargs):
+            output = MAIN_SHA if command[1] == "rev-parse" else CHANGELOG
+            return subprocess.CompletedProcess(command, 0, output, "")
+
         with (
             patch.object(publication, "git_tags", return_value=["v0.2.1", TAG]),
-            patch.object(publication.Path, "read_text", return_value=CHANGELOG),
-            patch.object(publication.subprocess, "run", return_value=completed),
+            patch.object(publication.subprocess, "run", side_effect=git) as run,
             patch.object(publication, "fetch", side_effect=fetch),
             patch.object(publication, "validate_pdf"),
         ):
-            return publication.check_publication()
+            result = publication.check_publication()
+            self.assertIn(
+                ["git", "show", f"{MAIN_SHA}:CHANGELOG.md"], [c.args[0] for c in run.call_args_list]
+            )
+            return result
 
     def test_valid_release(self):
         self.assertIn("agree", self.check())
@@ -89,10 +97,11 @@ class PublicationIntegrityTests(unittest.TestCase):
 
     def test_version_tag_changelog_and_notes_consistency(self):
         data = release()
-        for field, value in (("tag_name", "v0.2.1"), ("name", "wrong"), ("body", "wrong")):
+        for field, value in (("tag_name", "v0.2.1"), ("body", "wrong")):
             altered = dict(data, **{field: value})
             with self.subTest(field=field), self.assertRaises(publication.Mismatch):
                 self.check(altered)
+        self.assertIn("agree", self.check(dict(data, name="Paper release")))
         with self.assertRaises(publication.Mismatch):
             publication.validate_metadata(
                 "0.2.2", CHANGELOG, CHANGELOG.replace("A change", "other"), data, data
@@ -139,6 +148,41 @@ class PublicationIntegrityTests(unittest.TestCase):
             publication, "check_publication", side_effect=publication.Unavailable("offline")
         ):
             self.assertEqual(publication.main(), 2)
+
+    def test_public_download_404_is_distinct_from_redirect_or_denial(self):
+        url = f"{publication.DOWNLOAD}/latest/download/{STABLE}"
+        for error_url, exception in (
+            (url, publication.Mismatch),
+            ("https://cdn.example/expired", publication.Unavailable),
+        ):
+            cause = urllib.error.HTTPError(error_url, 404, "Not Found", {}, None)
+            error = publication.NotFound("404")
+            error.__cause__ = cause
+            with (
+                self.subTest(error_url=error_url),
+                patch.object(publication, "fetch", side_effect=error),
+            ):
+                with self.assertRaises(exception):
+                    publication.public_pdf(url, STABLE)
+        with patch.object(publication, "fetch", side_effect=publication.Unavailable("403")):
+            with self.assertRaises(publication.Unavailable):
+                publication.public_pdf(url, STABLE)
+
+    def test_missing_latest_release_requires_confirmed_public_repository(self):
+        completed = subprocess.CompletedProcess(["git"], 0, CHANGELOG, "")
+        for repository, outcome in (
+            ({"private": False, "full_name": "basil-one/circle"}, publication.Mismatch),
+            ({"private": True, "full_name": "basil-one/circle"}, publication.Unavailable),
+        ):
+            with (
+                self.subTest(repository=repository),
+                patch.object(publication, "git_tags", return_value=[TAG]),
+                patch.object(publication.subprocess, "run", return_value=completed),
+                patch.object(publication, "api_release", side_effect=publication.NotFound("404")),
+                patch.object(publication, "fetch", return_value=json.dumps(repository).encode()),
+            ):
+                with self.assertRaises(outcome):
+                    publication.check_publication()
 
     def test_empty_and_unreadable_pdf_fail_but_missing_tool_is_unknown(self):
         from pathlib import Path

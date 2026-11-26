@@ -986,3 +986,38 @@ test('publication mismatch, inaccessible evidence and contradictory outputs rema
     assert.ok(pulse.markdown.includes(`| Paper: Publication Integrity | ${expected} |`));
   }
 });
+
+test('publication evidence remains independent of same-cycle paper outcomes', async () => {
+      const mainSha = 'a'.repeat(40);
+      const validatorSha = 'b'.repeat(40);
+      const pulse = await buildOrchestratedPulse({
+        apiUrl: 'https://api.github.com',
+        repository: 'basil-one/circle',
+        needs: {
+          paper: {
+            result: 'failure',
+            outputs: { build: 'success', content: 'failure', link: 'incomplete', rendering: 'success' }
+          },
+          'paper-publication': {
+            result: 'failure',
+            outputs: {
+              status: 'failed',
+              detail: 'Release v0.2.2 PDF assets differ; review before repair.',
+              main_sha: mainSha,
+              validator_sha: validatorSha
+            }
+          }
+        },
+        runId: '901',
+        runUrl: 'https://github.com/basil-one/circle/actions/runs/901',
+        date,
+        fetchImpl: async () => ({ ok: true, json: async () => ({ artifacts: [] }) })
+      });
+      assert.match(pulse.markdown, /12 of 12 dimensions/);
+      assert.match(pulse.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
+      assert.match(pulse.markdown, /\| Paper: Content Integrity \| Failed \|/);
+      assert.match(pulse.markdown, /\| Paper: Link Integrity \| Incomplete \/ paper verification \|/);
+      assert.match(pulse.markdown, /\| Paper: Rendering Integrity \| Unknown \/ PDF preview unavailable \|/);
+      assert.match(pulse.markdown, /Release v0\.2\.2 PDF assets differ; review before repair/);
+      assert.match(pulse.markdown, new RegExp(`Published main: ${mainSha}; validator revision: ${validatorSha}`));
+});
