@@ -47,7 +47,9 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 
 ## Quality Gate
 
-Required checks protect against known defects before changes are merged. Common and Site safeguards are required except Performance Integrity, whose comparisons are informational.
+Required checks protect against known defects before changes are merged. All Common and Site safeguards are required.
+
+Performance Integrity measures changes when warranted. Performance comparisons inform human judgment rather than automatically prevent merging.
 
 Human approval governs merge and publication.
 
