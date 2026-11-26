@@ -38,6 +38,112 @@ def _parse_scalar(value: str) -> str:
     return value
 
 
+def _peek_next_content_line(lines: List[str], start_idx: int) -> Tuple[int, str, int]:
+    """Return the next non-empty, non-comment line and its indentation."""
+    for index in range(start_idx, len(lines)):
+        raw = lines[index]
+        stripped = raw.strip()
+        if stripped and not stripped.startswith("#"):
+            return index, stripped, len(raw) - len(raw.lstrip())
+    return -1, "", -1
+
+
+def _read_yaml_block_scalar(lines: List[str], start_idx: int) -> Tuple[str, int]:
+    """Read an indented YAML block scalar and return its text and next line."""
+    block_lines: List[str] = []
+    block_indent: int | None = None
+    index = start_idx
+    while index < len(lines):
+        raw = lines[index]
+        stripped = raw.strip()
+        indent = len(raw) - len(raw.lstrip())
+
+        if not stripped:
+            block_lines.append("")
+            index += 1
+            continue
+
+        if block_indent is None:
+            block_indent = indent
+        if indent < block_indent:
+            break
+
+        block_lines.append(raw[block_indent:])
+        index += 1
+
+    while block_lines and not block_lines[-1].strip():
+        block_lines.pop()
+    return "\n".join(block_lines), index
+
+
+def _parse_yaml_list_item(
+    lines: List[str],
+    index: int,
+    indent: int,
+    container: Union[Dict[str, Any], List[Any]],
+    stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]],
+) -> int:
+    if not isinstance(container, list):
+        raise ValueError(f"YAML parse error (line {index + 1}): list item without list context")
+
+    item_text = lines[index].strip()[2:].strip()
+    if ":" not in item_text:
+        container.append(_parse_scalar(item_text))
+        return index + 1
+
+    key, value = item_text.split(":", 1)
+    key = key.strip()
+    value = value.strip()
+    item_dict: Dict[str, Any] = {}
+    container.append(item_dict)
+
+    if value in ("|", "|-", "|+", ">", ">-", ">+"):
+        item_dict[key], index = _read_yaml_block_scalar(lines, index + 1)
+        stack.append((indent + 2, item_dict))
+        return index
+
+    item_dict[key] = _parse_scalar(value)
+    stack.append((indent + 2, item_dict))
+    return index + 1
+
+
+def _parse_yaml_mapping_entry(
+    lines: List[str],
+    index: int,
+    indent: int,
+    container: Union[Dict[str, Any], List[Any]],
+    stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]],
+) -> int:
+    line = lines[index].strip()
+    if ":" not in line:
+        raise ValueError(f"YAML parse error (line {index + 1}): expected 'key: value' -> {line}")
+    if not isinstance(container, dict):
+        raise ValueError(
+            f"YAML parse error (line {index + 1}): mapping entry inside list without dict item"
+        )
+
+    key, value = line.split(":", 1)
+    key = key.strip()
+    value = value.strip()
+
+    if value in ("|", "|-", "|+", ">", ">-", ">+"):
+        container[key], index = _read_yaml_block_scalar(lines, index + 1)
+        return index
+
+    if value:
+        container[key] = _parse_scalar(value)
+        return index + 1
+
+    next_idx, next_line, next_indent = _peek_next_content_line(lines, index + 1)
+    if next_idx != -1 and next_indent > indent and next_line.startswith("- "):
+        nested: Union[Dict[str, Any], List[Any]] = []
+    else:
+        nested = {}
+    container[key] = nested
+    stack.append((indent + 2, nested))
+    return index + 1
+
+
 def simple_yaml_load(content: str) -> dict:
     """A tiny YAML subset parser.
 
@@ -56,26 +162,6 @@ def simple_yaml_load(content: str) -> dict:
     # stack entries: (indent, container)
     stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]] = [(-1, root)]
 
-    def current_container() -> Union[Dict[str, Any], List[Any]]:
-        return stack[-1][1]
-
-    def pop_to_indent(target_indent: int) -> None:
-        # Pop until the current container's indent is *less than or equal to* the
-        # current line. (We only pop when indentation decreases.)
-        while stack and stack[-1][0] > target_indent:
-            stack.pop()
-
-    def peek_next_content_line(start_idx: int) -> Tuple[int, str, int]:
-        """Return (idx, stripped_line, indent) for the next non-empty, non-comment line."""
-        i = start_idx
-        while i < len(lines):
-            raw = lines[i]
-            stripped = raw.strip()
-            if stripped and not stripped.startswith('#'):
-                return i, stripped, (len(raw) - len(raw.lstrip()))
-            i += 1
-        return -1, '', -1
-
     i = 0
     while i < len(lines):
         raw = lines[i]
@@ -86,134 +172,14 @@ def simple_yaml_load(content: str) -> dict:
             continue
 
         indent = len(raw) - len(raw.lstrip())
-        pop_to_indent(indent)
-        container = current_container()
+        while stack and stack[-1][0] > indent:
+            stack.pop()
+        container = stack[-1][1]
 
-        # ------------------------------------------------------------------
-        # List item
-        # ------------------------------------------------------------------
         if line.startswith('- '):
-            if not isinstance(container, list):
-                raise ValueError(f"YAML parse error (line {i+1}): list item without list context")
-
-            item_text = line[2:].strip()
-
-            # List item that starts a dict inline: "- key: value"
-            if ':' in item_text:
-                key, value = item_text.split(':', 1)
-                key = key.strip()
-                value = value.strip()
-
-                item_dict: Dict[str, Any] = {}
-                container.append(item_dict)
-
-                # block scalars inside list items are not needed for this repo right now
-                if value in ('|', '|-', '|+', '>', '>-', '>+'):
-                    # Collect block scalar content
-                    block_lines: List[str] = []
-                    block_indent: int | None = None
-                    i += 1
-                    while i < len(lines):
-                        nxt_raw = lines[i]
-                        nxt_line = nxt_raw.strip('\n')
-                        nxt_stripped = nxt_line.strip()
-                        nxt_indent = len(nxt_raw) - len(nxt_raw.lstrip())
-
-                        if nxt_stripped == '':
-                            block_lines.append('')
-                            i += 1
-                            continue
-
-                        if block_indent is None:
-                            block_indent = nxt_indent
-
-                        if nxt_indent < (block_indent or 0):
-                            break
-
-                        block_lines.append(nxt_raw[block_indent:])
-                        i += 1
-
-                    while block_lines and not block_lines[-1].strip():
-                        block_lines.pop()
-
-                    item_dict[key] = '\n'.join(block_lines)
-                    # don't i += 1 here; loop continues with current i
-                    stack.append((indent + 2, item_dict))
-                    continue
-
-                item_dict[key] = _parse_scalar(value)
-                # Subsequent indented lines belong to this dict item
-                stack.append((indent + 2, item_dict))
-                i += 1
-                continue
-
-            # Simple scalar list item
-            container.append(_parse_scalar(item_text))
-            i += 1
+            i = _parse_yaml_list_item(lines, i, indent, container, stack)
             continue
-                
-        # ------------------------------------------------------------------
-        # Dict entry
-        # ------------------------------------------------------------------
-        if ':' not in line:
-            raise ValueError(f"YAML parse error (line {i+1}): expected 'key: value' -> {line}")
-
-        if not isinstance(container, dict):
-            raise ValueError(f"YAML parse error (line {i+1}): mapping entry inside list without dict item")
-
-        key, value = line.split(':', 1)
-        key = key.strip()
-        value = value.strip()
-
-        # Block scalar
-        if value in ('|', '|-', '|+', '>', '>-', '>+'):
-            block_lines: List[str] = []
-            block_indent: int | None = None
-            i += 1
-
-            while i < len(lines):
-                nxt_raw = lines[i]
-                nxt_stripped = nxt_raw.strip()
-                nxt_indent = len(nxt_raw) - len(nxt_raw.lstrip())
-
-                if nxt_stripped == '':
-                    block_lines.append('')
-                    i += 1
-                    continue
-
-                if block_indent is None:
-                    block_indent = nxt_indent
-
-                if nxt_indent < (block_indent or 0):
-                    break
-
-                block_lines.append(nxt_raw[block_indent:])
-                i += 1
-
-            while block_lines and not block_lines[-1].strip():
-                block_lines.pop()
-
-            container[key] = '\n'.join(block_lines)
-            continue
-
-        # Nested container
-        if value == '':
-            next_idx, next_line, next_indent = peek_next_content_line(i + 1)
-            if next_idx != -1 and next_indent > indent and next_line.startswith('- '):
-                new_list: List[Any] = []
-                container[key] = new_list
-                stack.append((indent + 2, new_list))
-            else:
-                new_dict: Dict[str, Any] = {}
-                container[key] = new_dict
-                stack.append((indent + 2, new_dict))
-
-            i += 1
-            continue
-
-        # Simple scalar
-        container[key] = _parse_scalar(value)
-        i += 1
+        i = _parse_yaml_mapping_entry(lines, i, indent, container, stack)
 
     return root
 

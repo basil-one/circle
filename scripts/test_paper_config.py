@@ -103,5 +103,47 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
         self.assertNotIn("creativecommons.org/licenses/by-sa/4.0/", template)
 
 
+class SimpleYamlLoadTests(unittest.TestCase):
+    def test_nested_sections_lists_and_block_scalars_keep_the_supported_shape(self):
+        parsed = BUILD_PDF.simple_yaml_load(
+            """title: Circle3
+sections:
+  - title: Moves
+    patterns:
+      - file: moves/establish.md
+        image: images/moves.png
+description: |
+  First line.
+
+  Third line.
+"""
+        )
+
+        self.assertEqual(parsed["title"], "Circle3")
+        self.assertEqual(
+            parsed["sections"],
+            [
+                {
+                    "title": "Moves",
+                    "patterns": [
+                        {
+                            "file": "moves/establish.md",
+                            "image": "images/moves.png",
+                        }
+                    ],
+                }
+            ],
+        )
+        self.assertEqual(parsed["description"], "First line.\n\nThird line.")
+
+    def test_invalid_list_and_mapping_contexts_keep_line_diagnostics(self):
+        for content, diagnostic in (
+            ("- item\n", "line 1"),
+            ("items:\n  - item\n    invalid\n", "line 3"),
+        ):
+            with self.subTest(content=content), self.assertRaisesRegex(ValueError, diagnostic):
+                BUILD_PDF.simple_yaml_load(content)
+
+
 if __name__ == "__main__":
     unittest.main()
