@@ -304,7 +304,7 @@ function collectCoverageIssues({
         `${route} at ${width}px`,
       );
       if (responsiveCases?.some((item) => !item.annotations.some(
-        (annotation) => annotation.type === "responsive-hit-area",
+        (annotation) => annotation?.type === "responsive-hit-area",
       ))) {
         issues.push(
           `Responsive hit-area evidence is missing for "${route}" at ${width}px.`,
