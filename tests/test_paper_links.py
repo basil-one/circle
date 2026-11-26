@@ -279,7 +279,9 @@ class PaperLinkTests(unittest.TestCase):
 
     def test_shared_planning_keeps_collisions_and_non_toc_section_anchors(self):
         config = (ROOT / "scripts/plop.paper.config.yaml").read_text()
-        config = config.replace("introduction_anchor: introduction", "introduction_anchor: abstract")
+        config = config.replace(
+            "introduction_anchor: introduction", "introduction_anchor: abstract"
+        )
         config = config.replace("include_in_toc: true", "include_in_toc: false", 1)
         config = config.replace(
             "introduction_file: content/", f"introduction_file: {ROOT}/scripts/content/"

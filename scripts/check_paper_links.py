@@ -43,11 +43,23 @@ def paper_expectations(config: Path):
     discussion_title, discussion_anchor = builder._get_discussion_meta()
     conclusion_title, conclusion_anchor = builder._get_conclusion_meta()
     (
-        sections, intro_anchor, discussion_anchor, conclusion_anchor, back_anchor,
-        core, appendix, routes,
+        sections,
+        intro_anchor,
+        discussion_anchor,
+        conclusion_anchor,
+        back_anchor,
+        core,
+        appendix,
+        routes,
     ) = builder._plan_paper_content(
-        builder._get_pattern_sections(), abstract, intro_text, intro_anchor,
-        discussion_anchor, conclusion_anchor, back_text, back_anchor,
+        builder._get_pattern_sections(),
+        abstract,
+        intro_text,
+        intro_anchor,
+        discussion_anchor,
+        conclusion_anchor,
+        back_text,
+        back_anchor,
     )
     toc = {abstract: abstract_label} if include_abstract and abstract_label and abstract else {}
     if intro_text.strip() and include_intro and intro_label:
@@ -55,8 +67,16 @@ def paper_expectations(config: Path):
     toc.update(
         (item["anchor"], item["label"])
         for item in builder._build_pdf_toc(
-            core, appendix, discussion_title, discussion_anchor, conclusion_title,
-            conclusion_anchor, back_text.strip(), include_back, back_label, back_anchor,
+            core,
+            appendix,
+            discussion_title,
+            discussion_anchor,
+            conclusion_title,
+            conclusion_anchor,
+            back_text.strip(),
+            include_back,
+            back_label,
+            back_anchor,
         )
     )
     anchors = {section["anchor"] for section in sections}
