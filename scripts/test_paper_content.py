@@ -1,6 +1,8 @@
+import json
 import os
 import re
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -71,12 +73,32 @@ class PaperContentTests(unittest.TestCase):
             with self.assertRaises(subprocess.TimeoutExpired):
                 content.plain_text("text")
 
+    def test_timeout_and_bad_config_write_incomplete_report(self):
+        failures = [subprocess.TimeoutExpired("pdftotext", 60), KeyError("framing")]
+        for failure in failures:
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                report = str(Path(directory) / "report.json")
+                with (
+                    patch.object(
+                        content.sys, "argv", ["check", "config", "pdf", "--report", report]
+                    ),
+                    patch.object(content.BUILD_PDF, "CirclePDFBuilder", side_effect=failure),
+                ):
+                    self.assertEqual(content.main(), 2)
+                self.assertEqual(json.loads(Path(report).read_text())["status"], "incomplete")
+
     def test_builder_normalizes_abstract_and_reserves_collisions(self):
         self.builder.config["framing"]["abstract_anchor"] = "Abstract heading!"
         self.builder.config["body"]["introduction_anchor"] = "abstract-heading"
         blocks, _, _ = content.plan(self.builder)
         self.assertEqual(blocks[0][1], "abstract-heading")
         self.assertEqual(blocks[1][1], "abstract-heading-2")
+
+    def test_pattern_coverage_does_not_depend_on_toc_flag(self):
+        self.builder.config["sections"][0]["include_in_toc"] = "false"
+        blocks, sections, _ = content.plan(self.builder)
+        pattern = sections[0]["patterns"][0]
+        self.assertIn(pattern["anchor"], [block[1] for block in blocks])
 
 
 @unittest.skipUnless(os.environ.get("PAPER_PDF_PATH"), "requires same-cycle generated PDF")
