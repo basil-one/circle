@@ -34,6 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           cp scripts/build-paper-pdf.sh "$RUNNER_TEMP/build-paper-pdf.sh"
+          cp scripts/paper_release.py "$RUNNER_TEMP/paper_release.py"
           test "$GITHUB_REF" = "refs/heads/main" || {
             echo "::error::Paper: Publish can only run from main."
             exit 1
@@ -92,6 +93,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
         run: |
-          python3 scripts/paper_release.py release \
+          python3 "$RUNNER_TEMP/paper_release.py" release \
             --version "$VERSION" \
             --pdf assets/pdfs/circle3-paper.pdf

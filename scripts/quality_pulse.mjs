@@ -658,7 +658,7 @@ function renderPulse({
   }
   lines.push('');
   lines.push(orchestrated
-    ? 'Each outcome below comes from the corresponding reusable workflow job in this run. No fixed wall-clock completion cutoff is applied.'
+    ? 'Each outcome below comes from the corresponding job in this run. No fixed wall-clock completion cutoff is applied.'
     : `Daily workflow runs are queried from \`main\` with \`schedule\` provenance. Runs must complete by ${cutoff} UTC to count as fresh; late or missing runs are not replaced with prior green results.`);
   return `${lines.join('\n')}\n`;
 }
@@ -727,11 +727,24 @@ async function buildOrchestratedPulse({
     ['dependency-security', 'Common: Dependency Security'],
     ['rendering', 'Site: Rendering Integrity'],
     ['performance', 'Site: Performance Integrity'],
-    ['paper', 'Paper: Build Integrity']
+    ['paper', 'Paper: Build Integrity'],
+    ['paper-publication', 'Paper: Publication Integrity']
   ];
   const results = jobMap.map(([jobId, name]) =>
     orchestratedJobResult(needs, jobId, name, run)
   );
+  const publication = results.find((item) => item.name === 'Paper: Publication Integrity');
+  if (['fresh', 'failed'].includes(publication.result.state)) {
+    const status = needs['paper-publication']?.outputs?.status;
+    if (status === 'unknown' || !['passed', 'failed'].includes(status) ||
+        (status === 'passed') !== (publication.result.state === 'fresh')) {
+      publication.result.state = 'unknown';
+      publication.result.label = 'Unknown / publication evidence unavailable';
+      publication.result.detail = 'Publication evidence could not be verified; inspect the publication job logs and rerun.';
+    } else if (status === 'failed') {
+      publication.result.detail = 'Published release integrity mismatch; inspect the publication job logs and decide how to repair it.';
+    }
+  }
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {

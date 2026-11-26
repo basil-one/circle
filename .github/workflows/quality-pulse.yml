@@ -65,6 +65,39 @@ jobs:
     permissions:
       contents: read
 
+  paper-publication:
+    name: "Paper: Publication Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      status: ${{ steps.verify.outputs.status }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install PDF inspection tool
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Verify published release
+        id: verify
+        run: |
+          set +e
+          python3 scripts/paper_publication_integrity.py
+          result=$?
+          case "$result" in
+            0) status=passed ;;
+            1) status=failed ;;
+            *) status=unknown ;;
+          esac
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Enforce publication result
+        env:
+          STATUS: ${{ steps.verify.outputs.status }}
+        run: test "$STATUS" = passed
+
   pulse:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
@@ -77,6 +110,7 @@ jobs:
       - rendering
       - performance
       - paper
+      - paper-publication
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

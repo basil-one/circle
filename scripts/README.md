@@ -104,7 +104,7 @@ Each release includes:
 
 Release notes combine version-specific entries from `CHANGELOG.md` with shared content maintained in `scripts/paper_release.py`.
 
-If publication fails, rerun the same version to resume. Completed releases are protected from replacement; deliberately delete an asset before rerunning to replace it. If branch protection blocks publication, resolve the permission issue before retrying.
+If publication fails, rerun the same version to resume. Completed releases are protected from replacement. If one asset survives, recovery copies that published asset to the missing name rather than pairing it with a newly rebuilt PDF. If both assets differ, publication stops for a human repair decision; it does not overwrite either asset. If branch protection blocks publication, resolve the permission issue before retrying.
 
 ## Inputs
 

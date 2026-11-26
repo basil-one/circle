@@ -696,6 +696,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'performance',
     'paper'
   ].map((jobId) => [jobId, { result: 'success' }]));
+  needs['paper-publication'] = { result: 'success', outputs: { status: 'passed' } };
   const performanceSummary = {
     complete: true,
     capturedAt: `${date}T06:30:00.000Z`,
@@ -742,9 +743,10 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   });
 
   assert.equal(pulse.successful, true);
-  assert.match(pulse.markdown, /All 8 dimensions passed in this cycle/);
+  assert.match(pulse.markdown, /All 9 dimensions passed in this cycle/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
+  assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/458/);
   assert.match(pulse.markdown, /\[same-cycle run\]\(https:\/\/github\.com\/basil-one\/circle\/actions\/runs\/888\)/);
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/456/);
@@ -783,7 +785,8 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
       'dependency-security': { result: 'skipped' },
       rendering: { result: 'skipped' },
       performance: { result: 'skipped' },
-      paper: { result: 'cancelled' }
+      paper: { result: 'cancelled' },
+      'paper-publication': { result: 'failure', outputs: { status: 'unknown' } }
     },
     runId: '889',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/889',
@@ -794,13 +797,14 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
     }
   });
   assert.equal(pulse.successful, false);
-  assert.match(pulse.markdown, /Cycle incomplete — 8 of 8 dimensions/);
+  assert.match(pulse.markdown, /Cycle incomplete — 9 of 9 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
   assert.match(pulse.markdown, /\| Common: Code Quality \| Unknown outcome \|/);
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Incomplete \/ cancelled \|/);
+  assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Unknown \/ publication evidence unavailable \|/);
 
   const missing = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -954,10 +958,31 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
     date,
     fetchImpl: async () => ({ ok: true, json: async () => ({ artifacts: [] }) })
   });
+
   assert.equal(pulse.successful, false);
   assert.match(pulse.markdown, /\| Common: Dependency Security \| Unknown \/ posture artifact unavailable \|/);
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Unknown \/ performance evidence unavailable \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(pulse.markdown, /no clean result is inferred/);
   assert.match(pulse.markdown, /no comparison or pass is inferred/);
+});
+
+test('publication mismatch, inaccessible evidence and contradictory outputs remain distinct', async () => {
+  for (const [result, status, expected] of [
+    ['failure', 'failed', 'Failed'],
+    ['failure', 'unknown', 'Unknown / publication evidence unavailable'],
+    ['success', undefined, 'Unknown / publication evidence unavailable'],
+    ['success', 'failed', 'Unknown / publication evidence unavailable']
+  ]) {
+    const pulse = await buildOrchestratedPulse({
+      apiUrl: 'https://api.github.com',
+      repository: 'basil-one/circle',
+      needs: { 'paper-publication': { result, outputs: { status } } },
+      runId: '900',
+      runUrl: 'https://github.com/basil-one/circle/actions/runs/900',
+      date
+    });
+    assert.equal(pulse.successful, false);
+    assert.ok(pulse.markdown.includes(`| Paper: Publication Integrity | ${expected} |`));
+  }
 });
