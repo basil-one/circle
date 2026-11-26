@@ -224,6 +224,11 @@ def reject_complete_published_release(tag: str, release: dict[str, object] | Non
     if release is None or release["isDraft"]:
         return
     existing_assets = set(release["assetNames"])
+    if not (required_asset_names(tag) & existing_assets):
+        raise ReleaseError(
+            f"Published release {tag} has no surviving PDF asset; decide how to repair it "
+            "before uploading a rebuilt paper."
+        )
     if required_asset_names(tag).issubset(existing_assets):
         raise ReleaseError(
             f"Release {tag} is already published with both PDF assets. "

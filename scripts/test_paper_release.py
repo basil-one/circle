@@ -261,6 +261,15 @@ class PaperReleaseTests(unittest.TestCase):
             run.assert_called_once()
             self.assertFalse(versioned.exists())
 
+    def test_published_release_without_surviving_assets_requires_decision(self):
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "circle3-paper.pdf"
+            pdf.write_bytes(b"new build")
+            with patch("paper_release.run_gh", return_value=self.gh_result(False)) as run:
+                with self.assertRaisesRegex(ReleaseError, "no surviving PDF"):
+                    publish_release("0.2.1", pdf, CHANGELOG, ["v0.2.1"])
+            run.assert_called_once()
+
     def test_published_release_recovery_uploads_only_missing_asset(self):
         with tempfile.TemporaryDirectory() as directory:
             pdf = Path(directory) / "circle3-paper.pdf"
