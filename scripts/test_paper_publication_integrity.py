@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 import paper_publication_integrity as publication
 
-
 CHANGELOG = """# Changelog
 
 ## [Unreleased]
@@ -95,9 +94,13 @@ class PublicationIntegrityTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(publication.Mismatch):
                 self.check(altered)
         with self.assertRaises(publication.Mismatch):
-            publication.validate_metadata("0.2.2", CHANGELOG, CHANGELOG.replace("A change", "other"), data, data)
+            publication.validate_metadata(
+                "0.2.2", CHANGELOG, CHANGELOG.replace("A change", "other"), data, data
+            )
         with self.assertRaises(publication.Mismatch):
-            publication.validate_metadata("0.2.2", CHANGELOG, CHANGELOG, data, {"tag_name": "v0.2.1"})
+            publication.validate_metadata(
+                "0.2.2", CHANGELOG, CHANGELOG, data, {"tag_name": "v0.2.1"}
+            )
 
     def test_inaccessible_and_malformed_api_are_unknown(self):
         with patch.object(publication, "fetch", side_effect=publication.Unavailable("network")):
@@ -110,6 +113,32 @@ class PublicationIntegrityTests(unittest.TestCase):
         del data["assets"]
         with self.assertRaises(publication.Unavailable):
             self.check(data)
+        data = release()
+        data["draft"] = None
+        with self.assertRaises(publication.Unavailable):
+            self.check(data)
+
+    def test_latest_release_older_than_tag_is_incomplete(self):
+        completed = subprocess.CompletedProcess(["git"], 0, CHANGELOG, "")
+        with (
+            patch.object(publication, "git_tags", return_value=[TAG]),
+            patch.object(publication.Path, "read_text", return_value=CHANGELOG),
+            patch.object(publication.subprocess, "run", return_value=completed),
+            patch.object(publication, "api_release", return_value={"tag_name": "v0.2.1"}) as api,
+        ):
+            with self.assertRaisesRegex(publication.Mismatch, "incomplete"):
+                publication.check_publication()
+            api.assert_called_once_with("latest")
+
+    def test_exit_codes_reserve_mismatch_from_unexpected_failure(self):
+        with patch.object(
+            publication, "check_publication", side_effect=publication.Mismatch("mismatch")
+        ):
+            self.assertEqual(publication.main(), 3)
+        with patch.object(
+            publication, "check_publication", side_effect=publication.Unavailable("offline")
+        ):
+            self.assertEqual(publication.main(), 2)
 
     def test_empty_and_unreadable_pdf_fail_but_missing_tool_is_unknown(self):
         from pathlib import Path
@@ -118,10 +147,14 @@ class PublicationIntegrityTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             with self.assertRaises(publication.Mismatch):
                 publication.validate_pdf(b"", STABLE, Path(directory))
-            with patch.object(publication.subprocess, "run", return_value=subprocess.CompletedProcess([], 1)):
+            with patch.object(
+                publication.subprocess, "run", return_value=subprocess.CompletedProcess([], 1)
+            ):
                 with self.assertRaises(publication.Mismatch):
                     publication.validate_pdf(b"bad", STABLE, Path(directory))
-            with patch.object(publication.subprocess, "run", side_effect=FileNotFoundError("pdfinfo")):
+            with patch.object(
+                publication.subprocess, "run", side_effect=FileNotFoundError("pdfinfo")
+            ):
                 with self.assertRaises(publication.Unavailable):
                     publication.validate_pdf(b"pdf", STABLE, Path(directory))
 

@@ -287,11 +287,11 @@ def download_release_assets(tag: str, names: set[str], directory: Path) -> dict[
         if result.returncode or not path.is_file() or not 0 < path.stat().st_size <= 50_000_000:
             raise ReleaseError(f"Unable to download a nonempty, bounded asset {name} for {tag}.")
         try:
-            subprocess.run(
-                ["pdfinfo", str(path)], check=True, capture_output=True, timeout=30
-            )
+            subprocess.run(["pdfinfo", str(path)], check=True, capture_output=True, timeout=30)
         except (OSError, subprocess.SubprocessError) as error:
-            raise ReleaseError(f"Asset {name} for {tag} is not verifiably readable: {error}") from error
+            raise ReleaseError(
+                f"Asset {name} for {tag} is not verifiably readable: {error}"
+            ) from error
         downloaded[name] = path
     return downloaded
 

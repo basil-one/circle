@@ -83,13 +83,15 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - name: Verify published release
         id: verify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set +e
           python3 scripts/paper_publication_integrity.py
           result=$?
           case "$result" in
             0) status=passed ;;
-            1) status=failed ;;
+            3) status=failed ;;
             *) status=unknown ;;
           esac
           echo "status=$status" >> "$GITHUB_OUTPUT"

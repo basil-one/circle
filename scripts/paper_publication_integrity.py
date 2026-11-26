@@ -3,6 +3,7 @@
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -32,12 +33,24 @@ class Unavailable(ValueError):
     """Evidence could not be obtained or interpreted."""
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 def fetch(url, limit):
-    request = urllib.request.Request(
-        url, headers={"Accept": "application/vnd.github+json", "User-Agent": "circle-quality-pulse"}
-    )
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "circle-quality-pulse"}
+    api_request = url.startswith(f"{API}/")
+    if api_request and os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    request = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        opener = (
+            urllib.request.build_opener(NoRedirect())
+            if api_request
+            else urllib.request.build_opener()
+        )
+        with opener.open(request, timeout=30) as response:
             data = response.read(limit + 1)
     except (OSError, urllib.error.URLError) as error:
         raise Unavailable(f"Could not retrieve {url}: {error}") from error
@@ -57,7 +70,7 @@ def api_release(path):
         raise Unavailable(f"Invalid release API response for {path}: {error}") from error
 
 
-def validate_metadata(version, current, tagged, release, latest):
+def validate_changelogs(version, current, tagged):
     tag = f"v{version}"
     if not changelog_versions(current) or changelog_versions(current)[0] != version:
         raise Mismatch(f"Latest stable tag {tag} differs from the latest changelog entry.")
@@ -69,7 +82,35 @@ def validate_metadata(version, current, tagged, release, latest):
             raise Mismatch(f"Changelog entry for {tag} differs from the tagged entry.")
     except ReleaseError as error:
         raise Mismatch(str(error)) from error
+    return changes
+
+
+def validate_release_assets(tag, assets):
+    if not isinstance(assets, list):
+        raise TypeError("assets is not a list")
+    by_name = {asset["name"]: asset for asset in assets}
+    if len(by_name) != len(assets):
+        raise TypeError("duplicate asset names")
+    missing = required_asset_names(tag) - by_name.keys()
+    if missing:
+        raise Mismatch(f"Release {tag} is missing assets: {', '.join(sorted(missing))}.")
+    for name in required_asset_names(tag):
+        asset = by_name[name]
+        if not isinstance(asset["size"], int) or isinstance(asset["size"], bool):
+            raise TypeError(f"invalid asset size for {name}")
+        if asset["state"] != "uploaded" or asset["size"] <= 0:
+            raise Mismatch(f"Release asset {name} is incomplete or empty.")
+    return by_name
+
+
+def validate_metadata(version, current, tagged, release, latest):
+    tag = f"v{version}"
+    changes = validate_changelogs(version, current, tagged)
     try:
+        if not all(isinstance(release[key], bool) for key in ("draft", "prerelease")):
+            raise TypeError("invalid release state")
+        if not all(isinstance(release[key], str) for key in ("tag_name", "name", "body")):
+            raise TypeError("invalid release identity or notes")
         if release["tag_name"] != tag or release["name"] != tag:
             raise Mismatch(f"Release identity does not match {tag}.")
         if release["draft"] or release["prerelease"] or not release["published_at"]:
@@ -78,20 +119,9 @@ def validate_metadata(version, current, tagged, release, latest):
             raise Mismatch(f"Latest published release is not {tag}.")
         if not release["body"].startswith(f"## What changed\n\n{changes}\n\n## Includes"):
             raise Mismatch(f"Release notes for {tag} differ from CHANGELOG.md.")
-        assets = release["assets"]
-        if not isinstance(assets, list):
-            raise TypeError("assets is not a list")
-        by_name = {asset["name"]: asset for asset in assets}
-        missing = required_asset_names(tag) - by_name.keys()
-        if missing:
-            raise Mismatch(f"Release {tag} is missing assets: {', '.join(sorted(missing))}.")
-        for name in required_asset_names(tag):
-            asset = by_name[name]
-            if asset["state"] != "uploaded" or asset["size"] <= 0:
-                raise Mismatch(f"Release asset {name} is incomplete or empty.")
+        return validate_release_assets(tag, release["assets"])
     except (KeyError, TypeError, AttributeError) as error:
         raise Unavailable(f"Incomplete release API evidence for {tag}: {error}") from error
-    return by_name
 
 
 def validate_pdf(data, name, directory):
@@ -100,7 +130,9 @@ def validate_pdf(data, name, directory):
     path = directory / name
     path.write_bytes(data)
     try:
-        result = subprocess.run(["pdfinfo", str(path)], capture_output=True, timeout=30, check=False)
+        result = subprocess.run(
+            ["pdfinfo", str(path)], capture_output=True, timeout=30, check=False
+        )
     except (OSError, subprocess.SubprocessError) as error:
         raise Unavailable(f"Could not inspect {name} with pdfinfo: {error}") from error
     if result.returncode:
@@ -115,13 +147,20 @@ def check_publication():
         current = Path("CHANGELOG.md").read_text(encoding="utf-8")
         tagged = subprocess.run(
             ["git", "show", f"v{version}:CHANGELOG.md"],
-            check=True, capture_output=True, text=True, timeout=30,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
         ).stdout
     except (OSError, subprocess.SubprocessError, ReleaseError) as error:
         raise Unavailable(f"Could not inspect tags or changelog: {error}") from error
     tag = f"v{version}"
-    release = api_release(f"tags/{tag}")
     latest = api_release("latest")
+    if not isinstance(latest.get("tag_name"), str):
+        raise Unavailable("Latest release API response has no tag name.")
+    if latest["tag_name"] != tag:
+        raise Mismatch(f"Latest published release is not {tag}; publication may be incomplete.")
+    release = api_release(f"tags/{tag}")
     assets = validate_metadata(version, current, tagged, release, latest)
     stable_name = "circle3-paper.pdf"
     versioned_name = f"circle3-paper-{tag}.pdf"
@@ -145,7 +184,7 @@ def main():
         print(f"PASSED: {check_publication()}")
     except Mismatch as error:
         print(f"FAILED: {error}")
-        return 1
+        return 3
     except Unavailable as error:
         print(f"UNKNOWN: {error}")
         return 2

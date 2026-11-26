@@ -227,7 +227,9 @@ class PaperReleaseTests(unittest.TestCase):
             ]
             with (
                 patch("paper_release.run_gh", side_effect=states) as run,
-                patch("paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}),
+                patch(
+                    "paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                ),
                 patch("paper_release.verify_asset_parity"),
             ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
@@ -274,7 +276,9 @@ class PaperReleaseTests(unittest.TestCase):
             ]
             with (
                 patch("paper_release.run_gh", side_effect=states) as run,
-                patch("paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}),
+                patch(
+                    "paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                ),
                 patch("paper_release.verify_asset_parity"),
             ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
@@ -322,7 +326,9 @@ class PaperReleaseTests(unittest.TestCase):
             second = Path(directory) / "second.pdf"
             first.write_bytes(b"released")
             second.write_bytes(b"other")
-            with patch("paper_release.download_release_assets", return_value={"a": first, "b": second}):
+            with patch(
+                "paper_release.download_release_assets", return_value={"a": first, "b": second}
+            ):
                 with self.assertRaisesRegex(ReleaseError, "differ"):
                     verify_asset_parity("v0.2.1", Path(directory))
                 second.write_bytes(b"released")
@@ -338,7 +344,11 @@ class PaperReleaseTests(unittest.TestCase):
                 surviving = root / "surviving.pdf"
                 surviving.write_bytes(b"original release")
                 initial = {"isDraft": True, "assetNames": {existing}, "assetSizes": {existing: 16}}
-                complete = {"isDraft": True, "assetNames": set(names), "assetSizes": dict.fromkeys(names, 16)}
+                complete = {
+                    "isDraft": True,
+                    "assetNames": set(names),
+                    "assetSizes": dict.fromkeys(names, 16),
+                }
                 published = dict(complete, isDraft=False)
                 uploads = {}
 
@@ -349,14 +359,18 @@ class PaperReleaseTests(unittest.TestCase):
 
                 with (
                     patch("paper_release.get_release", side_effect=[initial, complete, published]),
-                    patch("paper_release.download_release_assets", return_value={existing: surviving}),
+                    patch(
+                        "paper_release.download_release_assets", return_value={existing: surviving}
+                    ),
                     patch("paper_release.upload_missing_release_assets", side_effect=capture),
                     patch("paper_release.verify_asset_parity"),
                     patch("paper_release.mark_release_published"),
                 ):
                     changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
                     publish_release("0.2.1", pdf, changelog, ["v0.2.1"])
-                self.assertEqual(uploads, {next(name for name in names if name != existing): b"original release"})
+                self.assertEqual(
+                    uploads, {next(name for name in names if name != existing): b"original release"}
+                )
 
     def test_mismatch_or_inaccessible_existing_assets_never_publishes(self):
         names = {"circle3-paper.pdf", "circle3-paper-v0.2.1.pdf"}
@@ -368,8 +382,14 @@ class PaperReleaseTests(unittest.TestCase):
                 with (
                     self.subTest(failure=failure),
                     patch("paper_release.get_release", return_value=state),
-                    patch("paper_release.download_release_assets", side_effect=ReleaseError("unavailable") if failure == "download" else None),
-                    patch("paper_release.verify_asset_parity", side_effect=ReleaseError("differ") if failure == "parity" else None),
+                    patch(
+                        "paper_release.download_release_assets",
+                        side_effect=ReleaseError("unavailable") if failure == "download" else None,
+                    ),
+                    patch(
+                        "paper_release.verify_asset_parity",
+                        side_effect=ReleaseError("differ") if failure == "parity" else None,
+                    ),
                     patch("paper_release.mark_release_published") as publish,
                 ):
                     with self.assertRaises(ReleaseError):
