@@ -22,8 +22,14 @@
 @layer reset {
   body {
     margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont,
-                 "Segoe UI", Helvetica, Arial, sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Helvetica,
+      Arial,
+      sans-serif;
     color: #1a1a1a;
     background: #fdfcf9;
   }
@@ -185,13 +191,12 @@
      MAIN IMAGES: FULL-WIDTH, CIRCULAR
      ======================================== */
   main img {
-    width: 100%;         /* always match main width */
-    max-width: 100%;     /* prevent overflow */
-    height: auto;        /* maintain aspect ratio */
-    object-fit: cover;   /* crop nicely if needed */
-    border-radius: 10%;  /* circular */
+    width: 100%; /* always match main width */
+    max-width: 100%; /* prevent overflow */
+    height: auto; /* maintain aspect ratio */
+    object-fit: cover; /* crop nicely if needed */
+    border-radius: 10%; /* circular */
   }
-
 }
 .footer-policy-links {
   text-align: center;

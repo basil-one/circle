@@ -29,6 +29,8 @@ jobs:
         run: bundle exec jekyll build --trace
         env:
           JEKYLL_ENV: production
+      - name: Verify repository changelog is not a generated page
+        run: test ! -e _site/CHANGELOG.html
       - name: Summarize production build
         if: always()
         env:

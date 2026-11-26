@@ -1,12 +1,7 @@
-import { readdirSync } from 'node:fs';
-import { relative, resolve, sep } from 'node:path';
+import { readdirSync } from "node:fs";
+import { relative, resolve, sep } from "node:path";
 
-const performanceRoutes = [
-  '/',
-  '/moves/',
-  '/lenses/',
-  '/method/'
-];
+const performanceRoutes = ["/", "/moves/", "/lenses/", "/method/"];
 
 function htmlFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -17,21 +12,21 @@ function htmlFiles(directory) {
 }
 
 function routeForFile(siteDirectory, filePath) {
-  const relativePath = relative(siteDirectory, filePath).split(sep).join('/');
-  if (relativePath === 'index.html') return '/';
-  if (relativePath.endsWith('/index.html')) {
-    return `/${relativePath.slice(0, -'index.html'.length)}`;
+  const relativePath = relative(siteDirectory, filePath).split(sep).join("/");
+  if (relativePath === "index.html") return "/";
+  if (relativePath.endsWith("/index.html")) {
+    return `/${relativePath.slice(0, -"index.html".length)}`;
   }
   return `/${relativePath}`;
 }
 
 export function generatedFileForRoute(siteDirectory, route) {
   const filePath = resolve(siteDirectory, `.${route}`);
-  return route === '/'
-    ? resolve(siteDirectory, 'index.html')
+  return route === "/"
+    ? resolve(siteDirectory, "index.html")
     : /\.html?$/i.test(route)
       ? filePath
-      : resolve(filePath, 'index.html');
+      : resolve(filePath, "index.html");
 }
 
 export function discoverHtmlRoutes(siteDirectory) {
@@ -46,9 +41,13 @@ export function selectSmokeRoutes(siteDirectory) {
 
 export function selectPerformanceRoutes(siteDirectory) {
   const generatedRoutes = new Set(discoverHtmlRoutes(siteDirectory));
-  const missingRoutes = performanceRoutes.filter((route) => !generatedRoutes.has(route));
+  const missingRoutes = performanceRoutes.filter(
+    (route) => !generatedRoutes.has(route),
+  );
   if (missingRoutes.length) {
-    throw new Error(`Circle performance routes are missing from generated output: ${missingRoutes.join(', ')}`);
+    throw new Error(
+      `Circle performance routes are missing from generated output: ${missingRoutes.join(", ")}`,
+    );
   }
   return [...performanceRoutes];
 }

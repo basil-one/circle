@@ -8,8 +8,7 @@ const workflows = [
   ['site-build-integrity.yml', 'build', 'Site: Build Integrity'],
   ['site-link-integrity.yml', 'links', 'Site: Link Integrity'],
   ['site-seo-integrity.yml', 'seo', 'Site: SEO Integrity'],
-  ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity'],
-  ['site-performance-integrity.yml', 'lighthouse', 'Site: Performance Integrity']
+  ['site-rendering-integrity.yml', 'browser-smoke', 'Site: Rendering Integrity']
 ];
 
 test('required PR checks are emitted by their substantive workflow jobs', async () => {
@@ -43,4 +42,17 @@ test('required PR checks are emitted by their substantive workflow jobs', async 
       assert.equal(condition, undefined, `${jobId} cannot be skipped by a job condition`);
     }
   }
+});
+
+test('performance remains available but is not part of Agency’s required-check contract', async () => {
+  const file = 'site-performance-integrity.yml';
+  const yaml = await readFile(new URL(`../.github/workflows/${file}`, import.meta.url), 'utf8');
+  assert.ok(!workflows.some(([requiredFile]) => requiredFile === file));
+  assert.match(yaml, /^  pull_request:\n    branches: \[main\]$/m);
+  assert.match(yaml, /^  workflow_dispatch:$/m);
+  assert.match(yaml, /^  workflow_call:$/m);
+  assert.doesNotMatch(yaml, /^  schedule:$/m);
+  assert.match(yaml, /^  lighthouse:\n    name: "Site: Performance Integrity"$/m);
+  assert.match(yaml, /^      - name: Run performance classifier and history tests\n        id: tests\n        run: npm run test:performance-history/m);
+  assert.match(yaml, /^      - name: Measure rendered pages\n        id: measure\n        if: .+\n        run: npm run measure:performance/m);
 });

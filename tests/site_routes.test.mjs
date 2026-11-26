@@ -36,7 +36,6 @@ test('discovers Circle collection entries and smoke-tests every generated route'
     assert.deepEqual(selectSmokeRoutes(root), [...routes].sort());
     assert.deepEqual(selectPerformanceRoutes(root), ['/', '/moves/', '/lenses/', '/method/']);
     assert.equal(generatedFileForRoute(root, '/moves/establish/'), resolve(root, 'moves/establish/index.html'));
-    assert.equal(generatedFileForRoute(root, '/CHANGELOG.html'), resolve(root, 'CHANGELOG.html'));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

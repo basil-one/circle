@@ -1,7 +1,9 @@
-import { test } from '@playwright/test';
-import { assertResponsivePage } from './responsive.js';
+import { test } from "@playwright/test";
+import { assertResponsivePage } from "./responsive.js";
 
-test('a forced page overflow produces an actionable responsive diagnostic', async ({ page }) => {
+test("a forced page overflow produces an actionable responsive diagnostic", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.setContent(`<!doctype html>
     <html lang="en">
@@ -9,5 +11,5 @@ test('a forced page overflow produces an actionable responsive diagnostic', asyn
       <body><main><h1>Fixture</h1><div style="width: 640px">Forced horizontal overflow</div></main></body>
     </html>`);
 
-  await assertResponsivePage(page, 'in-memory responsive failure fixture', 320);
+  await assertResponsivePage(page, "in-memory responsive failure fixture", 320);
 });
