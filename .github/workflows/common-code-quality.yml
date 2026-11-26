@@ -1,0 +1,93 @@
+name: "Common: Code Quality"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: "Common: Code Quality"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Load Super-Linter configuration
+        run: cat .github/linters/super-linter.env >> "$GITHUB_ENV"
+      - name: Check Gemfile syntax
+        id: ruby_syntax
+        run: ruby -c Gemfile
+      - name: GitHub Actions validation
+        id: jactionlint
+        uses: jdx/jactionlint@72c00452809bcca05b8bc12acdcf15dd7a9c1c5e # v2.6.0
+        with:
+          version: 2.6.0
+          profile: correctness
+          online: false
+          color: false
+      - name: Verify invalid permissions are rejected
+        env:
+          JACTIONLINT_EXECUTABLE: ${{ steps.jactionlint.outputs.executable }}
+        run: |
+          fixture="$(mktemp)"
+          output="$(mktemp)"
+          trap 'rm -f "$fixture" "$output"' EXIT
+          cat > "$fixture" <<'YAML'
+          name: Invalid permission fixture
+          on: push
+          permissions:
+            invalid-permission-scope: read
+          jobs:
+            test:
+              runs-on: ubuntu-latest
+              steps:
+                - run: echo "fixture"
+          YAML
+          if "$JACTIONLINT_EXECUTABLE" --profile correctness --color=never "$fixture" >"$output" 2>&1; then
+            echo "jactionlint accepted the invalid permission fixture"
+            exit 1
+          fi
+          if ! grep -Fq 'unknown permission scope "invalid-permission-scope"' "$output"; then
+            echo "jactionlint rejected the fixture for an unexpected reason"
+            exit 1
+          fi
+      - name: Test daily quality orchestration and Pulse
+        run: npm run test:quality-pulse
+      - name: Test required-check contracts
+        run: npm run test:required-checks
+      - name: Test generated-site route discovery
+        run: npm run test:site-routes
+      - name: Test rendering summary and coverage
+        run: npm run test:rendering-summary
+      - name: Super-Linter
+        id: super_linter
+        uses: super-linter/super-linter/slim@v9.0.0
+      - name: Summarize source quality
+        if: always()
+        env:
+          RUBY_OUTCOME: ${{ steps.ruby_syntax.outcome }}
+          ACTIONS_OUTCOME: ${{ steps.jactionlint.outcome }}
+          LINTER_OUTCOME: ${{ steps.super_linter.outcome }}
+        run: |
+          summary_outcome() {
+            case "$1" in
+              success) printf -- "- %s: **passed**.\n" "$2" ;;
+              failure) printf -- "- %s: **failed**; see step logs.\n" "$2" ;;
+              *) printf -- "- %s: **not completed**; see prior logs.\n" "$2" ;;
+            esac
+          }
+          {
+            echo "# Common: Code Quality"
+            echo
+            summary_outcome "$RUBY_OUTCOME" "Ruby Gemfile syntax"
+            summary_outcome "$ACTIONS_OUTCOME" "GitHub Actions validation (jactionlint)"
+            summary_outcome "$LINTER_OUTCOME" "Super-Linter + Ruff C901"
+            echo "Linter findings: GitHub annotations and Super-Linter logs."
+          } >> "$GITHUB_STEP_SUMMARY"

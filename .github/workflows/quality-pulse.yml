@@ -1,0 +1,92 @@
+name: Quality Pulse
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-quality-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  site-build:
+    name: "Site: Build Integrity"
+    uses: ./.github/workflows/site-build-integrity.yml
+    permissions:
+      contents: read
+
+  link:
+    name: "Site: Link Integrity"
+    uses: ./.github/workflows/site-link-integrity.yml
+    permissions:
+      contents: read
+
+  seo:
+    name: "Site: SEO Integrity"
+    uses: ./.github/workflows/site-seo-integrity.yml
+    permissions:
+      contents: read
+
+  code-quality:
+    name: "Common: Code Quality"
+    uses: ./.github/workflows/common-code-quality.yml
+    permissions:
+      contents: read
+
+  dependency-security:
+    name: "Common: Dependency Security"
+    uses: ./.github/workflows/common-dependency-security.yml
+    permissions:
+      contents: read
+      vulnerability-alerts: read
+
+  rendering:
+    name: "Site: Rendering Integrity"
+    uses: ./.github/workflows/site-rendering-integrity.yml
+    permissions:
+      contents: read
+
+  performance:
+    name: "Site: Performance Integrity"
+    uses: ./.github/workflows/site-performance-integrity.yml
+    with:
+      caller_event_name: ${{ github.event_name }}
+    permissions:
+      actions: read
+      contents: read
+
+  pulse:
+    name: Quality Pulse
+    if: ${{ always() && !cancelled() }}
+    needs:
+      - site-build
+      - link
+      - seo
+      - code-quality
+      - dependency-security
+      - rendering
+      - performance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Summarize this quality cycle
+        run: node scripts/quality_pulse.mjs
+        env:
+          GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PULSE_RESULTS_JSON: ${{ toJSON(needs) }}
+          PULSE_RUN_ID: ${{ github.run_id }}
+          PULSE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PULSE_EVENT_NAME: ${{ github.event_name }}
+          PULSE_RUN_BRANCH: ${{ github.ref_name }}

@@ -33,11 +33,34 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 
 ## Safeguards in Operation
 
-| Domain | Capability | In operation |
-| --- | --- | --- |
-| Paper | [Paper: Preview](workflows/paper-preview.yml) | Builds a downloadable PDF for paper-related pull requests and on demand, supporting human review before merge. |
-| Paper | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated publication from `main`, with version validation, PDF generation, changelog promotion, tagging, and release safeguards. |
+| Capability | Safeguard |
+| --- | --- |
+| [Common: Code Quality](workflows/common-code-quality.yml) | Source quality, workflow correctness, and maintainability. Function complexity is capped at 10. |
+| [Common: Dependency Security](workflows/common-dependency-security.yml) | Dependency changes and open vulnerability alerts at moderate severity or higher. |
+| [Site: Build Integrity](workflows/site-build-integrity.yml) | Successful production website generation. |
+| [Site: Link Integrity](workflows/site-link-integrity.yml) | Internal links, fragments, assets, and external destinations. |
+| [Site: SEO Integrity](workflows/site-seo-integrity.yml) | Page titles, canonical URLs, and indexing directives. |
+| [Site: Rendering Integrity](workflows/site-rendering-integrity.yml) | Browser verification, accessibility, and responsive usability at 320px, 768px, and 1280px. |
+| [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Lighthouse measurements across representative pages on mobile and desktop. |
+| [Paper: Preview](workflows/paper-preview.yml) | Downloadable PDF generation for human review. |
+| [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
 
-The Common and Site safeguards, cross-domain Quality Gate, daily Quality Pulse, and additional Paper safeguards are planned, not yet established. See [North Star — Circle Quality](https://github.com/basil-one/circle/issues/20) for the progression.
+## Quality Gate
 
-The intended daily Quality Pulse includes website and paper generation so technical problems can be discovered and addressed independently of creative work.
+Required checks protect against known defects before changes are merged. All Common and Site safeguards are required.
+
+Performance Integrity measures changes when warranted. Performance comparisons inform human judgment rather than automatically prevent merging.
+
+Human approval governs merge and publication.
+
+## Quality Pulse
+
+A [daily workflow](workflows/quality-pulse.yml) runs the Common and Site safeguards in parallel and provides a coherent view of quality. It can also be run on demand.
+
+Failures, incomplete checks, and unavailable evidence remain distinguishable from success. Findings bring actionable evidence to human judgment.
+
+Performance measurements are compared against a reviewed reference and recent compatible measurements.
+
+## Evolution
+
+Quality Gate activation and additional Paper safeguards remain in progress. See [North Star — Circle Quality](https://github.com/basil-one/circle/issues/20).

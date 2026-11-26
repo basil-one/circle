@@ -15,27 +15,135 @@ The framing + conclusion sections remain fully template-driven; this script only
 builds the *body* content that pandoc injects into the LaTeX template.
 """
 
-import sys
+import logging
 import re
 import shutil
 import subprocess
-import textwrap
+import sys
 import tempfile
+import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urlparse
-import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
 def _parse_scalar(value: str) -> str:
     value = value.strip()
-    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+    if (value.startswith('"') and value.endswith('"')) or (
+        value.startswith("'") and value.endswith("'")
+    ):
         return value[1:-1]
     return value
+
+
+def _peek_next_content_line(lines: List[str], start_idx: int) -> Tuple[int, str, int]:
+    """Return the next non-empty, non-comment line and its indentation."""
+    for index in range(start_idx, len(lines)):
+        raw = lines[index]
+        stripped = raw.strip()
+        if stripped and not stripped.startswith("#"):
+            return index, stripped, len(raw) - len(raw.lstrip())
+    return -1, "", -1
+
+
+def _read_yaml_block_scalar(lines: List[str], start_idx: int) -> Tuple[str, int]:
+    """Read an indented YAML block scalar and return its text and next line."""
+    block_lines: List[str] = []
+    block_indent: int | None = None
+    index = start_idx
+    while index < len(lines):
+        raw = lines[index]
+        stripped = raw.strip()
+        indent = len(raw) - len(raw.lstrip())
+
+        if not stripped:
+            block_lines.append("")
+            index += 1
+            continue
+
+        if block_indent is None:
+            block_indent = indent
+        if indent < block_indent:
+            break
+
+        block_lines.append(raw[block_indent:])
+        index += 1
+
+    while block_lines and not block_lines[-1].strip():
+        block_lines.pop()
+    return "\n".join(block_lines), index
+
+
+def _parse_yaml_list_item(
+    lines: List[str],
+    index: int,
+    indent: int,
+    container: Union[Dict[str, Any], List[Any]],
+    stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]],
+) -> int:
+    if not isinstance(container, list):
+        raise ValueError(f"YAML parse error (line {index + 1}): list item without list context")
+
+    item_text = lines[index].strip()[2:].strip()
+    if ":" not in item_text:
+        container.append(_parse_scalar(item_text))
+        return index + 1
+
+    key, value = item_text.split(":", 1)
+    key = key.strip()
+    value = value.strip()
+    item_dict: Dict[str, Any] = {}
+    container.append(item_dict)
+
+    if value in ("|", "|-", "|+", ">", ">-", ">+"):
+        item_dict[key], index = _read_yaml_block_scalar(lines, index + 1)
+        stack.append((indent + 2, item_dict))
+        return index
+
+    item_dict[key] = _parse_scalar(value)
+    stack.append((indent + 2, item_dict))
+    return index + 1
+
+
+def _parse_yaml_mapping_entry(
+    lines: List[str],
+    index: int,
+    indent: int,
+    container: Union[Dict[str, Any], List[Any]],
+    stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]],
+) -> int:
+    line = lines[index].strip()
+    if ":" not in line:
+        raise ValueError(f"YAML parse error (line {index + 1}): expected 'key: value' -> {line}")
+    if not isinstance(container, dict):
+        raise ValueError(
+            f"YAML parse error (line {index + 1}): mapping entry inside list without dict item"
+        )
+
+    key, value = line.split(":", 1)
+    key = key.strip()
+    value = value.strip()
+
+    if value in ("|", "|-", "|+", ">", ">-", ">+"):
+        container[key], index = _read_yaml_block_scalar(lines, index + 1)
+        return index
+
+    if value:
+        container[key] = _parse_scalar(value)
+        return index + 1
+
+    next_idx, next_line, next_indent = _peek_next_content_line(lines, index + 1)
+    if next_idx != -1 and next_indent > indent and next_line.startswith("- "):
+        nested: Union[Dict[str, Any], List[Any]] = []
+    else:
+        nested = {}
+    container[key] = nested
+    stack.append((indent + 2, nested))
+    return index + 1
 
 
 def simple_yaml_load(content: str) -> dict:
@@ -56,164 +164,24 @@ def simple_yaml_load(content: str) -> dict:
     # stack entries: (indent, container)
     stack: List[Tuple[int, Union[Dict[str, Any], List[Any]]]] = [(-1, root)]
 
-    def current_container() -> Union[Dict[str, Any], List[Any]]:
-        return stack[-1][1]
-
-    def pop_to_indent(target_indent: int) -> None:
-        # Pop until the current container's indent is *less than or equal to* the
-        # current line. (We only pop when indentation decreases.)
-        while stack and stack[-1][0] > target_indent:
-            stack.pop()
-
-    def peek_next_content_line(start_idx: int) -> Tuple[int, str, int]:
-        """Return (idx, stripped_line, indent) for the next non-empty, non-comment line."""
-        i = start_idx
-        while i < len(lines):
-            raw = lines[i]
-            stripped = raw.strip()
-            if stripped and not stripped.startswith('#'):
-                return i, stripped, (len(raw) - len(raw.lstrip()))
-            i += 1
-        return -1, '', -1
-
     i = 0
     while i < len(lines):
         raw = lines[i]
         line = raw.strip()
 
-        if not line or line.startswith('#'):
+        if not line or line.startswith("#"):
             i += 1
             continue
 
         indent = len(raw) - len(raw.lstrip())
-        pop_to_indent(indent)
-        container = current_container()
+        while stack and stack[-1][0] > indent:
+            stack.pop()
+        container = stack[-1][1]
 
-        # ------------------------------------------------------------------
-        # List item
-        # ------------------------------------------------------------------
-        if line.startswith('- '):
-            if not isinstance(container, list):
-                raise ValueError(f"YAML parse error (line {i+1}): list item without list context")
-
-            item_text = line[2:].strip()
-
-            # List item that starts a dict inline: "- key: value"
-            if ':' in item_text:
-                key, value = item_text.split(':', 1)
-                key = key.strip()
-                value = value.strip()
-
-                item_dict: Dict[str, Any] = {}
-                container.append(item_dict)
-
-                # block scalars inside list items are not needed for this repo right now
-                if value in ('|', '|-', '|+', '>', '>-', '>+'):
-                    # Collect block scalar content
-                    block_lines: List[str] = []
-                    block_indent: int | None = None
-                    i += 1
-                    while i < len(lines):
-                        nxt_raw = lines[i]
-                        nxt_line = nxt_raw.strip('\n')
-                        nxt_stripped = nxt_line.strip()
-                        nxt_indent = len(nxt_raw) - len(nxt_raw.lstrip())
-
-                        if nxt_stripped == '':
-                            block_lines.append('')
-                            i += 1
-                            continue
-
-                        if block_indent is None:
-                            block_indent = nxt_indent
-
-                        if nxt_indent < (block_indent or 0):
-                            break
-
-                        block_lines.append(nxt_raw[block_indent:])
-                        i += 1
-
-                    while block_lines and not block_lines[-1].strip():
-                        block_lines.pop()
-
-                    item_dict[key] = '\n'.join(block_lines)
-                    # don't i += 1 here; loop continues with current i
-                    stack.append((indent + 2, item_dict))
-                    continue
-
-                item_dict[key] = _parse_scalar(value)
-                # Subsequent indented lines belong to this dict item
-                stack.append((indent + 2, item_dict))
-                i += 1
-                continue
-
-            # Simple scalar list item
-            container.append(_parse_scalar(item_text))
-            i += 1
+        if line.startswith("- "):
+            i = _parse_yaml_list_item(lines, i, indent, container, stack)
             continue
-                
-        # ------------------------------------------------------------------
-        # Dict entry
-        # ------------------------------------------------------------------
-        if ':' not in line:
-            raise ValueError(f"YAML parse error (line {i+1}): expected 'key: value' -> {line}")
-
-        if not isinstance(container, dict):
-            raise ValueError(f"YAML parse error (line {i+1}): mapping entry inside list without dict item")
-
-        key, value = line.split(':', 1)
-        key = key.strip()
-        value = value.strip()
-
-        # Block scalar
-        if value in ('|', '|-', '|+', '>', '>-', '>+'):
-            block_lines: List[str] = []
-            block_indent: int | None = None
-            i += 1
-
-            while i < len(lines):
-                nxt_raw = lines[i]
-                nxt_stripped = nxt_raw.strip()
-                nxt_indent = len(nxt_raw) - len(nxt_raw.lstrip())
-
-                if nxt_stripped == '':
-                    block_lines.append('')
-                    i += 1
-                    continue
-
-                if block_indent is None:
-                    block_indent = nxt_indent
-
-                if nxt_indent < (block_indent or 0):
-                    break
-
-                block_lines.append(nxt_raw[block_indent:])
-                i += 1
-
-            while block_lines and not block_lines[-1].strip():
-                block_lines.pop()
-
-            container[key] = '\n'.join(block_lines)
-            continue
-
-        # Nested container
-        if value == '':
-            next_idx, next_line, next_indent = peek_next_content_line(i + 1)
-            if next_idx != -1 and next_indent > indent and next_line.startswith('- '):
-                new_list: List[Any] = []
-                container[key] = new_list
-                stack.append((indent + 2, new_list))
-            else:
-                new_dict: Dict[str, Any] = {}
-                container[key] = new_dict
-                stack.append((indent + 2, new_dict))
-
-            i += 1
-            continue
-
-        # Simple scalar
-        container[key] = _parse_scalar(value)
-        i += 1
+        i = _parse_yaml_mapping_entry(lines, i, indent, container, stack)
 
     return root
 
@@ -224,15 +192,15 @@ class CirclePDFBuilder:
     def __init__(self, config_path: str, workspace_root: str | None = None):
         self.config_path = Path(config_path)
         self.root_dir = Path(workspace_root) if workspace_root else self.config_path.parent.parent
-        
+
         logger.info(f"Workspace root: {self.root_dir}")
-        
+
         self.config = self._load_config()
-    
+
     def _load_config(self) -> dict:
         """Load configuration."""
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, "r", encoding="utf-8") as f:
                 content = f.read()
             config = simple_yaml_load(content)
 
@@ -271,7 +239,7 @@ class CirclePDFBuilder:
     def _read_text_file(self, raw_path: str, *, description: str = "file") -> str:
         path = self._resolve_path(raw_path, must_exist=True)
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 return f.read()
         except Exception as e:
             raise ValueError(f"Could not read {description} at {path}: {e}")
@@ -287,7 +255,7 @@ class CirclePDFBuilder:
         file_path = cfg.get(file_key)
         if not file_path:
             inline = cfg.get(inline_key)
-            if str(inline or '').strip():
+            if str(inline or "").strip():
                 raise ValueError(
                     f"Inline markdown for '{inline_key}' is no longer supported; "
                     f"move it to a markdown file and set '{file_key}'."
@@ -298,39 +266,39 @@ class CirclePDFBuilder:
 
     def _get_root_url(self) -> str:
         """Return the root URL used to absolutize site-relative links."""
-        root_url = str(self.config.get('root_url') or '').strip().rstrip('/')
+        root_url = str(self.config.get("root_url") or "").strip().rstrip("/")
         if root_url:
             return root_url
 
         # Strict: metadata.url is required.
-        return self._require_config_str('metadata', 'url').rstrip('/')
+        return self._require_config_str("metadata", "url").rstrip("/")
 
     def _get_framing_abstract_toc_settings(self) -> Tuple[str, str, bool]:
         """Return (abstract_label, abstract_anchor, include_in_toc)."""
-        framing = self.config.get('framing')
+        framing = self.config.get("framing")
         if not isinstance(framing, dict):
             raise ValueError("Config section 'framing' must be a mapping/object")
 
-        label = self._require_config_str('framing', 'abstract_label')
-        raw_anchor = self._require_config_str('framing', 'abstract_anchor')
-        anchor = self._latex_id(raw_anchor, default='abstract')
+        label = self._require_config_str("framing", "abstract_label")
+        raw_anchor = self._require_config_str("framing", "abstract_anchor")
+        anchor = self._latex_id(raw_anchor, default="abstract")
 
-        if 'include_abstract_in_toc' not in framing:
+        if "include_abstract_in_toc" not in framing:
             raise ValueError("Missing required config value: framing.include_abstract_in_toc")
-        include_in_toc = self._parse_bool(framing.get('include_abstract_in_toc'), default=False)
+        include_in_toc = self._parse_bool(framing.get("include_abstract_in_toc"), default=False)
 
         return label, anchor, include_in_toc
 
     def _get_pdf_engine(self) -> str:
         """Return the configured PDF engine (default: xelatex)."""
-        output_cfg = self.config.get('output')
+        output_cfg = self.config.get("output")
         if not isinstance(output_cfg, dict):
             raise ValueError("Config section 'output' must be a mapping/object")
 
         engine = (
-            str(self.config.get('pdf_engine') or '')
-            or str(output_cfg.get('pdf_engine') or '')
-            or 'xelatex'
+            str(self.config.get("pdf_engine") or "")
+            or str(output_cfg.get("pdf_engine") or "")
+            or "xelatex"
         )
         return engine
 
@@ -340,7 +308,7 @@ class CirclePDFBuilder:
             raise ValueError(f"Config section '{section}' must be a mapping/object")
 
         value = cfg.get(key)
-        value = '' if value is None else str(value).strip()
+        value = "" if value is None else str(value).strip()
         if not value:
             raise ValueError(f"Missing required config value: {section}.{key}")
         return value
@@ -349,7 +317,7 @@ class CirclePDFBuilder:
         if not isinstance(cfg, dict):
             raise ValueError(f"Config section '{context}' must be a mapping/object")
         value = cfg.get(key)
-        value = '' if value is None else str(value).strip()
+        value = "" if value is None else str(value).strip()
         if not value:
             raise ValueError(f"Missing required config value: {context}.{key}")
         return value
@@ -366,76 +334,78 @@ class CirclePDFBuilder:
             raise ValueError(f"Config section '{context}' must be a mapping/object")
         value = cfg.get(key)
         if not isinstance(value, list) or not value:
-            raise ValueError(f"Missing required config value: {context}.{key} (must be a non-empty list)")
+            raise ValueError(
+                f"Missing required config value: {context}.{key} (must be a non-empty list)"
+            )
         return value
 
     def _get_copyright_notice(self) -> Dict[str, str] | None:
         """Return the optional front-matter copyright notice for the PDF."""
-        framing = self.config.get('framing')
+        framing = self.config.get("framing")
         if not isinstance(framing, dict):
             raise ValueError("Config section 'framing' must be a mapping/object")
 
-        notice = framing.get('copyright_notice')
+        notice = framing.get("copyright_notice")
         if notice is None:
             return None
         if not isinstance(notice, dict):
             raise ValueError("Config value 'framing.copyright_notice' must be a mapping/object")
 
-        context = 'framing.copyright_notice'
-        year = self._require_dict_str(notice, 'year', context=context)
-        if not re.fullmatch(r'\d{4}', year):
+        context = "framing.copyright_notice"
+        year = self._require_dict_str(notice, "year", context=context)
+        if not re.fullmatch(r"\d{4}", year):
             raise ValueError(f"Invalid config value: {context}.year (must be a four-digit year)")
 
-        holder = self._require_dict_str(notice, 'holder', context=context)
-        license_name = self._require_dict_str(notice, 'license_name', context=context)
-        license_url = self._require_dict_str(notice, 'license_url', context=context)
+        holder = self._require_dict_str(notice, "holder", context=context)
+        license_name = self._require_dict_str(notice, "license_name", context=context)
+        license_url = self._require_dict_str(notice, "license_url", context=context)
         parsed_url = urlparse(license_url)
         if (
-            parsed_url.scheme != 'https'
+            parsed_url.scheme != "https"
             or not parsed_url.hostname
             or parsed_url.username
             or parsed_url.password
-            or re.search(r'[{}\\%\s]', license_url)
+            or re.search(r"[{}\\%\s]", license_url)
         ):
             raise ValueError(f"Invalid config value: {context}.license_url (must be an HTTPS URL)")
 
         result = {
-            'year': year,
-            'holder': self._escape_latex_text(holder),
-            'license_name': self._escape_latex_text(license_name),
-            'license_url': license_url,
+            "year": year,
+            "holder": self._escape_latex_text(holder),
+            "license_name": self._escape_latex_text(license_name),
+            "license_url": license_url,
         }
-        if 'additional_text' in notice:
-            additional_text = self._require_dict_str(notice, 'additional_text', context=context)
-            result['additional_text'] = self._escape_latex_text(additional_text)
+        if "additional_text" in notice:
+            additional_text = self._require_dict_str(notice, "additional_text", context=context)
+            result["additional_text"] = self._escape_latex_text(additional_text)
         return result
 
     def _get_framing_labels(self) -> Tuple[str, str]:
-        abstract_label = self._require_config_str('framing', 'abstract_label')
-        toc_label = self._require_config_str('framing', 'toc_label')
+        abstract_label = self._require_config_str("framing", "abstract_label")
+        toc_label = self._require_config_str("framing", "toc_label")
         return abstract_label, toc_label
 
     def _latex_id(self, raw: str, *, default: str) -> str:
         r"""Return a LaTeX-safe id for \hypertarget/\label."""
-        raw = (raw or '').strip()
-        if raw and re.match(r'^[A-Za-z0-9][A-Za-z0-9:-]*$', raw):
+        raw = (raw or "").strip()
+        if raw and re.match(r"^[A-Za-z0-9][A-Za-z0-9:-]*$", raw):
             return raw
 
         slug = self._slugify(raw or default)
-        if re.match(r'^\d', slug):
-            slug = 'sec-' + slug
+        if re.match(r"^\d", slug):
+            slug = "sec-" + slug
         return slug or default
 
     def _get_conclusion_meta(self) -> Tuple[str, str]:
-        title = self._require_config_str('conclusion', 'title')
-        raw_anchor = self._require_config_str('conclusion', 'anchor')
-        anchor = self._latex_id(raw_anchor, default='conclusion')
+        title = self._require_config_str("conclusion", "title")
+        raw_anchor = self._require_config_str("conclusion", "anchor")
+        anchor = self._latex_id(raw_anchor, default="conclusion")
         return title, anchor
 
     def _get_discussion_meta(self) -> Tuple[str, str]:
-        title = self._require_config_str('discussion', 'title')
-        raw_anchor = self._require_config_str('discussion', 'anchor')
-        anchor = self._latex_id(raw_anchor, default='discussion')
+        title = self._require_config_str("discussion", "title")
+        raw_anchor = self._require_config_str("discussion", "anchor")
+        anchor = self._latex_id(raw_anchor, default="discussion")
         return title, anchor
 
     def _parse_bool(self, value: Any, *, default: bool = False) -> bool:
@@ -448,46 +418,54 @@ class CirclePDFBuilder:
         if isinstance(value, bool):
             return value
         text = str(value).strip().lower()
-        if text in ('true', 'yes', 'y', '1', 'on'):
+        if text in ("true", "yes", "y", "1", "on"):
             return True
-        if text in ('false', 'no', 'n', '0', 'off'):
+        if text in ("false", "no", "n", "0", "off"):
             return False
         return default
 
     def _get_body_intro(self) -> Tuple[str, str, str, bool]:
         """Return (intro_markdown, intro_label, intro_anchor, include_in_toc)."""
-        body = self.config.get('body')
+        body = self.config.get("body")
         if not isinstance(body, dict):
             raise ValueError("Config section 'body' must be a mapping/object")
 
-        intro_markdown = self._get_markdown_content(body, inline_key='introduction', file_key='introduction_file')
-        intro_label = self._require_dict_str(body, 'introduction_label', context='body')
-        raw_anchor = self._require_dict_str(body, 'introduction_anchor', context='body')
-        intro_anchor = self._latex_id(raw_anchor, default='introduction')
+        intro_markdown = self._get_markdown_content(
+            body, inline_key="introduction", file_key="introduction_file"
+        )
+        intro_label = self._require_dict_str(body, "introduction_label", context="body")
+        raw_anchor = self._require_dict_str(body, "introduction_anchor", context="body")
+        intro_anchor = self._latex_id(raw_anchor, default="introduction")
 
-        include_in_toc = self._require_dict_bool(body, 'include_introduction_in_toc', context='body')
+        include_in_toc = self._require_dict_bool(
+            body, "include_introduction_in_toc", context="body"
+        )
 
         return intro_markdown, intro_label, intro_anchor, include_in_toc
 
     def _get_body_back_matter(self) -> Tuple[str, str, str, bool]:
         """Return (back_matter_markdown, back_matter_label, back_matter_anchor, include_in_toc)."""
-        body = self.config.get('body')
+        body = self.config.get("body")
         if not isinstance(body, dict):
             raise ValueError("Config section 'body' must be a mapping/object")
 
-        back_matter_markdown = self._get_markdown_content(body, inline_key='back_matter', file_key='back_matter_file')
-        back_matter_label = self._require_dict_str(body, 'back_matter_label', context='body')
-        raw_anchor = self._require_dict_str(body, 'back_matter_anchor', context='body')
-        back_matter_anchor = self._latex_id(raw_anchor, default='references')
+        back_matter_markdown = self._get_markdown_content(
+            body, inline_key="back_matter", file_key="back_matter_file"
+        )
+        back_matter_label = self._require_dict_str(body, "back_matter_label", context="body")
+        raw_anchor = self._require_dict_str(body, "back_matter_anchor", context="body")
+        back_matter_anchor = self._latex_id(raw_anchor, default="references")
 
-        include_in_toc = self._require_dict_bool(body, 'include_back_matter_in_toc', context='body')
+        include_in_toc = self._require_dict_bool(body, "include_back_matter_in_toc", context="body")
 
         return back_matter_markdown, back_matter_label, back_matter_anchor, include_in_toc
 
     def _check_dependencies(self) -> bool:
         """Check required external system dependencies."""
-        if shutil.which('pandoc') is None:
-            logger.error("Pandoc is not installed. Install with: brew install pandoc (macOS) or apt install pandoc (Linux)")
+        if shutil.which("pandoc") is None:
+            logger.error(
+                "Pandoc is not installed. Install with: brew install pandoc (macOS) or apt install pandoc (Linux)"
+            )
             return False
 
         pdf_engine = self._get_pdf_engine()
@@ -499,26 +477,26 @@ class CirclePDFBuilder:
             return False
 
         return True
-    
+
     def _parse_frontmatter(self, content: str) -> Tuple[Dict, str]:
         """Parse YAML frontmatter from markdown."""
-        if not content.startswith('---'):
+        if not content.startswith("---"):
             return {}, content
-        
+
         try:
-            parts = content.split('---', 2)
+            parts = content.split("---", 2)
             if len(parts) < 3:
                 return {}, content
-            
+
             frontmatter_str = parts[1]
             body = parts[2].strip()
-            
+
             frontmatter = simple_yaml_load(frontmatter_str)
             return frontmatter, body
         except Exception as e:
             logger.warning(f"Error parsing frontmatter: {e}")
             return {}, content
-    
+
     def _filter_jekyll_syntax(self, content: str) -> str:
         """Remove Jekyll/kramdown-specific syntax.
 
@@ -527,9 +505,9 @@ class CirclePDFBuilder:
         next heading (e.g. "](...)### Heading").
         """
         # Remove inline attribute lists like: {: data-ga-event="..." }
-        content = re.sub(r'\s*\{:\s*[^}]*\}', '', content)
+        content = re.sub(r"\s*\{:\s*[^}]*\}", "", content)
         # Trim trailing whitespace that can be left behind after attribute removal.
-        content = re.sub(r'[ \t]+$', '', content, flags=re.MULTILINE)
+        content = re.sub(r"[ \t]+$", "", content, flags=re.MULTILINE)
         return content
 
     def _normalize_relative_links(self, content: str) -> str:
@@ -541,9 +519,25 @@ class CirclePDFBuilder:
         def replace_link(match):
             text = match.group(1)
             path = match.group(2)
-            return f'[{text}]({root_url}{path})'
+            return f"[{text}]({root_url}{path})"
 
-        return re.sub(r'\[([^\]]+)\]\((/[^)]+)\)', replace_link, content)
+        return re.sub(r"\[([^\]]+)\]\((/[^)]+)\)", replace_link, content)
+
+    def _site_path_from_url(self, url: str, parsed: Any) -> str | None:
+        """Return the site path for a local URL, or None for a non-local URL."""
+        if parsed.scheme and parsed.scheme not in ("http", "https"):
+            return None
+
+        root_url = self._get_root_url()
+        if parsed.scheme in ("http", "https"):
+            if root_url and url.startswith(root_url + "/"):
+                return "/" + url[len(root_url) + 1 :]
+            return None
+
+        path = parsed.path or ""
+        if not path:
+            return None
+        return path if path.startswith("/") else "/" + path
 
     def _normalize_site_path(self, raw_url: str) -> str | None:
         """Normalize a site URL/path to a canonical permalink like '/moves/establish/'.
@@ -565,49 +559,34 @@ class CirclePDFBuilder:
             return None
 
         # Strip markdown autolink brackets: <https://...>
-        if url.startswith('<') and url.endswith('>'):
+        if url.startswith("<") and url.endswith(">"):
             url = url[1:-1].strip()
 
         parsed = urlparse(url)
-
-        # Non-http(s) schemes are never in-doc navigations.
-        if parsed.scheme and parsed.scheme not in ('http', 'https'):
+        path = self._site_path_from_url(url, parsed)
+        if path is None:
             return None
 
-        root_url = self._get_root_url()
-
-        if parsed.scheme in ('http', 'https'):
-            if root_url and url.startswith(root_url + '/'):
-                path = '/' + url[len(root_url) + 1 :]
-            else:
-                return None
-        else:
-            path = parsed.path or ''
-            if not path:
-                return None
-            if not path.startswith('/'):
-                path = '/' + path
-
         # Ignore obvious assets (except html).
-        trimmed = path.rstrip('/')
-        ext_match = re.search(r'\.([A-Za-z0-9]{1,8})$', trimmed)
-        if ext_match and ext_match.group(1).lower() != 'html':
+        trimmed = path.rstrip("/")
+        ext_match = re.search(r"\.([A-Za-z0-9]{1,8})$", trimmed)
+        if ext_match and ext_match.group(1).lower() != "html":
             return None
 
         # Normalize html-ish endings to permalinks.
-        if trimmed.endswith('/index.html'):
-            path = trimmed[: -len('/index.html')]
-        elif trimmed.endswith('index.html'):
-            path = trimmed[: -len('index.html')]
-        elif trimmed.endswith('.html'):
-            path = trimmed[: -len('.html')]
+        if trimmed.endswith("/index.html"):
+            path = trimmed[: -len("/index.html")]
+        elif trimmed.endswith("index.html"):
+            path = trimmed[: -len("index.html")]
+        elif trimmed.endswith(".html"):
+            path = trimmed[: -len(".html")]
 
-        path = path.rstrip('/') + '/'
+        path = path.rstrip("/") + "/"
         return path
 
     def _infer_section_permalink(self, section: Dict[str, Any]) -> str | None:
         """Return the canonical site permalink for a section, if explicitly provided."""
-        raw = section.get('permalink')
+        raw = section.get("permalink")
         norm = self._normalize_site_path(str(raw)) if raw else None
         return norm
 
@@ -617,7 +596,7 @@ class CirclePDFBuilder:
             return content
 
         # Negative lookbehind avoids rewriting images: ![alt](...)
-        link_pattern = re.compile(r'(?<!!)\[([^\]]+)\]\(([^)]+)\)')
+        link_pattern = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
 
         def replace_link(match: re.Match) -> str:
             label = match.group(1)
@@ -636,10 +615,10 @@ class CirclePDFBuilder:
             if not anchor:
                 return match.group(0)
 
-            return f'[{label}](#{anchor})'
+            return f"[{label}](#{anchor})"
 
         return link_pattern.sub(replace_link, content)
-    
+
     def _clean_pattern_content(self, content: str) -> str:
         """
         Clean pattern markdown:
@@ -652,8 +631,8 @@ class CirclePDFBuilder:
         # Remove common "subtitle" blocks that appear right under the H1.
         # Moves use: *A Pattern for ... by* **Michael Basil**
         content = re.sub(
-            r'\n\*A\s+Pattern\s+for[^\n]*\*\s*\*\*[^*]*\*\*\s*\n\n',
-            '\n',
+            r"\n\*A\s+Pattern\s+for[^\n]*\*\s*\*\*[^*]*\*\*\s*\n\n",
+            "\n",
             content,
         )
 
@@ -663,24 +642,24 @@ class CirclePDFBuilder:
         # ...or the one-line variant:
         #   *A Reflective Exercise for ...* by **Michael Basil**
         content = re.sub(
-            r'\n\*A\s+Reflective\s+Exercise[^\n]*\*\s*(?:\n\s*|\s+)by\s+\*\*[^*]*\*\*\s*\n\n',
-            '\n',
+            r"\n\*A\s+Reflective\s+Exercise[^\n]*\*\s*(?:\n\s*|\s+)by\s+\*\*[^*]*\*\*\s*\n\n",
+            "\n",
             content,
             flags=re.IGNORECASE,
         )
-        
+
         # Remove image line: ![text](/path/to/image.png)
-        content = re.sub(r'!\[[^\]]*\]\([^)]*\.png\)\s*\n\n', '', content)
-        
+        content = re.sub(r"!\[[^\]]*\]\([^)]*\.png\)\s*\n\n", "", content)
+
         # Remove "Explore in your context" section and everything after
         # (handles variations like "Your" vs "your" and "Context" vs "context").
-        explore_pattern = r'\n##\s+Explore\s+in\s+your\s+context.*'
-        content = re.sub(explore_pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
+        explore_pattern = r"\n##\s+Explore\s+in\s+your\s+context.*"
+        content = re.sub(explore_pattern, "", content, flags=re.DOTALL | re.IGNORECASE)
 
         # Remove "Continue exploring" section (used in lenses) and everything after.
-        continue_pattern = r'\n##\s+Continue\s+exploring.*'
-        content = re.sub(continue_pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
-        
+        continue_pattern = r"\n##\s+Continue\s+exploring.*"
+        content = re.sub(continue_pattern, "", content, flags=re.DOTALL | re.IGNORECASE)
+
         # Clean up Jekyll syntax
         content = self._filter_jekyll_syntax(content)
 
@@ -689,20 +668,20 @@ class CirclePDFBuilder:
 
         # Defensive fix: if a link line got concatenated with a following heading
         # (e.g. "](url)### Heading"), re-insert paragraph breaks.
-        content = re.sub(r'\)(?=#{2,6}\s)', ')\n\n', content)
+        content = re.sub(r"\)(?=#{2,6}\s)", ")\n\n", content)
 
         # Replace unicode "pointing" emoji with a plain markdown bullet so it renders cleanly.
         # (This intentionally turns those lines into list items.)
-        content = re.sub(r'(?m)^👉\s*', '- ', content)
-        content = content.replace('👉', '-')
-        
+        content = re.sub(r"(?m)^👉\s*", "- ", content)
+        content = content.replace("👉", "-")
+
         # Remove extra blank lines (more than 2 in a row)
-        content = re.sub(r'\n\n\n+', '\n\n', content)
+        content = re.sub(r"\n\n\n+", "\n\n", content)
 
         # PDF-only: append citation markers (e.g. "[Snowden & Boone 2007]") configured
         # in plop.paper.config.yaml, without editing the shared web/PDF source files.
         content = self._apply_citation_annotations(content)
-        
+
         return content.strip()
 
     def _get_citation_annotations(self) -> List[Dict[str, Any]]:
@@ -714,7 +693,7 @@ class CirclePDFBuilder:
         sources originally linked as videos/landing pages, without touching the
         shared _moves/_lenses markdown files used by the website.
         """
-        raw = self.config.get('citations')
+        raw = self.config.get("citations")
         if raw is None:
             return []
         if not isinstance(raw, list):
@@ -725,14 +704,16 @@ class CirclePDFBuilder:
             if not isinstance(item, dict):
                 raise ValueError(f"citations[{idx}] must be a mapping/object")
 
-            annotation = self._require_dict_str(item, 'annotation', context=f"citations[{idx}]")
-            url = str(item.get('url') or '').strip()
-            text = str(item.get('text') or '').strip()
+            annotation = self._require_dict_str(item, "annotation", context=f"citations[{idx}]")
+            url = str(item.get("url") or "").strip()
+            text = str(item.get("text") or "").strip()
             if not url and not text:
                 raise ValueError(f"citations[{idx}] must include either 'url' or 'text'")
 
-            first_only = self._parse_bool(item.get('first_only'), default=False)
-            rules.append({'url': url, 'text': text, 'annotation': annotation, 'first_only': first_only})
+            first_only = self._parse_bool(item.get("first_only"), default=False)
+            rules.append(
+                {"url": url, "text": text, "annotation": annotation, "first_only": first_only}
+            )
 
         return rules
 
@@ -742,19 +723,19 @@ class CirclePDFBuilder:
         if not rules or not content:
             return content
 
-        link_pattern = re.compile(r'(?<!!)\[([^\]]+)\]\(([^)\s]+)\)')
+        link_pattern = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)\s]+)\)")
 
         for rule in rules:
-            annotation = rule['annotation']
-            first_only = rule['first_only']
+            annotation = rule["annotation"]
+            first_only = rule["first_only"]
 
-            if rule['url']:
-                target = rule['url'].rstrip('/')
+            if rule["url"]:
+                target = rule["url"].rstrip("/")
                 seen = 0
 
                 def replace_link(match: re.Match, _target=target, _annotation=annotation) -> str:
                     nonlocal seen
-                    url = match.group(2).strip().rstrip('/')
+                    url = match.group(2).strip().rstrip("/")
                     if url != _target:
                         return match.group(0)
                     if first_only and seen:
@@ -764,25 +745,29 @@ class CirclePDFBuilder:
 
                 content = link_pattern.sub(replace_link, content)
 
-            elif rule['text']:
-                text_pattern = re.compile(re.escape(rule['text']))
+            elif rule["text"]:
+                text_pattern = re.compile(re.escape(rule["text"]))
                 count = 1 if first_only else 0
-                content = text_pattern.sub(lambda m, _annotation=annotation: f"{m.group(0)} {_annotation}", content, count=count)
+                content = text_pattern.sub(
+                    lambda m, _annotation=annotation: f"{m.group(0)} {_annotation}",
+                    content,
+                    count=count,
+                )
 
         return content
 
     def _read_and_clean_pattern(self, pattern_file: str) -> Tuple[Dict[str, Any], str]:
         """Read a pattern markdown file, parse frontmatter, and clean the body."""
         full_path = self.root_dir / pattern_file
-        
+
         if not full_path.exists():
             logger.error(f"Pattern file not found: {full_path}")
             sys.exit(1)
-        
+
         try:
-            with open(full_path, 'r', encoding='utf-8') as f:
+            with open(full_path, "r", encoding="utf-8") as f:
                 content = f.read()
-            
+
             frontmatter, body = self._parse_frontmatter(content)
             body = self._clean_pattern_content(body)
             return frontmatter, body
@@ -790,113 +775,73 @@ class CirclePDFBuilder:
             logger.error(f"Error reading pattern file '{pattern_file}': {e}")
             sys.exit(1)
 
+    def _normalize_pattern_items(
+        self, raw_patterns: Any, section_idx: int, section: Dict[str, Any]
+    ) -> List[Dict[str, str]]:
+        if not isinstance(raw_patterns, list) or not raw_patterns:
+            raise ValueError(
+                f"Each sections item must include a non-empty 'patterns' list. Got: {section}"
+            )
+
+        patterns: List[Dict[str, str]] = []
+        for pattern_idx, item in enumerate(raw_patterns):
+            if not isinstance(item, dict):
+                raise ValueError(
+                    f"Unsupported patterns item in sections[{section_idx}] at index "
+                    f"{pattern_idx}: expected mapping/object, got {type(item)}"
+                )
+            pattern = {str(key): str(value) for key, value in item.items() if value is not None}
+            if "file" not in pattern:
+                raise ValueError(
+                    "Each patterns item must include 'file'. "
+                    f"Got: {pattern} (in sections[{section_idx}])"
+                )
+            patterns.append(pattern)
+        return patterns
+
     def _get_pattern_sections(self) -> List[Dict[str, Any]]:
-        """Return ordered sectioned-pattern configuration.
-
-        Preferred config shape:
-
-        sections:
-          - title: Moves
-            intro_image: images/full/moves.png      # optional
-            patterns:
-              - file: moves/establish.md
-                intro_image: images/full/move-establish.png
-                            - file: moves/integrate.md
-                              intro_image: images/full/move-integrate.png
-              - file: moves/reconcile.md
-                intro_image: images/full/move-reconcile.png
-
-          - title: Lenses
-            intro_image: images/full/lenses.png     # optional
-            patterns:
-              - file: lenses/sense.md
-                intro_image: images/full/lens-sense.png
-              - file: lenses/energy.md
-                intro_image: images/full/lens-energy.png
-              - file: lenses/paradigm.md
-                intro_image: images/full/lens-paradigm.png
-
-        """
-
-        raw_sections = self.config.get('sections')
+        """Return ordered sectioned-pattern configuration."""
+        raw_sections = self.config.get("sections")
         if not isinstance(raw_sections, list) or not raw_sections:
             raise ValueError("Missing required config value: sections (must be a non-empty list)")
 
         sections: List[Dict[str, Any]] = []
+        for idx, item in enumerate(raw_sections):
+            if not isinstance(item, dict):
+                raise ValueError(
+                    f"Unsupported sections item at index {idx}: "
+                    f"expected mapping/object, got {type(item)}"
+                )
 
-        if isinstance(raw_sections, list) and raw_sections:
-            for idx, item in enumerate(raw_sections):
-                if not isinstance(item, dict):
-                    raise ValueError(
-                        f"Unsupported sections item at index {idx}: expected mapping/object, got {type(item)}"
-                    )
-
-                # Copy top-level section keys (stringify), then coerce patterns.
-                section: Dict[str, Any] = {}
-                for k, v in item.items():
-                    if v is None:
-                        continue
-                    section[str(k)] = v
-
-                raw_patterns = section.get('patterns')
-                if not isinstance(raw_patterns, list) or not raw_patterns:
-                    raise ValueError(
-                        "Each sections item must include a non-empty 'patterns' list. "
-                        f"Got: {item}"
-                    )
-
-                patterns: List[Dict[str, str]] = []
-                for p_idx, p in enumerate(raw_patterns):
-                    if not isinstance(p, dict):
-                        raise ValueError(
-                            f"Unsupported patterns item in sections[{idx}] at index {p_idx}: expected mapping/object, got {type(p)}"
-                        )
-
-                    pattern: Dict[str, str] = {}
-                    for pk, pv in p.items():
-                        if pv is None:
-                            continue
-                        pattern[str(pk)] = str(pv)
-                    patterns.append(pattern)
-
-                for p in patterns:
-                    if 'file' not in p:
-                        raise ValueError(
-                            "Each patterns item must include 'file'. "
-                            f"Got: {p} (in sections[{idx}])"
-                        )
-
-                section['patterns'] = patterns
-                sections.append(section)
-
-            return sections
-
-        raise ValueError("Missing required config value: sections (must be a non-empty list)")
+            section = {str(key): value for key, value in item.items() if value is not None}
+            section["patterns"] = self._normalize_pattern_items(section.get("patterns"), idx, item)
+            sections.append(section)
+        return sections
 
     def _slugify(self, text: str) -> str:
         """Create a stable anchor slug for LaTeX hypertargets."""
-        text = (text or '').strip().lower()
-        text = re.sub(r'[^a-z0-9]+', '-', text)
-        text = re.sub(r'-{2,}', '-', text)
-        return text.strip('-') or 'pattern'
+        text = (text or "").strip().lower()
+        text = re.sub(r"[^a-z0-9]+", "-", text)
+        text = re.sub(r"-{2,}", "-", text)
+        return text.strip("-") or "pattern"
 
     def _escape_latex_text(self, text: str) -> str:
         """Escape a small set of LaTeX special characters for TOC labels."""
         if not text:
-            return ''
+            return ""
 
         # Keep this intentionally small; pattern titles in this repo are usually plain.
         replacements = {
-            '\\': r'\textbackslash{}',
-            '&': r'\&',
-            '%': r'\%',
-            '$': r'\$',
-            '#': r'\#',
-            '_': r'\_',
-            '{': r'\{',
-            '}': r'\}',
+            "\\": r"\textbackslash{}",
+            "&": r"\&",
+            "%": r"\%",
+            "$": r"\$",
+            "#": r"\#",
+            "_": r"\_",
+            "{": r"\{",
+            "}": r"\}",
         }
-        return ''.join(replacements.get(ch, ch) for ch in str(text))
+        return "".join(replacements.get(ch, ch) for ch in str(text))
 
     def _replace_unicode_arrows(self, text: str) -> str:
         """Replace Unicode arrows with LaTeX-rendered arrows.
@@ -905,24 +850,26 @@ class CirclePDFBuilder:
         include symbols like U+2192 (→).
         """
         if not text:
-            return '' if text is None else text
+            return "" if text is None else text
 
         replacements = {
             # Use Pandoc/LaTeX math so we don't depend on the text font having U+2192.
-            '→': r'$\rightarrow$',
+            "→": r"$\rightarrow$",
         }
         for src, dst in replacements.items():
             text = str(text).replace(src, dst)
         return text
 
-    def _infer_pattern_title(self, pattern_file: str, frontmatter: Dict[str, Any], body: str) -> str:
-        title = str(frontmatter.get('title') or '').strip()
+    def _infer_pattern_title(
+        self, pattern_file: str, frontmatter: Dict[str, Any], body: str
+    ) -> str:
+        title = str(frontmatter.get("title") or "").strip()
         if title:
             return title
 
         # Fall back to the first markdown heading in the body.
         for line in body.splitlines():
-            m = re.match(r'^#{1,6}\s+(.*)$', line.strip())
+            m = re.match(r"^#{1,6}\s+(.*)$", line.strip())
             if m:
                 return m.group(1).strip()
 
@@ -954,7 +901,7 @@ class CirclePDFBuilder:
         link directly to this intro image page.
         """
         if not image_path:
-            return ''
+            return ""
 
         lines: List[str] = []
         if prepend_page_break:
@@ -968,8 +915,8 @@ class CirclePDFBuilder:
             lines.append(r"\phantomsection")
             lines.append(rf"\label{{{anchor}}}")
 
-        kicker = str(marker_kicker or '').strip()
-        marker = str(marker_title or '').strip()
+        kicker = str(marker_kicker or "").strip()
+        marker = str(marker_title or "").strip()
         if kicker or marker:
             safe_kicker = self._escape_latex_text(kicker)
             safe_marker = self._escape_latex_text(marker)
@@ -977,13 +924,13 @@ class CirclePDFBuilder:
                 [
                     r"\vspace*{1.5em}",
                     r"\begin{center}",
-                    rf"{{\large\textbf{{{safe_kicker}}}}}" if safe_kicker else '',
-                    rf"{{\large\textbf{{{safe_marker}}}}}" if safe_marker else '',
+                    rf"{{\large\textbf{{{safe_kicker}}}}}" if safe_kicker else "",
+                    rf"{{\large\textbf{{{safe_marker}}}}}" if safe_marker else "",
                     r"\end{center}",
                     r"\vspace*{0.5em}",
                 ]
             )
-            lines = [ln for ln in lines if ln != '']
+            lines = [ln for ln in lines if ln != ""]
 
         lines.extend(
             [
@@ -1029,7 +976,7 @@ class CirclePDFBuilder:
           - anchor: latex anchor id
         """
         if not toc_items:
-            return ''
+            return ""
 
         lines: List[str] = [
             r"\begingroup",
@@ -1041,21 +988,21 @@ class CirclePDFBuilder:
         ]
 
         for item in toc_items:
-            label = str(item.get('label') or '').strip()
-            anchor = str(item.get('anchor') or '').strip()
-            kind = str(item.get('kind') or 'pattern').strip().lower()
+            label = str(item.get("label") or "").strip()
+            anchor = str(item.get("anchor") or "").strip()
+            kind = str(item.get("kind") or "pattern").strip().lower()
             if not label or not anchor:
                 continue
 
             safe_label = self._escape_latex_text(label)
 
-            if kind == 'section':
+            if kind == "section":
                 rendered_label = rf"\textbf{{{safe_label}}}"
-            elif kind == 'pattern':
+            elif kind == "pattern":
                 rendered_label = rf"\hspace{{1em}}{safe_label}"
-            elif kind == 'conclusion':
+            elif kind == "conclusion":
                 rendered_label = rf"\textbf{{{safe_label}}}"
-            elif kind == 'backmatter':
+            elif kind == "backmatter":
                 rendered_label = safe_label
             else:
                 rendered_label = safe_label
@@ -1070,6 +1017,286 @@ class CirclePDFBuilder:
             ]
         )
         return "\n".join(lines)
+
+    def _reserve_pdf_anchor(self, anchor: str, used_anchors: set[str]) -> str:
+        base_anchor = anchor
+        suffix = 2
+        while anchor in used_anchors:
+            anchor = f"{base_anchor}-{suffix}"
+            suffix += 1
+        used_anchors.add(anchor)
+        return anchor
+
+    def _plan_pdf_pattern(
+        self,
+        pattern: Any,
+        section_idx: int,
+        pattern_idx: int,
+        toc_bucket: List[Dict[str, str]],
+        used_anchors: set[str],
+        permalink_to_anchor: Dict[str, str],
+    ) -> Dict[str, Any]:
+        if not isinstance(pattern, dict):
+            raise ValueError(
+                f"Each pattern must be a mapping/object. Got: {type(pattern)} "
+                f"(in sections[{section_idx}].patterns[{pattern_idx}])"
+            )
+
+        context = f"sections[{section_idx}].patterns[{pattern_idx}]"
+        pattern_file = self._require_dict_str(pattern, "file", context=context)
+        intro_image = self._require_dict_str(pattern, "intro_image", context=context)
+        frontmatter, body = self._read_and_clean_pattern(pattern_file)
+        title = self._infer_pattern_title(pattern_file, frontmatter, body)
+        anchor = self._reserve_pdf_anchor(f"pattern-{self._slugify(title)}", used_anchors)
+
+        logger.info(f"Loaded pattern: {title}")
+        toc_bucket.append({"kind": "pattern", "label": title, "anchor": anchor})
+        pattern_permalink = self._normalize_site_path(str(frontmatter.get("permalink") or ""))
+        if pattern_permalink:
+            permalink_to_anchor[pattern_permalink] = anchor
+
+        return {
+            "file": pattern_file,
+            "title": title,
+            "anchor": anchor,
+            "intro_image": intro_image,
+            "body": body,
+        }
+
+    def _plan_pdf_section(
+        self,
+        section: Any,
+        section_idx: int,
+        used_anchors: set[str],
+        toc_core_items: List[Dict[str, str]],
+        toc_appendix_items: List[Dict[str, str]],
+        permalink_to_anchor: Dict[str, str],
+    ) -> Dict[str, Any]:
+        if not isinstance(section, dict):
+            raise ValueError(
+                f"Unsupported pattern section at index {section_idx}: "
+                f"expected mapping/object, got {type(section)}"
+            )
+
+        context = f"sections[{section_idx}]"
+        section_title = self._require_dict_str(section, "title", context=context)
+        section_intro_image = self._require_dict_str(section, "intro_image", context=context)
+        is_appendix = section_title.lower().startswith("appendix:")
+        toc_bucket = toc_appendix_items if is_appendix else toc_core_items
+        patterns = self._require_dict_list(section, "patterns", context=context)
+
+        if section_title:
+            logger.info(f"Loaded pattern section: {section_title} ({len(patterns)} patterns)")
+
+        section_anchor = self._reserve_pdf_anchor(
+            f"section-{self._slugify(section_title or str(section_idx + 1))}",
+            used_anchors,
+        )
+        include_section_in_toc = self._require_dict_bool(section, "include_in_toc", context=context)
+        if include_section_in_toc and section_title:
+            toc_bucket.append({"kind": "section", "label": section_title, "anchor": section_anchor})
+
+        section_permalink = self._infer_section_permalink(section)
+        if section_permalink:
+            permalink_to_anchor[section_permalink] = section_anchor
+
+        planned_patterns = [
+            self._plan_pdf_pattern(
+                pattern,
+                section_idx,
+                pattern_idx,
+                toc_bucket,
+                used_anchors,
+                permalink_to_anchor,
+            )
+            for pattern_idx, pattern in enumerate(patterns)
+        ]
+        return {
+            "title": section_title,
+            "toc_label": section_title,
+            "anchor": section_anchor,
+            "intro_image": section_intro_image,
+            "is_appendix": is_appendix,
+            "patterns": planned_patterns,
+        }
+
+    def _plan_pdf_sections(
+        self,
+        pattern_sections: List[Dict[str, Any]],
+        used_anchors: set[str],
+        toc_core_items: List[Dict[str, str]],
+        toc_appendix_items: List[Dict[str, str]],
+        permalink_to_anchor: Dict[str, str],
+    ) -> List[Dict[str, Any]]:
+        return [
+            self._plan_pdf_section(
+                section,
+                section_idx,
+                used_anchors,
+                toc_core_items,
+                toc_appendix_items,
+                permalink_to_anchor,
+            )
+            for section_idx, section in enumerate(pattern_sections)
+        ]
+
+    def _clean_pdf_markdown(self, markdown: str, permalink_to_anchor: Dict[str, str]) -> str:
+        cleaned = self._filter_jekyll_syntax(markdown)
+        cleaned = self._normalize_relative_links(cleaned)
+        return self._rewrite_pdf_internal_links(cleaned, permalink_to_anchor)
+
+    def _append_pdf_anchor(
+        self,
+        chunks: List[str],
+        image: str,
+        anchor: str,
+        page_break_needed: bool,
+        *,
+        appendix: bool = False,
+    ) -> None:
+        if image:
+            image_options = {"marker_kicker": "", "marker_title": ""} if appendix else {}
+            chunks.append(
+                self._latex_full_width_image_page(
+                    image,
+                    anchor=anchor,
+                    prepend_page_break=page_break_needed,
+                    **image_options,
+                )
+            )
+        else:
+            chunks.append(
+                self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed)
+            )
+
+    def _render_pdf_patterns(
+        self,
+        chunks: List[str],
+        patterns: List[Dict[str, Any]],
+        permalink_to_anchor: Dict[str, str],
+        page_break_needed: bool = False,
+    ) -> bool:
+        for pattern in patterns:
+            self._append_pdf_anchor(
+                chunks,
+                str(pattern.get("intro_image") or "").strip(),
+                str(pattern["anchor"]),
+                page_break_needed,
+            )
+            page_break_needed = False
+            body = str(pattern.get("body") or "")
+            chunks.append(self._rewrite_pdf_internal_links(body, permalink_to_anchor))
+            page_break_needed = True
+        return page_break_needed
+
+    def _render_pdf_sections(
+        self,
+        chunks: List[str],
+        sections: List[Dict[str, Any]],
+        permalink_to_anchor: Dict[str, str],
+        *,
+        appendix: bool = False,
+        page_break_needed: bool = False,
+    ) -> bool:
+        for section in sections:
+            self._append_pdf_anchor(
+                chunks,
+                str(section.get("intro_image") or "").strip(),
+                str(section["anchor"]),
+                page_break_needed,
+                appendix=appendix,
+            )
+            page_break_needed = self._render_pdf_patterns(
+                chunks, section.get("patterns", []), permalink_to_anchor, False
+            )
+        return page_break_needed
+
+    def _render_pdf_appendix(
+        self,
+        chunks: List[str],
+        sections: List[Dict[str, Any]],
+        permalink_to_anchor: Dict[str, str],
+        page_break_needed: bool,
+    ) -> None:
+        appendix_divider_emitted = False
+        for section in sections:
+            if not appendix_divider_emitted:
+                chunks.append(
+                    self._latex_minimal_appendix_divider_page(prepend_page_break=page_break_needed)
+                )
+                page_break_needed = False
+                appendix_divider_emitted = True
+            self._append_pdf_anchor(
+                chunks,
+                str(section.get("intro_image") or "").strip(),
+                str(section["anchor"]),
+                page_break_needed,
+                appendix=True,
+            )
+            page_break_needed = self._render_pdf_patterns(
+                chunks, section.get("patterns", []), permalink_to_anchor, False
+            )
+
+    def _append_pdf_markdown(
+        self,
+        chunks: List[str],
+        markdown: str,
+        permalink_to_anchor: Dict[str, str],
+    ) -> bool:
+        if not markdown:
+            return False
+        chunks.append(self._clean_pdf_markdown(markdown, permalink_to_anchor))
+        return True
+
+    def _append_pdf_intro(
+        self,
+        chunks: List[str],
+        markdown: str,
+        anchor: str,
+        permalink_to_anchor: Dict[str, str],
+    ) -> None:
+        chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=False))
+        self._append_pdf_markdown(chunks, markdown, permalink_to_anchor)
+        chunks.append("```{=latex}\n\\newpage\n```")
+
+    def _append_pdf_back_matter(
+        self,
+        chunks: List[str],
+        markdown: str,
+        anchor: str,
+        permalink_to_anchor: Dict[str, str],
+    ) -> None:
+        chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=True))
+        self._append_pdf_markdown(chunks, markdown, permalink_to_anchor)
+
+    def _build_pdf_toc(
+        self,
+        toc_core_items: List[Dict[str, str]],
+        toc_appendix_items: List[Dict[str, str]],
+        discussion_title: str,
+        discussion_anchor: str,
+        conclusion_title: str,
+        conclusion_anchor: str,
+        back_matter_markdown: str,
+        include_back_matter_in_toc: bool,
+        back_matter_label: str,
+        back_matter_anchor: str,
+    ) -> List[Dict[str, str]]:
+        toc_items = list(toc_core_items)
+        if discussion_title:
+            toc_items.append(
+                {"kind": "section", "label": discussion_title, "anchor": discussion_anchor}
+            )
+        if conclusion_title:
+            toc_items.append(
+                {"kind": "section", "label": conclusion_title, "anchor": conclusion_anchor}
+            )
+        if back_matter_markdown and include_back_matter_in_toc and back_matter_label:
+            toc_items.append(
+                {"kind": "backmatter", "label": back_matter_label, "anchor": back_matter_anchor}
+            )
+        toc_items.extend(toc_appendix_items)
+        return toc_items
 
     def _build_markdown_for_pandoc(
         self,
@@ -1110,7 +1337,7 @@ class CirclePDFBuilder:
         permalink_to_anchor: Dict[str, str] = {}
 
         abstract_label = str(abstract_label).strip()
-        abstract_anchor = self._latex_id(str(abstract_anchor).strip(), default='abstract')
+        abstract_anchor = self._latex_id(str(abstract_anchor).strip(), default="abstract")
         include_abstract_in_toc = bool(include_abstract_in_toc)
 
         # The abstract anchor is created in the LaTeX template (not in the markdown body),
@@ -1119,7 +1346,9 @@ class CirclePDFBuilder:
             used_anchors.add(abstract_anchor)
 
         if include_abstract_in_toc and abstract_label and abstract_anchor:
-            toc_items.append({'kind': 'section', 'label': abstract_label, 'anchor': abstract_anchor})
+            toc_items.append(
+                {"kind": "section", "label": abstract_label, "anchor": abstract_anchor}
+            )
 
         intro_markdown = textwrap.dedent(intro_markdown).strip()
         intro_label = str(intro_label).strip()
@@ -1129,162 +1358,53 @@ class CirclePDFBuilder:
         back_matter_label = str(back_matter_label).strip()
         back_matter_anchor = str(back_matter_anchor).strip()
         discussion_title = str(discussion_title).strip()
-        discussion_anchor = self._latex_id(str(discussion_anchor).strip(), default='discussion')
+        discussion_anchor = self._latex_id(str(discussion_anchor).strip(), default="discussion")
         discussion_image = str(discussion_image).strip()
         discussion_main_markdown = textwrap.dedent(discussion_main_markdown).strip()
         conclusion_title = str(conclusion_title).strip()
-        conclusion_anchor = self._latex_id(str(conclusion_anchor).strip(), default='conclusion')
+        conclusion_anchor = self._latex_id(str(conclusion_anchor).strip(), default="conclusion")
         conclusion_image = str(conclusion_image).strip()
         conclusion_main_markdown = textwrap.dedent(conclusion_main_markdown).strip()
 
         if intro_markdown:
-            # Ensure the intro anchor cannot collide with later section/pattern anchors.
-            intro_anchor_base = intro_anchor
-            suffix = 2
-            while intro_anchor in used_anchors:
-                intro_anchor = f"{intro_anchor_base}-{suffix}"
-                suffix += 1
-            used_anchors.add(intro_anchor)
+            intro_anchor = self._reserve_pdf_anchor(intro_anchor, used_anchors)
 
             if include_intro_in_toc and intro_label:
-                toc_items.append({'kind': 'section', 'label': intro_label, 'anchor': intro_anchor})
+                toc_items.append({"kind": "section", "label": intro_label, "anchor": intro_anchor})
 
-        # First pass: plan sections/patterns and build a permalink -> anchor map.
-        planned_sections: List[Dict[str, Any]] = []
-
-        for section_idx, section in enumerate(pattern_sections):
-            if not isinstance(section, dict):
-                raise ValueError(
-                    f"Unsupported pattern section at index {section_idx}: expected mapping/object, got {type(section)}"
-                )
-
-            section_title = self._require_dict_str(section, 'title', context=f"sections[{section_idx}]")
-            section_toc_label = section_title
-            section_intro_image = self._require_dict_str(section, 'intro_image', context=f"sections[{section_idx}]")
-            is_appendix_section = section_title.lower().startswith('appendix:')
-            section_toc_bucket = toc_appendix_items if is_appendix_section else toc_core_items
-
-            patterns = self._require_dict_list(section, 'patterns', context=f"sections[{section_idx}]")
-
-            if section_title:
-                logger.info(f"Loaded pattern section: {section_title} ({len(patterns)} patterns)")
-
-            section_anchor_base = f"section-{self._slugify(section_toc_label or section_title or str(section_idx + 1))}"
-            section_anchor = section_anchor_base
-            suffix = 2
-            while section_anchor in used_anchors:
-                section_anchor = f"{section_anchor_base}-{suffix}"
-                suffix += 1
-            used_anchors.add(section_anchor)
-
-            include_section_in_toc = self._require_dict_bool(section, 'include_in_toc', context=f"sections[{section_idx}]")
-            if include_section_in_toc and section_toc_label:
-                section_toc_bucket.append({'kind': 'section', 'label': section_toc_label, 'anchor': section_anchor})
-
-            section_permalink = self._infer_section_permalink(section)
-            if section_permalink:
-                permalink_to_anchor[section_permalink] = section_anchor
-
-            planned_patterns: List[Dict[str, Any]] = []
-            for pattern_idx, pattern in enumerate(patterns):
-                if not isinstance(pattern, dict):
-                    raise ValueError(
-                        f"Each pattern must be a mapping/object. Got: {type(pattern)} (in sections[{section_idx}].patterns[{pattern_idx}])"
-                    )
-
-                pattern_file = self._require_dict_str(
-                    pattern,
-                    'file',
-                    context=f"sections[{section_idx}].patterns[{pattern_idx}]",
-                )
-                intro_image = self._require_dict_str(
-                    pattern,
-                    'intro_image',
-                    context=f"sections[{section_idx}].patterns[{pattern_idx}]",
-                )
-
-                frontmatter, body = self._read_and_clean_pattern(pattern_file)
-                title = self._infer_pattern_title(pattern_file, frontmatter, body)
-
-                base_anchor = f"pattern-{self._slugify(title)}"
-                anchor = base_anchor
-                suffix = 2
-                while anchor in used_anchors:
-                    anchor = f"{base_anchor}-{suffix}"
-                    suffix += 1
-                used_anchors.add(anchor)
-
-                logger.info(f"Loaded pattern: {title}")
-                section_toc_bucket.append({'kind': 'pattern', 'label': title, 'anchor': anchor})
-
-                pattern_permalink = self._normalize_site_path(str(frontmatter.get('permalink') or ''))
-                if pattern_permalink:
-                    permalink_to_anchor[pattern_permalink] = anchor
-
-                planned_patterns.append(
-                    {
-                        'file': pattern_file,
-                        'title': title,
-                        'anchor': anchor,
-                        'intro_image': intro_image,
-                        'body': body,
-                    }
-                )
-
-            planned_sections.append(
-                {
-                    'title': section_title,
-                    'toc_label': section_toc_label,
-                    'anchor': section_anchor,
-                    'intro_image': section_intro_image,
-                    'is_appendix': is_appendix_section,
-                    'patterns': planned_patterns,
-                }
-            )
+        planned_sections = self._plan_pdf_sections(
+            pattern_sections,
+            used_anchors,
+            toc_core_items,
+            toc_appendix_items,
+            permalink_to_anchor,
+        )
 
         # Core content appears before back matter; appendix sections are rendered after back matter.
-        core_sections = [s for s in planned_sections if not bool(s.get('is_appendix'))]
-        appendix_sections = [s for s in planned_sections if bool(s.get('is_appendix'))]
-        planned_sections = core_sections + appendix_sections
+        core_sections = [s for s in planned_sections if not bool(s.get("is_appendix"))]
+        appendix_sections = [s for s in planned_sections if bool(s.get("is_appendix"))]
 
-        # Reserve the discussion anchor (rendered between the Moves and the Conclusion).
-        discussion_anchor_base = discussion_anchor
-        suffix = 2
-        while discussion_anchor in used_anchors:
-            discussion_anchor = f"{discussion_anchor_base}-{suffix}"
-            suffix += 1
-        used_anchors.add(discussion_anchor)
-
-        # Reserve conclusion anchor and include it in TOC as part of the core paper.
-        conclusion_anchor_base = conclusion_anchor
-        suffix = 2
-        while conclusion_anchor in used_anchors:
-            conclusion_anchor = f"{conclusion_anchor_base}-{suffix}"
-            suffix += 1
-        used_anchors.add(conclusion_anchor)
+        discussion_anchor = self._reserve_pdf_anchor(discussion_anchor, used_anchors)
+        conclusion_anchor = self._reserve_pdf_anchor(conclusion_anchor, used_anchors)
 
         # Optionally add back matter (e.g., References/Acknowledgements) as the last body section.
         if back_matter_markdown:
-            back_anchor_base = back_matter_anchor
-            suffix = 2
-            while back_matter_anchor in used_anchors:
-                back_matter_anchor = f"{back_anchor_base}-{suffix}"
-                suffix += 1
-            used_anchors.add(back_matter_anchor)
+            back_matter_anchor = self._reserve_pdf_anchor(back_matter_anchor, used_anchors)
 
-            if include_back_matter_in_toc and back_matter_label:
-                # Back matter should appear in the TOC but not be emphasized like the main content sections.
-                pass
-
-        # Assemble TOC in presentation order: core patterns -> discussion -> conclusion -> back matter -> appendix.
-        toc_items.extend(toc_core_items)
-        if discussion_title:
-            toc_items.append({'kind': 'section', 'label': discussion_title, 'anchor': discussion_anchor})
-        if conclusion_title:
-            toc_items.append({'kind': 'section', 'label': conclusion_title, 'anchor': conclusion_anchor})
-        if back_matter_markdown and include_back_matter_in_toc and back_matter_label:
-            toc_items.append({'kind': 'backmatter', 'label': back_matter_label, 'anchor': back_matter_anchor})
-        toc_items.extend(toc_appendix_items)
+        toc_items.extend(
+            self._build_pdf_toc(
+                toc_core_items,
+                toc_appendix_items,
+                discussion_title,
+                discussion_anchor,
+                conclusion_title,
+                conclusion_anchor,
+                back_matter_markdown,
+                include_back_matter_in_toc,
+                back_matter_label,
+                back_matter_anchor,
+            )
+        )
 
         # Second pass: emit markdown/latex blocks, rewriting internal links now that we know all anchors.
         chunks: List[str] = []
@@ -1294,361 +1414,268 @@ class CirclePDFBuilder:
         page_break_needed = False
 
         if intro_markdown:
-            intro_clean = self._filter_jekyll_syntax(intro_markdown)
-            intro_clean = self._normalize_relative_links(intro_clean)
-            intro_clean = self._rewrite_pdf_internal_links(intro_clean, permalink_to_anchor)
-
-            chunks.append(self._latex_hypertarget_block(intro_anchor, prepend_page_break=page_break_needed))
-            page_break_needed = False
-            chunks.append(intro_clean)
-            chunks.append("```{=latex}\n\\newpage\n```")
+            self._append_pdf_intro(chunks, intro_markdown, intro_anchor, permalink_to_anchor)
             page_break_needed = False
 
-        for section in core_sections:
-            section_anchor = str(section['anchor'])
-            section_intro_image = str(section.get('intro_image') or '').strip()
-
-            if section_intro_image:
-                chunks.append(
-                    self._latex_full_width_image_page(
-                        section_intro_image,
-                        anchor=section_anchor,
-                        prepend_page_break=page_break_needed,
-                    )
-                )
-                page_break_needed = False
-            else:
-                chunks.append(self._latex_hypertarget_block(section_anchor, prepend_page_break=page_break_needed))
-                page_break_needed = False
-
-            for pattern in section.get('patterns', []):
-                anchor = str(pattern['anchor'])
-                intro_image = str(pattern.get('intro_image') or '').strip()
-
-                if intro_image:
-                    chunks.append(
-                        self._latex_full_width_image_page(
-                            intro_image,
-                            anchor=anchor,
-                            prepend_page_break=page_break_needed,
-                        )
-                    )
-                    page_break_needed = False
-                else:
-                    chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed))
-                    page_break_needed = False
-
-                body = str(pattern.get('body') or '')
-                body = self._rewrite_pdf_internal_links(body, permalink_to_anchor)
-                chunks.append(body)
-                page_break_needed = True
+        page_break_needed = self._render_pdf_sections(
+            chunks, core_sections, permalink_to_anchor, page_break_needed=page_break_needed
+        )
 
         # Discussion sits between the Moves and the Conclusion in the core content flow.
-        if discussion_image:
-            chunks.append(
-                self._latex_full_width_image_page(
-                    discussion_image,
-                    anchor=discussion_anchor,
-                    prepend_page_break=page_break_needed,
-                )
-            )
-            page_break_needed = False
-        else:
-            chunks.append(self._latex_hypertarget_block(discussion_anchor, prepend_page_break=page_break_needed))
-            page_break_needed = False
-
-        if discussion_main_markdown:
-            discussion_clean = self._filter_jekyll_syntax(discussion_main_markdown)
-            discussion_clean = self._normalize_relative_links(discussion_clean)
-            discussion_clean = self._rewrite_pdf_internal_links(discussion_clean, permalink_to_anchor)
-            chunks.append(discussion_clean)
-            page_break_needed = True
+        self._append_pdf_anchor(chunks, discussion_image, discussion_anchor, page_break_needed)
+        page_break_needed = self._append_pdf_markdown(
+            chunks, discussion_main_markdown, permalink_to_anchor
+        )
 
         # Conclusion sits in the core content flow, before references.
-        if conclusion_image:
-            chunks.append(
-                self._latex_full_width_image_page(
-                    conclusion_image,
-                    anchor=conclusion_anchor,
-                    prepend_page_break=page_break_needed,
-                )
-            )
-            page_break_needed = False
-        else:
-            chunks.append(self._latex_hypertarget_block(conclusion_anchor, prepend_page_break=page_break_needed))
-            page_break_needed = False
-
-        if conclusion_main_markdown:
-            conclusion_clean = self._filter_jekyll_syntax(conclusion_main_markdown)
-            conclusion_clean = self._normalize_relative_links(conclusion_clean)
-            conclusion_clean = self._rewrite_pdf_internal_links(conclusion_clean, permalink_to_anchor)
-            chunks.append(conclusion_clean)
+        self._append_pdf_anchor(chunks, conclusion_image, conclusion_anchor, page_break_needed)
+        self._append_pdf_markdown(chunks, conclusion_main_markdown, permalink_to_anchor)
 
         page_break_needed = True
 
         if back_matter_markdown:
-            back_clean = self._filter_jekyll_syntax(back_matter_markdown)
-            back_clean = self._normalize_relative_links(back_clean)
-            back_clean = self._rewrite_pdf_internal_links(back_clean, permalink_to_anchor)
-
-            # Always start back matter on a fresh page.
-            chunks.append(self._latex_hypertarget_block(back_matter_anchor, prepend_page_break=True))
-            chunks.append(back_clean)
+            self._append_pdf_back_matter(
+                chunks, back_matter_markdown, back_matter_anchor, permalink_to_anchor
+            )
             page_break_needed = True
 
-        # Render appendix sections after back matter (if any), before conclusion.
-        appendix_divider_emitted = False
-        for section in appendix_sections:
-            section_anchor = str(section['anchor'])
-            section_intro_image = str(section.get('intro_image') or '').strip()
-
-            if not appendix_divider_emitted:
-                chunks.append(self._latex_minimal_appendix_divider_page(prepend_page_break=page_break_needed))
-                page_break_needed = False
-                appendix_divider_emitted = True
-
-            if section_intro_image:
-                chunks.append(
-                    self._latex_full_width_image_page(
-                        section_intro_image,
-                        anchor=section_anchor,
-                        marker_kicker='',
-                        marker_title='',
-                        prepend_page_break=page_break_needed,
-                    )
-                )
-                page_break_needed = False
-            else:
-                chunks.append(self._latex_hypertarget_block(section_anchor, prepend_page_break=page_break_needed))
-                page_break_needed = False
-
-            for pattern in section.get('patterns', []):
-                anchor = str(pattern['anchor'])
-                intro_image = str(pattern.get('intro_image') or '').strip()
-
-                if intro_image:
-                    chunks.append(
-                        self._latex_full_width_image_page(
-                            intro_image,
-                            anchor=anchor,
-                            prepend_page_break=page_break_needed,
-                        )
-                    )
-                    page_break_needed = False
-                else:
-                    chunks.append(self._latex_hypertarget_block(anchor, prepend_page_break=page_break_needed))
-                    page_break_needed = False
-
-                body = str(pattern.get('body') or '')
-                body = self._rewrite_pdf_internal_links(body, permalink_to_anchor)
-                chunks.append(body)
-                page_break_needed = True
+        # Render appendix sections after conclusion and back matter (if any).
+        self._render_pdf_appendix(chunks, appendix_sections, permalink_to_anchor, page_break_needed)
 
         markdown_body = "\n\n".join([c for c in chunks if c.strip()]).strip() + "\n"
         return markdown_body, toc_items
-    
+
     def _markdown_to_latex(self, text: str) -> str:
         """Convert markdown formatting to LaTeX, using Pandoc for complex content."""
         text = text.strip()
         if not text:
-            return ''
-        
+            return ""
+
         # Check if content contains markdown lists - use Pandoc for proper rendering
-        if re.search(r'^\s*([-+*]|\d+\.)\s+', text, re.MULTILINE):
+        if re.search(r"^\s*([-+*]|\d+\.)\s+", text, re.MULTILINE):
             return self._pandoc_markdown_to_latex(text)
-        
+
         # Simple formatting for non-list content
         paragraphs = []
-        for para in re.split(r'\n\s*\n', text):
+        for para in re.split(r"\n\s*\n", text):
             if not para.strip():
                 continue
-            normalized = ' '.join(line.strip() for line in para.splitlines() if line.strip())
+            normalized = " ".join(line.strip() for line in para.splitlines() if line.strip())
             paragraphs.append(normalized)
 
-        text = '\n\n'.join(paragraphs)
-        
+        text = "\n\n".join(paragraphs)
+
         # Convert **bold** first, then normal italics.
-        text = re.sub(r'\*\*([^*]+?)\*\*', r'\\textbf{\1}', text)
-        text = re.sub(r'(?<!\*)\*([^*]+?)\*(?!\*)', r'\\textit{\1}', text)
+        text = re.sub(r"\*\*([^*]+?)\*\*", r"\\textbf{\1}", text)
+        text = re.sub(r"(?<!\*)\*([^*]+?)\*(?!\*)", r"\\textit{\1}", text)
         return text
-    
+
     def _pandoc_markdown_to_latex(self, markdown_text: str) -> str:
         """Use Pandoc to convert markdown (with lists) to LaTeX inline content."""
         try:
             result = subprocess.run(
-                ['pandoc', '-f', 'markdown', '-t', 'latex', '--no-highlight'],
-                input=markdown_text.encode('utf-8'),
+                ["pandoc", "-f", "markdown", "-t", "latex", "--no-highlight"],
+                input=markdown_text.encode("utf-8"),
                 capture_output=True,
-                timeout=10
+                timeout=10,
             )
             if result.returncode != 0:
                 logger.warning(f"Pandoc conversion failed: {result.stderr.decode('utf-8')}")
                 return markdown_text
-            
-            latex_output = result.stdout.decode('utf-8').strip()
-            
+
+            latex_output = result.stdout.decode("utf-8").strip()
+
             # In LaTeX minipages, use explicit line break before lists
             # This preserves the blank line from the markdown without adding extra spacing
             latex_output = re.sub(
-                r'([^\n])\n\n+\\begin\{(itemize|enumerate)\}',
-                r'\1\n\\\\\n\\begin{\2}',
-                latex_output
+                r"([^\n])\n\n+\\begin\{(itemize|enumerate)\}",
+                r"\1\n\\\\\n\\begin{\2}",
+                latex_output,
             )
-            
+
             return latex_output
         except Exception as e:
             logger.warning(f"Error using Pandoc for markdown conversion: {e}")
             return markdown_text
-    
-    def _call_pandoc(self, markdown_content: str, output_path: Path, *, short_toc: str = '') -> bool:
+
+    def _append_optional_pandoc_arguments(
+        self, args: List[str], keywords_lines: str, copyright_notice: Dict[str, str] | None
+    ) -> None:
+        if keywords_lines:
+            args += ["-V", "keywords_lines=" + keywords_lines]
+        if not copyright_notice:
+            return
+
+        args += [
+            "-V",
+            "copyright_notice=true",
+            "-V",
+            "copyright_notice_year=" + copyright_notice["year"],
+            "-V",
+            "copyright_notice_holder=" + copyright_notice["holder"],
+            "-V",
+            "copyright_notice_license_name=" + copyright_notice["license_name"],
+            "-V",
+            "copyright_notice_license_url=" + copyright_notice["license_url"],
+        ]
+        if "additional_text" in copyright_notice:
+            args += [
+                "-V",
+                "copyright_notice_additional_text=" + copyright_notice["additional_text"],
+            ]
+
+    def _build_pandoc_arguments(
+        self, template_path: Path, output_path: Path, short_toc: str
+    ) -> Tuple[List[str], Dict[str, Any], str, str]:
+        title = self._require_config_str("metadata", "title")
+        author = self._require_config_str("metadata", "author")
+        date = self._require_config_str("metadata", "date")
+        metadata = self.config.get("metadata")
+        if not isinstance(metadata, dict):
+            raise ValueError("Config section 'metadata' must be a mapping/object")
+        email = self._require_config_str("metadata", "email")
+        url = self._require_config_str("metadata", "url")
+
+        raw_keywords = self._require_dict_list(metadata, "keywords", context="metadata")
+        keywords_list = [str(keyword).strip() for keyword in raw_keywords if str(keyword).strip()]
+        if not keywords_list:
+            raise ValueError(
+                "Missing required config value: metadata.keywords (must contain at least one keyword)"
+            )
+        keywords_lines = r" \\ ".join(self._escape_latex_text(keyword) for keyword in keywords_list)
+
+        framing = self.config.get("framing")
+        if not isinstance(framing, dict):
+            raise ValueError("Config section 'framing' must be a mapping/object")
+        conclusion = self.config.get("conclusion")
+        if not isinstance(conclusion, dict):
+            raise ValueError("Config section 'conclusion' must be a mapping/object")
+
+        framing_abstract_label, framing_toc_label = self._get_framing_labels()
+        copyright_notice = self._get_copyright_notice()
+        conclusion_title, conclusion_anchor = self._get_conclusion_meta()
+        abstract_anchor = self._latex_id(
+            self._require_config_str("framing", "abstract_anchor"), default="abstract"
+        )
+
+        framing_abstract = self._markdown_to_latex(
+            self._get_markdown_content(framing, inline_key="abstract", file_key="abstract_file")
+        )
+        conclusion_main = self._markdown_to_latex(
+            self._get_markdown_content(
+                conclusion, inline_key="main_text", file_key="main_text_file"
+            )
+        )
+        framing_abstract = self._replace_unicode_arrows(framing_abstract)
+        conclusion_main = self._replace_unicode_arrows(conclusion_main)
+
+        framing_title = self._require_dict_str(framing, "title", context="framing")
+        framing_subtitle = self._require_dict_str(framing, "subtitle", context="framing")
+        images = self._require_dict_list(framing, "images", context="framing")
+        if len(images) < 2:
+            raise ValueError("framing.images must include at least 2 images")
+        framing_image_1 = str(images[0]).strip()
+        framing_image_2 = str(images[1]).strip()
+        if not framing_image_1:
+            raise ValueError("Missing required config value: framing.images[0]")
+        if not framing_image_2:
+            raise ValueError("Missing required config value: framing.images[1]")
+        conclusion_image = str(conclusion.get("image") or "").strip()
+
+        args = [
+            "pandoc",
+            "--from",
+            "markdown",
+            "--to",
+            "pdf",
+            "--template",
+            str(template_path),
+            "--pdf-engine",
+            self._get_pdf_engine(),
+            "-V",
+            "title=" + str(title),
+            "-V",
+            "author=" + str(author),
+            "-V",
+            "date=" + str(date),
+            "-V",
+            "email=" + str(email),
+            "-V",
+            "url=" + str(url),
+            "-V",
+            "framing_title=" + framing_title,
+            "-V",
+            "framing_subtitle=" + framing_subtitle,
+            "-V",
+            "framing_abstract_label=" + framing_abstract_label,
+            "-V",
+            "framing_toc_label=" + framing_toc_label,
+            "-V",
+            "framing_abstract_anchor=" + str(abstract_anchor),
+            "-V",
+            "framing_abstract=" + framing_abstract,
+            "-V",
+            "framing_image_1=" + framing_image_1,
+            "-V",
+            "framing_image_2=" + framing_image_2,
+            "-V",
+            "short_toc=" + (short_toc or ""),
+            "-V",
+            "conclusion_title=" + conclusion_title,
+            "-V",
+            "conclusion_anchor=" + conclusion_anchor,
+            "-V",
+            "conclusion_image=" + conclusion_image,
+            "-V",
+            "conclusion_main=" + conclusion_main,
+            "--output",
+            str(output_path),
+        ]
+        self._append_optional_pandoc_arguments(args, keywords_lines, copyright_notice)
+        return args, framing, framing_abstract, conclusion_main
+
+    def _call_pandoc(
+        self, markdown_content: str, output_path: Path, *, short_toc: str = ""
+    ) -> bool:
         """Call pandoc with custom template."""
         try:
-            # Get template path
-            template_path = self.config_path.parent / 'template.tex'
-            
+            template_path = self.config_path.parent / "template.tex"
             if not template_path.exists():
                 logger.error(f"LaTeX template not found: {template_path}")
                 return False
-            
-            # Prepare pandoc arguments
-            title = self._require_config_str('metadata', 'title')
-            author = self._require_config_str('metadata', 'author')
-            date = self._require_config_str('metadata', 'date')
 
-            metadata = self.config.get('metadata')
-            if not isinstance(metadata, dict):
-                raise ValueError("Config section 'metadata' must be a mapping/object")
-            email = self._require_config_str('metadata', 'email')
-            url = self._require_config_str('metadata', 'url')
-
-            # Keywords are required. Use a YAML list in metadata.keywords:
-            #
-            #   keywords:
-            #     - pattern language
-            #     - change leadership
-            #
-            # We pass a LaTeX-ready, line-separated rendering into the template.
-            raw_keywords = self._require_dict_list(metadata, 'keywords', context='metadata')
-            keywords_list = [str(k).strip() for k in raw_keywords if str(k).strip()]
-            if not keywords_list:
-                raise ValueError(
-                    "Missing required config value: metadata.keywords (must contain at least one keyword)"
-                )
-
-            keywords_list_escaped = [self._escape_latex_text(k) for k in keywords_list]
-            keywords_lines = r" \\ ".join(keywords_list_escaped)
-
-            # Extract framing and conclusion config
-            framing = self.config.get('framing')
-            if not isinstance(framing, dict):
-                raise ValueError("Config section 'framing' must be a mapping/object")
-
-            conclusion = self.config.get('conclusion')
-            if not isinstance(conclusion, dict):
-                raise ValueError("Config section 'conclusion' must be a mapping/object")
-
-            framing_abstract_label, framing_toc_label = self._get_framing_labels()
-            copyright_notice = self._get_copyright_notice()
-            conclusion_title, conclusion_anchor = self._get_conclusion_meta()
-            
-            abstract_anchor = self._latex_id(self._require_config_str('framing', 'abstract_anchor'), default='abstract')
-
-            # Convert markdown formatting to LaTeX in config values
-            framing_abstract_md = self._get_markdown_content(framing, inline_key='abstract', file_key='abstract_file')
-            framing_abstract = self._markdown_to_latex(framing_abstract_md)
-
-            conclusion_main_md = self._get_markdown_content(conclusion, inline_key='main_text', file_key='main_text_file')
-            conclusion_main = self._markdown_to_latex(conclusion_main_md)
-
-            # Replace Unicode arrows (e.g. →) with LaTeX-rendered arrows.
-            framing_abstract = self._replace_unicode_arrows(framing_abstract)
-            conclusion_main = self._replace_unicode_arrows(conclusion_main)
-            
-            framing_title = self._require_dict_str(framing, 'title', context='framing')
-            framing_subtitle = self._require_dict_str(framing, 'subtitle', context='framing')
-
-            images = self._require_dict_list(framing, 'images', context='framing')
-            if len(images) < 2:
-                raise ValueError("framing.images must include at least 2 images")
-            framing_image_1 = str(images[0]).strip()
-            framing_image_2 = str(images[1]).strip()
-            if not framing_image_1:
-                raise ValueError("Missing required config value: framing.images[0]")
-            if not framing_image_2:
-                raise ValueError("Missing required config value: framing.images[1]")
-
-            conclusion_image = str(conclusion.get('image') or '').strip()
-
-            args = [
-                'pandoc',
-                '--from', 'markdown',
-                '--to', 'pdf',
-                '--template', str(template_path),
-                '--pdf-engine', self._get_pdf_engine(),
-                '-V', 'title=' + str(title),
-                '-V', 'author=' + str(author),
-                '-V', 'date=' + str(date),
-                '-V', 'email=' + str(email),
-                '-V', 'url=' + str(url),
-                '-V', 'framing_title=' + framing_title,
-                '-V', 'framing_subtitle=' + framing_subtitle,
-                '-V', 'framing_abstract_label=' + framing_abstract_label,
-                '-V', 'framing_toc_label=' + framing_toc_label,
-                '-V', 'framing_abstract_anchor=' + str(abstract_anchor),
-                '-V', 'framing_abstract=' + framing_abstract,
-                '-V', 'framing_image_1=' + framing_image_1,
-                '-V', 'framing_image_2=' + framing_image_2,
-                '-V', 'short_toc=' + (short_toc or ''),
-                '-V', 'conclusion_title=' + conclusion_title,
-                '-V', 'conclusion_anchor=' + conclusion_anchor,
-                '-V', 'conclusion_image=' + conclusion_image,
-                '-V', 'conclusion_main=' + conclusion_main,
-                '--output', str(output_path),
-            ]
-
-            if keywords_lines:
-                args += ['-V', 'keywords_lines=' + keywords_lines]
-
-            if copyright_notice:
-                args += [
-                    '-V', 'copyright_notice=true',
-                    '-V', 'copyright_notice_year=' + copyright_notice['year'],
-                    '-V', 'copyright_notice_holder=' + copyright_notice['holder'],
-                    '-V', 'copyright_notice_license_name=' + copyright_notice['license_name'],
-                    '-V', 'copyright_notice_license_url=' + copyright_notice['license_url'],
-                ]
-                if 'additional_text' in copyright_notice:
-                    args += ['-V', 'copyright_notice_additional_text=' + copyright_notice['additional_text']]
-            
-            logger.info(f"Calling pandoc with custom template")
+            args, framing, abstract, conclusion_main = self._build_pandoc_arguments(
+                template_path, output_path, short_toc
+            )
+            logger.info("Calling pandoc with custom template")
             logger.info(f"Template: {template_path}")
             logger.info(f"Framing title: {framing.get('title', 'MISSING')}")
-            logger.info(f"Abstract length: {len(framing_abstract)} chars")
+            logger.info(f"Abstract length: {len(abstract)} chars")
             logger.info(f"Main text length: {len(conclusion_main)} chars")
             logger.info(f"Output file: {output_path}")
-            
-            # Call pandoc
+
             result = subprocess.run(
                 args,
-                input=markdown_content.encode('utf-8'),
+                input=markdown_content.encode("utf-8"),
                 capture_output=True,
                 cwd=str(self.root_dir),
             )
-            
             if result.returncode != 0:
                 logger.error(f"Pandoc error: {result.stderr.decode('utf-8')}")
                 return False
-            
+
             logger.info(f"PDF generated successfully: {output_path}")
             return True
-            
         except FileNotFoundError:
-            logger.error("Pandoc is not installed. Install with: brew install pandoc (macOS) or apt install pandoc (Linux)")
+            logger.error(
+                "Pandoc is not installed. Install with: brew install pandoc (macOS) "
+                "or apt install pandoc (Linux)"
+            )
             return False
-        except Exception as e:
-            logger.error(f"Error calling pandoc: {e}")
+        except Exception as error:
+            logger.error(f"Error calling pandoc: {error}")
             return False
-    
+
     def build(self) -> bool:
         """Execute the PDF building pipeline."""
         logger.info("Starting Circle3 multi-pattern PDF build pipeline")
@@ -1656,9 +1683,9 @@ class CirclePDFBuilder:
         # Step 1: Collect patterns (optionally grouped into sections)
         pattern_sections = self._get_pattern_sections()
         total_patterns = sum(
-            len(s.get('patterns', []))
+            len(s.get("patterns", []))
             for s in pattern_sections
-            if isinstance(s, dict) and isinstance(s.get('patterns', []), list)
+            if isinstance(s, dict) and isinstance(s.get("patterns", []), list)
         )
         logger.info(f"Pattern sections: {len(pattern_sections)}")
         logger.info(f"Patterns: {total_patterns}")
@@ -1670,31 +1697,36 @@ class CirclePDFBuilder:
             return False
 
         try:
-            abstract_label, abstract_anchor, include_abstract_in_toc = self._get_framing_abstract_toc_settings()
-            intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_body_intro()
-            back_matter_markdown, back_matter_label, back_matter_anchor, include_back_matter_in_toc = (
-                self._get_body_back_matter()
+            abstract_label, abstract_anchor, include_abstract_in_toc = (
+                self._get_framing_abstract_toc_settings()
             )
-            conclusion = self.config.get('conclusion')
+            intro_markdown, intro_label, intro_anchor, include_intro_in_toc = self._get_body_intro()
+            (
+                back_matter_markdown,
+                back_matter_label,
+                back_matter_anchor,
+                include_back_matter_in_toc,
+            ) = self._get_body_back_matter()
+            conclusion = self.config.get("conclusion")
             if not isinstance(conclusion, dict):
                 raise ValueError("Config section 'conclusion' must be a mapping/object")
             conclusion_title, conclusion_anchor = self._get_conclusion_meta()
-            conclusion_image = str(conclusion.get('image') or '').strip()
+            conclusion_image = str(conclusion.get("image") or "").strip()
             conclusion_main_markdown = self._get_markdown_content(
                 conclusion,
-                inline_key='main_text',
-                file_key='main_text_file',
+                inline_key="main_text",
+                file_key="main_text_file",
             )
 
-            discussion = self.config.get('discussion')
+            discussion = self.config.get("discussion")
             if not isinstance(discussion, dict):
                 raise ValueError("Config section 'discussion' must be a mapping/object")
             discussion_title, discussion_anchor = self._get_discussion_meta()
-            discussion_image = self._require_dict_str(discussion, 'image', context='discussion')
+            discussion_image = self._require_dict_str(discussion, "image", context="discussion")
             discussion_main_markdown = self._get_markdown_content(
                 discussion,
-                inline_key='main_text',
-                file_key='main_text_file',
+                inline_key="main_text",
+                file_key="main_text_file",
             )
 
             markdown_content, toc_items = self._build_markdown_for_pandoc(
@@ -1727,23 +1759,25 @@ class CirclePDFBuilder:
             return False
 
         # Save intermediate markdown for inspection (to /tmp)
-        debug_md_path = Path(tempfile.gettempdir()) / f"{self.config_path.stem}.debug-intermediate.md"
+        debug_md_path = (
+            Path(tempfile.gettempdir()) / f"{self.config_path.stem}.debug-intermediate.md"
+        )
         try:
-            with open(debug_md_path, 'w', encoding='utf-8') as f:
+            with open(debug_md_path, "w", encoding="utf-8") as f:
                 f.write(markdown_content)
             logger.info(f"Intermediate markdown saved for inspection: {debug_md_path}")
         except Exception as e:
             logger.warning(f"Could not save intermediate markdown: {e}")
-        
+
         # Step 3: Generate PDF
         logger.info("Step 3: Generating PDF with custom template...")
-        output_cfg = self.config.get('output')
+        output_cfg = self.config.get("output")
         if not isinstance(output_cfg, dict):
             raise ValueError("Config section 'output' must be a mapping/object")
 
-        output_filename = self._require_dict_str(output_cfg, 'filename', context='output')
-        output_dir = self._require_dict_str(output_cfg, 'directory', context='output')
-        
+        output_filename = self._require_dict_str(output_cfg, "filename", context="output")
+        output_dir = self._require_dict_str(output_cfg, "directory", context="output")
+
         out_dir_path = Path(output_dir)
         if not out_dir_path.is_absolute():
             out_dir_path = (self.root_dir / out_dir_path).resolve()
@@ -1751,16 +1785,16 @@ class CirclePDFBuilder:
         output_path = out_dir_path / output_filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         success = self._call_pandoc(markdown_content, output_path, short_toc=short_toc)
-        
+
         if success:
             file_size = output_path.stat().st_size / (1024 * 1024)
             logger.info(f"\n✓ PDF build complete! File size: {file_size:.2f} MB")
             logger.info(f"✓ Location: {output_path.resolve()}")
         else:
             logger.error("\n✗ PDF build failed")
-        
+
         return success
 
 
@@ -1772,7 +1806,9 @@ def main() -> None:
     # Require an explicit config path.
     # Example: python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
     if len(sys.argv) <= 1:
-        logger.error("Missing config file argument. Usage: python3 scripts/build-pdf.py <config.yaml>")
+        logger.error(
+            "Missing config file argument. Usage: python3 scripts/build-pdf.py <config.yaml>"
+        )
         raise SystemExit(2)
 
     config_path = Path(sys.argv[1])
@@ -1785,5 +1821,5 @@ def main() -> None:
     raise SystemExit(0 if success else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

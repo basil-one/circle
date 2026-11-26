@@ -1,0 +1,7 @@
+extends: relaxed
+rules:
+  document-start: disable
+  line-length: disable
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false

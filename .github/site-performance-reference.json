@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "status": "pending",
+  "note": "Set this file to a reviewed performance-summary.json from a successful scheduled or manually dispatched measurement on main. Never use a pull-request measurement as the fixed reference."
+}

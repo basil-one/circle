@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
 import json
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 
 VERSION_PATTERN = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\Z")
@@ -46,7 +46,9 @@ def stable_tag_versions(tags: list[str]) -> list[str]:
 
 def unreleased_bounds(changelog: str) -> tuple[int, int]:
     lines = changelog.splitlines(keepends=True)
-    headings = [index for index, line in enumerate(lines) if line.rstrip("\r\n") == UNRELEASED_HEADING]
+    headings = [
+        index for index, line in enumerate(lines) if line.rstrip("\r\n") == UNRELEASED_HEADING
+    ]
     if len(headings) != 1:
         raise ReleaseError("CHANGELOG.md must contain exactly one '## [Unreleased]' heading.")
     start = headings[0] + 1
@@ -127,7 +129,9 @@ def promote_changelog(version: str, release_date: str, changelog: str, tags: lis
     try:
         parsed_date = date.fromisoformat(release_date)
     except ValueError as error:
-        raise ReleaseError(f"Invalid release date {release_date!r}; expected YYYY-MM-DD.") from error
+        raise ReleaseError(
+            f"Invalid release date {release_date!r}; expected YYYY-MM-DD."
+        ) from error
     if parsed_date.isoformat() != release_date:
         raise ReleaseError(f"Invalid release date {release_date!r}; expected YYYY-MM-DD.")
     previous = validate_new_release(version, changelog, tags)
@@ -205,22 +209,121 @@ def run_gh(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["gh", *args], check=False, text=True, capture_output=True)
 
 
-def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str]) -> None:
-    tag = f"v{version}"
+def validate_publish_request(version: str, pdf_path: Path, tags: list[str]) -> str:
     if latest_stable_tag(tags) != version:
-        raise ReleaseError("Refusing to publish: the requested version is not the latest stable tag.")
+        raise ReleaseError(
+            "Refusing to publish: the requested version is not the latest stable tag."
+        )
     if not pdf_path.is_file() or pdf_path.stat().st_size == 0:
         raise ReleaseError(f"PDF not found or empty: {pdf_path}")
+    return f"v{version}"
 
+
+def reject_complete_published_release(tag: str, release: dict[str, object] | None) -> None:
+    if release is None or release["isDraft"]:
+        return
+    existing_assets = set(release["assetNames"])
+    if required_asset_names(tag).issubset(existing_assets):
+        raise ReleaseError(
+            f"Release {tag} is already published with both PDF assets. "
+            "Delete only the asset you intend to replace, then rerun this version."
+        )
+
+
+def ensure_draft_release(
+    tag: str,
+    release: dict[str, object] | None,
+    notes_path: str,
+) -> dict[str, object]:
+    if release is not None:
+        return release
+
+    created = run_gh(
+        [
+            "release",
+            "create",
+            tag,
+            "--draft",
+            "--title",
+            tag,
+            "--notes-file",
+            notes_path,
+            "--verify-tag",
+        ]
+    )
+    if created.returncode:
+        raise ReleaseError(f"Unable to create draft release {tag}: {created.stderr.strip()}")
     release = get_release(tag)
-    if release is not None and not release["isDraft"]:
-        existing_assets = set(release["assetNames"])
-        if required_asset_names(tag).issubset(existing_assets):
+    if release is None:
+        raise ReleaseError(f"Draft release {tag} was created but could not be verified.")
+    if not release["isDraft"]:
+        raise ReleaseError(f"Release {tag} was not created as a draft; refusing to upload assets.")
+    return release
+
+
+def upload_missing_release_assets(
+    tag: str,
+    release: dict[str, object],
+    assets: dict[str, Path],
+) -> None:
+    existing_assets = set(release["assetNames"])
+    for asset_name, asset_path in assets.items():
+        if asset_name in existing_assets:
+            continue
+        upload = run_gh(["release", "upload", tag, str(asset_path)])
+        if upload.returncode:
             raise ReleaseError(
-                f"Release {tag} is already published with both PDF assets. "
-                "Delete only the asset you intend to replace, then rerun this version."
+                f"Unable to upload missing asset {asset_name} for release {tag}: "
+                f"{upload.stderr.strip()}"
             )
 
+
+def verify_release_assets(
+    tag: str, release: dict[str, object] | None, *, published: bool = False
+) -> dict[str, object]:
+    if release is None:
+        if published:
+            raise ReleaseError(f"Release {tag} could not be verified as published.")
+        raise ReleaseError(f"Release {tag} disappeared before asset verification.")
+    if published and release["isDraft"]:
+        raise ReleaseError(f"Release {tag} could not be verified as published.")
+    missing_assets = required_asset_names(tag) - set(release["assetNames"])
+    if missing_assets:
+        missing = ", ".join(sorted(missing_assets))
+        if published:
+            raise ReleaseError(f"Published release {tag} is missing required assets: {missing}.")
+        raise ReleaseError(f"Release {tag} is still missing required assets: {missing}.")
+    return release
+
+
+def mark_release_published(tag: str, notes_path: str, release: dict[str, object]) -> None:
+    if release["isDraft"]:
+        action = run_gh(
+            [
+                "release",
+                "edit",
+                tag,
+                "--title",
+                tag,
+                "--notes-file",
+                notes_path,
+                "--draft=false",
+                "--latest",
+            ]
+        )
+    else:
+        action = run_gh(["release", "edit", tag, "--latest"])
+    if action.returncode:
+        raise ReleaseError(
+            f"Both assets are present, but release {tag} could not be published/marked "
+            f"latest: {action.stderr.strip()}"
+        )
+
+
+def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str]) -> None:
+    tag = validate_publish_request(version, pdf_path, tags)
+    release = get_release(tag)
+    reject_complete_published_release(tag, release)
     versioned_pdf = pdf_path.with_name(f"circle3-paper-{tag}.pdf")
     shutil.copyfile(pdf_path, versioned_pdf)
     assets = {
@@ -231,79 +334,11 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".md") as notes_file:
         notes_file.write(notes)
         notes_file.flush()
-
-        if release is None:
-            created = run_gh(
-                [
-                    "release",
-                    "create",
-                    tag,
-                    "--draft",
-                    "--title",
-                    tag,
-                    "--notes-file",
-                    notes_file.name,
-                    "--verify-tag",
-                ]
-            )
-            if created.returncode:
-                raise ReleaseError(f"Unable to create draft release {tag}: {created.stderr.strip()}")
-            release = get_release(tag)
-            if release is None:
-                raise ReleaseError(f"Draft release {tag} was created but could not be verified.")
-            if not release["isDraft"]:
-                raise ReleaseError(
-                    f"Release {tag} was not created as a draft; refusing to upload assets."
-                )
-
-        existing_assets = set(release["assetNames"])
-        for asset_name, asset_path in assets.items():
-            if asset_name in existing_assets:
-                continue
-            upload = run_gh(["release", "upload", tag, str(asset_path)])
-            if upload.returncode:
-                raise ReleaseError(
-                    f"Unable to upload missing asset {asset_name} for release {tag}: "
-                    f"{upload.stderr.strip()}"
-                )
-
-        verified = get_release(tag)
-        if verified is None:
-            raise ReleaseError(f"Release {tag} disappeared before asset verification.")
-        missing_assets = required_asset_names(tag) - set(verified["assetNames"])
-        if missing_assets:
-            missing = ", ".join(sorted(missing_assets))
-            raise ReleaseError(f"Release {tag} is still missing required assets: {missing}.")
-
-        if verified["isDraft"]:
-            action = run_gh(
-                [
-                    "release",
-                    "edit",
-                    tag,
-                    "--title",
-                    tag,
-                    "--notes-file",
-                    notes_file.name,
-                    "--draft=false",
-                    "--latest",
-                ]
-            )
-        else:
-            action = run_gh(["release", "edit", tag, "--latest"])
-        if action.returncode:
-            raise ReleaseError(
-                f"Both assets are present, but release {tag} could not be published/marked "
-                f"latest: {action.stderr.strip()}"
-            )
-
-        final = get_release(tag)
-        if final is None or final["isDraft"]:
-            raise ReleaseError(f"Release {tag} could not be verified as published.")
-        missing_assets = required_asset_names(tag) - set(final["assetNames"])
-        if missing_assets:
-            missing = ", ".join(sorted(missing_assets))
-            raise ReleaseError(f"Published release {tag} is missing required assets: {missing}.")
+        release = ensure_draft_release(tag, release, notes_file.name)
+        upload_missing_release_assets(tag, release, assets)
+        verified = verify_release_assets(tag, get_release(tag))
+        mark_release_published(tag, notes_file.name, verified)
+        verify_release_assets(tag, get_release(tag), published=True)
 
 
 def required_asset_names(tag: str) -> set[str]:
@@ -361,9 +396,7 @@ def command_release(args: argparse.Namespace) -> None:
 
 
 def command_notes(args: argparse.Namespace) -> None:
-    notes = render_release_notes(
-        args.version, Path(args.changelog).read_text(encoding="utf-8")
-    )
+    notes = render_release_notes(args.version, Path(args.changelog).read_text(encoding="utf-8"))
     Path(args.output).write_text(notes, encoding="utf-8")
 
 

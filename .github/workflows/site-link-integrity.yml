@@ -1,0 +1,69 @@
+name: "Site: Link Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    name: "Site: Link Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+        env:
+          BUNDLE_FROZEN: 'true'
+      - name: Build site
+        id: build
+        run: bundle exec jekyll build --trace
+        env:
+          JEKYLL_ENV: production
+      - name: Test link auditor
+        id: link_tests
+        run: python3 -m unittest discover -s tests -p 'test_site_links.py'
+      - name: Audit generated site links
+        id: link_audit
+        run: |
+          python3 scripts/check_site_links.py \
+            --site-dir _site \
+            --config _config.yml \
+            --report "$RUNNER_TEMP/link-audit-report.md" \
+            --fail-on-likely-external
+      - name: Add link audit report to job summary
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          TEST_OUTCOME: ${{ steps.link_tests.outcome }}
+          AUDIT_OUTCOME: ${{ steps.link_audit.outcome }}
+        run: |
+          echo "# Site: Link Integrity" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          summary_outcome() {
+            case "$1" in
+              success) printf -- "- %s: **passed**.\n" "$2" ;;
+              failure) printf -- "- %s: **failed**; see logs.\n" "$2" ;;
+              *) printf -- "- %s: **not completed**; see prior logs.\n" "$2" ;;
+            esac
+          }
+          {
+            summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
+            summary_outcome "$TEST_OUTCOME" "Link-auditor unit tests"
+            summary_outcome "$AUDIT_OUTCOME" "Generated-site link audit"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$RUNNER_TEMP/link-audit-report.md" ]; then
+            cat "$RUNNER_TEMP/link-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Link report unavailable." >> "$GITHUB_STEP_SUMMARY"
+            echo "  See audit step logs." >> "$GITHUB_STEP_SUMMARY"
+          fi

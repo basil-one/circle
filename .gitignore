@@ -7,6 +7,10 @@ _site/
 # Ruby / Bundler
 .bundle/
 vendor/
+/node_modules/
+/playwright-report/
+/test-results/
+/performance-reports/
 
 # OS / editor junk
 .DS_Store

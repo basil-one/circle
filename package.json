@@ -1,0 +1,24 @@
+{
+  "name": "circle-site-quality",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:browser": "playwright test tests/browser/smoke.spec.js tests/browser/responsive.spec.js",
+    "test:browser:negative": "playwright test tests/browser/negative.spec.js",
+    "test:browser:accessibility-negative": "playwright test tests/browser/accessibility-negative.spec.js",
+    "test:browser:responsive-negative": "playwright test tests/browser/responsive-negative.spec.js",
+    "test:performance-history": "node --test tests/site_performance_history.test.mjs",
+    "test:performance-skip": "node --test tests/site_performance_skip.test.mjs",
+    "test:performance-summary": "node --test tests/site_performance_summary.test.mjs",
+    "test:quality-pulse": "node --test tests/daily_quality_workflow.test.mjs tests/quality_pulse.test.mjs tests/common_dependency_posture.test.mjs",
+    "test:required-checks": "node --test tests/required_checks.test.mjs",
+    "test:rendering-summary": "node --test tests/site_rendering_summary.test.mjs",
+    "test:site-routes": "node --test tests/site_routes.test.mjs",
+    "measure:performance": "node scripts/measure_site_performance.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.1",
+    "lighthouse": "13.6.0"
+  }
+}

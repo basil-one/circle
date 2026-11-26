@@ -107,7 +107,10 @@ class PaperReleaseTests(unittest.TestCase):
 
     def test_promotes_entries_and_updates_comparison_links(self):
         promoted = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
-        self.assertIn("## [Unreleased]\n\n## [0.2.1] - 2026-11-24\n\n### Added\n- A reviewed change.", promoted)
+        self.assertIn(
+            "## [Unreleased]\n\n## [0.2.1] - 2026-11-24\n\n### Added\n- A reviewed change.",
+            promoted,
+        )
         self.assertIn(
             "[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.1...HEAD\n"
             "[0.2.1]: https://github.com/basil-one/circle/compare/v0.2.0...v0.2.1",
@@ -247,7 +250,9 @@ class PaperReleaseTests(unittest.TestCase):
                 Path(run.call_args_list[1].args[0][3]).name,
                 "circle3-paper-v0.2.1.pdf",
             )
-            self.assertEqual(run.call_args_list[3].args[0], ["release", "edit", "v0.2.1", "--latest"])
+            self.assertEqual(
+                run.call_args_list[3].args[0], ["release", "edit", "v0.2.1", "--latest"]
+            )
             self.assertNotIn("--clobber", run.call_args_list[1].args[0])
 
     def test_published_release_recovery_restores_only_missing_stable_asset(self):
@@ -267,7 +272,9 @@ class PaperReleaseTests(unittest.TestCase):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(run.call_args_list[1].args[0][2], "v0.2.1")
             self.assertEqual(run.call_args_list[1].args[0][3], str(pdf))
-            self.assertEqual(run.call_args_list[3].args[0], ["release", "edit", "v0.2.1", "--latest"])
+            self.assertEqual(
+                run.call_args_list[3].args[0], ["release", "edit", "v0.2.1", "--latest"]
+            )
 
 
 if __name__ == "__main__":

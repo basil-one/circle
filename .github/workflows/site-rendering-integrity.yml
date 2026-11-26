@@ -1,0 +1,114 @@
+name: "Site: Rendering Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-rendering-integrity-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-smoke:
+    name: "Site: Rendering Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+        env:
+          BUNDLE_FROZEN: 'true'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build site
+        id: build
+        run: bundle exec jekyll build --trace
+        env:
+          JEKYLL_ENV: production
+      - name: Install browser test dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps --only-shell chromium
+      - name: Run rendered-site smoke tests
+        id: smoke
+        run: npm run test:browser -- --reporter=json
+        env:
+          CI: 'true'
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/browser-results.json
+      - name: Verify missing-route diagnostic
+        id: negative
+        run: |
+          output="$RUNNER_TEMP/browser-negative.log"
+          diagnostic='Expected /__browser-test-missing-route__/'
+          diagnostic="$diagnostic to return HTTP 200"
+          if npm run \
+            test:browser:negative >"$output" 2>&1; then
+            cat "$output"
+            echo "Expected the deliberately missing route test to fail."
+            exit 1
+          fi
+          cat "$output"
+          grep -F "$diagnostic" "$output"
+          grep -F 'received HTTP 404' "$output"
+          echo "Confirmed the expected missing-route HTTP 404 diagnostic."
+        env:
+          CI: 'true'
+      - name: Verify accessibility diagnostic
+        id: accessibility_negative
+        if: always() && steps.build.outcome == 'success'
+        run: |
+          output="$RUNNER_TEMP/browser-accessibility-negative.log"
+          if npm run \
+            test:browser:accessibility-negative >"$output" 2>&1; then
+            cat "$output"
+            echo "Expected the controlled accessibility fixture to fail."
+            exit 1
+          fi
+          cat "$output"
+          grep -F 'Accessibility violations detected on in-memory accessibility failure fixture.' "$output"
+          grep -F 'Element: img' "$output"
+          grep -F 'Rule: image-alt' "$output"
+          grep -F 'Next step:' "$output"
+          echo "Confirmed actionable diagnostics for the in-memory accessibility fixture."
+        env:
+          CI: 'true'
+      - name: Verify responsive diagnostic
+        id: responsive_negative
+        if: always() && steps.build.outcome == 'success'
+        run: |
+          output="$RUNNER_TEMP/browser-responsive-negative.log"
+          if npm run \
+            test:browser:responsive-negative >"$output" 2>&1; then
+            cat "$output"
+            echo "Expected the controlled responsive fixture to fail."
+            exit 1
+          fi
+          cat "$output"
+          grep -F 'Responsive usability failure on in-memory responsive failure fixture at 320px: whole-page horizontal overflow' "$output"
+          grep -F 'Affected elements: div (' "$output"
+          grep -F 'Next step: inspect the reported route at this viewport' "$output"
+          echo "Confirmed actionable diagnostics for the in-memory responsive fixture."
+        env:
+          CI: 'true'
+      - name: Summarize rendered-site checks
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
+          NEGATIVE_OUTCOME: ${{ steps.negative.outcome }}
+          ACCESSIBILITY_NEGATIVE_OUTCOME: ${{ steps.accessibility_negative.outcome }}
+          RESPONSIVE_NEGATIVE_OUTCOME: ${{ steps.responsive_negative.outcome }}
+          RESULTS_FILE: ${{ runner.temp }}/browser-results.json
+        run: node scripts/render_site_rendering_summary.mjs
