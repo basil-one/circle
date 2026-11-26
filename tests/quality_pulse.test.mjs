@@ -1010,6 +1010,12 @@ test('paper rendering preserves findings and never infers success from missing e
   pulse = await build();
   assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
 
+  outputs.rendering_evidence = JSON.stringify({
+    status: 'success', detail: '', findings: ['page 1: rendered completely blank']
+  });
+  pulse = await build();
+  assert.match(pulse.markdown, /Unknown \/ rendering evidence unavailable/);
+
   outputs.build = 'failure';
   pulse = await build();
   assert.match(pulse.markdown, /Incomplete \/ build unavailable/);

@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build: ${{ needs.paper-build.result }}
-      rendering: ${{ needs.paper-rendering.outputs.status }}
+      rendering: ${{ needs.paper-rendering.outputs.status == 'success' && needs.paper-rendering.result != 'success' && 'incomplete' || needs.paper-rendering.outputs.status || 'incomplete' }}
       rendering_evidence: ${{ needs.paper-rendering.outputs.evidence }}
     steps:
       - run: echo "Paper Build and Rendering outcomes are available to Quality Pulse."

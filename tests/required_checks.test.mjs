@@ -79,6 +79,7 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(paper, /command -v pdfinfo\n          command -v pdftoppm\n          python3 -m unittest discover -s scripts -p 'test_paper_rendering\.py' -v/);
   assert.match(paper, /python3 scripts\/check_paper_rendering\.py assets\/pdfs\/circle3-paper\.pdf --report/);
   assert.match(paper, /build: \$\{\{ needs\.paper-build\.result \}\}/);
-  assert.match(paper, /rendering: \$\{\{ needs\.paper-rendering\.outputs\.status \}\}/);
+  assert.match(paper, /needs\.paper-rendering\.outputs\.status == 'success' && needs\.paper-rendering\.result != 'success' && 'incomplete'/);
+  assert.match(paper, /needs\.paper-rendering\.outputs\.status \|\| 'incomplete'/);
   assert.match(paper, /rendering_evidence: \$\{\{ needs\.paper-rendering\.outputs\.evidence \}\}/);
 });

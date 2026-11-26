@@ -756,6 +756,7 @@ async function buildOrchestratedPulse({
       if (evidence?.status !== paperRendering || typeof evidence.detail !== 'string' ||
           !Array.isArray(evidence.findings) ||
           evidence.findings.some((finding) => typeof finding !== 'string') ||
+          (paperRendering === 'success' && evidence.findings.length !== 0) ||
           (paperRendering === 'failure' && evidence.findings.length === 0)) {
         throw new Error('invalid rendering evidence');
       }

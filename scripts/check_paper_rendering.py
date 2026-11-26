@@ -127,11 +127,7 @@ def main():
         try:
             args.report.write_text(json.dumps(report), encoding="utf-8")
         except OSError as error:
-            print(
-                f"Paper: Rendering Integrity — incomplete: cannot write report: {error}",
-                file=sys.stderr,
-            )
-            code = 2
+            outcome, detail, code = "incomplete", f"cannot write report: {error}", 2
     if outcome == "incomplete":
         print(f"Paper: Rendering Integrity — incomplete: {detail}", file=sys.stderr)
     elif findings:

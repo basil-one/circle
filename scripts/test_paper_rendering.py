@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import shutil
 import subprocess
@@ -66,6 +68,19 @@ def fixture_pdf(path, page_streams, *, broken_image=False):
 
 
 class RenderingUnitTests(unittest.TestCase):
+    def test_unwritable_report_is_incomplete_not_passed(self):
+        output = io.StringIO()
+        errors = io.StringIO()
+        with (
+            patch.object(rendering, "check_rendering", return_value=(1, [])),
+            patch.object(sys, "argv", [str(CHECK), "paper.pdf", "--report", "/missing/report"]),
+            contextlib.redirect_stdout(output),
+            contextlib.redirect_stderr(errors),
+        ):
+            self.assertEqual(rendering.main(), 2)
+        self.assertNotIn("passed", output.getvalue())
+        self.assertIn("incomplete: cannot write report", errors.getvalue())
+
     def test_bad_raster_is_not_treated_as_blank_or_passed(self):
         for data in (b"", b"P6\n1 1\n255\n\xff", b"P6\n0 1\n255\n"):
             with self.subTest(data=data), self.assertRaises(ValueError):
