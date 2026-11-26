@@ -742,12 +742,12 @@ async function buildOrchestratedPulse({
     { rendering: { result: paperRendering } }, 'rendering', 'Paper: Rendering Integrity', run
   );
   const renderingJob = paperOutputs?.rendering_job;
-  if (paperRendering === 'failure') {
+  if (paperRendering === 'failure' && ['failure', 'cancelled'].includes(renderingJob)) {
     paperRender.result.state = 'failed';
     paperRender.result.label = 'Failed';
     paperRender.result.detail = 'Rendering findings require correction; inspect the rendering job and report.';
-    if (renderingJob !== 'failure') {
-      paperRender.result.detail += ' Job and validator outcomes disagree or the job was cancelled; inspect and rerun.';
+    if (renderingJob === 'cancelled') {
+      paperRender.result.detail += ' The job was cancelled after the finding; inspect and rerun.';
     }
   } else if (paperBuild !== 'success') {
     paperRender.result.state = 'incomplete';
@@ -877,13 +877,13 @@ async function buildOrchestratedPulse({
       const { data: report, artifact } = await fetchArtifactJson({
         ...artifactOptions,
         artifactName: 'paper-rendering-report',
-        fileName: 'paper-rendering.json',
+        fileName: 'paper-rendering-report.json',
         includeMetadata: true
       });
       const expectedStatus = { success: 'passed', failure: 'failed', incomplete: 'incomplete' }[paperRendering];
       if (report?.status !== expectedStatus || !Array.isArray(report.findings) ||
-          report.findings.length > 300 ||
-          report.findings.some((finding) => typeof finding !== 'string' || finding.length > 2000) ||
+          report.findings.length > 100 ||
+          report.findings.some((finding) => typeof finding !== 'string' || finding.length === 0 || finding.length > 2000) ||
           (expectedStatus === 'passed' && report.findings.length !== 0) ||
           (expectedStatus !== 'passed' && report.findings.length === 0)) {
         throw new Error('rendering report is malformed or disagrees with the validator');
@@ -893,7 +893,7 @@ async function buildOrchestratedPulse({
       const last = report.findings.at(-1);
       if (report.findings.length > 3 && last.startsWith('Rendering inspection incomplete:')) details.push(last);
       if (details.length) {
-        paperRender.result.detail += ` ${details.map((item) => item.replace(/[\r\n]+/g, ' ').slice(0, 600)).join('; ')}. See the report for all findings.`;
+        paperRender.result.detail += ` ${details.map((item) => item.replace(/[\r\n|]+/g, ' ').slice(0, 600)).join('; ')}. See the report for all findings.`;
       }
     } catch (error) {
       if (paperRender.result.state === 'fresh') {

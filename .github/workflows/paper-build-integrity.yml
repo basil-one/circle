@@ -96,7 +96,7 @@ jobs:
         id: rendering
         run: |
           set +e
-          python3 scripts/check_paper_rendering.py assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering.json"
+          python3 scripts/check_paper_rendering.py assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json"
           result=$?
           set -e
           case "$result" in
@@ -106,11 +106,11 @@ jobs:
           esac
           exit "$result"
       - name: Upload rendering report
-        if: ${{ always() && !cancelled() }}
+        if: ${{ always() && steps.rendering.outcome != 'skipped' }}
         uses: actions/upload-artifact@v6
         with:
           name: paper-rendering-report
-          path: ${{ runner.temp }}/paper-rendering.json
+          path: ${{ runner.temp }}/paper-rendering-report.json
           if-no-files-found: error
           retention-days: 30
 

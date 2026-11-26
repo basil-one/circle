@@ -155,7 +155,7 @@ class RenderingUnitTests(unittest.TestCase):
             ):
                 self.assertEqual(rendering.main(), 1)
             data = json.loads(report.read_text())
-        self.assertEqual(len(data["findings"]), 300)
+        self.assertEqual(len(data["findings"]), 100)
         self.assertIn("further findings omitted", data["findings"][-2])
         self.assertIn("page 302: timeout", data["findings"][-1])
 

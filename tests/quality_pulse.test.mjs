@@ -728,7 +728,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   const unzipImpl = (_command, args) => {
     if (args.at(-1) === 'performance-comparison.json') return JSON.stringify(performanceComparison);
     if (args.at(-1) === 'performance-summary.json') return JSON.stringify(performanceSummary);
-    if (args.at(-1) === 'paper-rendering.json') return JSON.stringify({ status: 'passed', findings: [] });
+    if (args.at(-1) === 'paper-rendering-report.json') return JSON.stringify({ status: 'passed', findings: [] });
     if (args.at(-1) === 'dependency-posture.json') {
       return JSON.stringify({ status: 'passed', detail: 'No open medium-or-higher alerts' });
     }

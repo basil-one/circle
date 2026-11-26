@@ -124,9 +124,9 @@ def main():
     code = {"passed": 0, "failed": 1, "incomplete": 2}[outcome]
     if args.report:
         report_findings = findings
-        if len(findings) > 300:
-            report_findings = findings[:298] + [
-                f"{len(findings) - 299} further findings omitted; see job logs",
+        if len(findings) > 100:
+            report_findings = findings[:98] + [
+                f"{len(findings) - 99} further findings omitted; see job logs",
                 findings[-1],
             ]
         report = {"status": outcome, "findings": report_findings}
