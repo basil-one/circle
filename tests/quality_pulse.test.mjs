@@ -816,6 +816,119 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
   assert.match(missing.markdown, /\| Paper: Build Integrity \| Missing \|/);
 });
 
+test('orchestrated Pulse reports confirmed performance detail and distinguishes incomplete or legacy evidence', async () => {
+  const runId = '892';
+  const runUrl = `https://github.com/basil-one/circle/actions/runs/${runId}`;
+  const performanceSummary = {
+    complete: true,
+    capturedAt: `${date}T06:30:00.000Z`,
+    source: { eventName: 'schedule', branch: 'main', runId }
+  };
+  const needs = {
+    'site-build': { result: 'success' },
+    link: { result: 'success' },
+    seo: { result: 'success' },
+    'code-quality': { result: 'success' },
+    'dependency-security': { result: 'success' },
+    rendering: { result: 'success' },
+    performance: { result: 'failure' }
+  };
+  const buildFailurePulse = async (comparison) => buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    token: 'test-token',
+    needs,
+    runId,
+    runUrl,
+    date,
+    fetchImpl: async (url) => {
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith(`/actions/runs/${runId}/artifacts`)) {
+        const artifactName = parsed.searchParams.get('name');
+        return {
+          ok: true,
+          json: async () => ({
+            artifacts: [{
+              name: artifactName,
+              expired: false,
+              id: artifactName === 'performance-summary' ? 456 : 457
+            }]
+          })
+        };
+      }
+      if (/\/actions\/artifacts\/(456|457)\/zip$/.test(parsed.pathname)) {
+        return { ok: true, arrayBuffer: async () => new ArrayBuffer(0) };
+      }
+      throw new Error(`Unexpected request: ${parsed.pathname}`);
+    },
+    unzipImpl: (_command, args) => {
+      if (args.at(-1) === 'performance-comparison.json') return JSON.stringify(comparison);
+      if (args.at(-1) === 'performance-summary.json') return JSON.stringify(performanceSummary);
+      if (args.at(-1) === 'dependency-posture.json') {
+        return JSON.stringify({ status: 'passed', detail: 'No open medium-or-higher alerts' });
+      }
+      throw new Error(`Unexpected artifact file: ${args.at(-1)}`);
+    }
+  });
+
+  const confirmedComparison = structuredClone(performanceComparison);
+  confirmedComparison.policy = {
+    status: 'failed',
+    confirmedViolations: [
+      {
+        route: '/method/',
+        formFactor: 'mobile',
+        metric: 'largest-contentful-paint',
+        criterion: 'absolute',
+        value: 3_604,
+        confirmationValue: 3_201,
+        limit: 3_000
+      },
+      {
+        route: '/method/',
+        formFactor: 'mobile',
+        metric: 'largest-contentful-paint',
+        criterion: 'reference-deterioration',
+        value: 3_604,
+        confirmationValue: 3_201,
+        referenceValue: 2_405,
+        delta: 1_199,
+        deltaPercentage: 49.8
+      }
+    ]
+  };
+  const confirmed = await buildFailurePulse(confirmedComparison);
+  assert.equal(confirmed.successful, false);
+  assert.match(confirmed.markdown, /\| Site: Performance Integrity \| Failed \|/);
+  assert.match(confirmed.markdown, /Confirmed performance violation\(s\)/);
+  assert.match(confirmed.markdown, /`\/method\/`\/mobile largest-contentful-paint: 3\.60 s initially, 3\.20 s confirmed vs 3\.00 s limit/);
+  assert.match(confirmed.markdown, /reference 2\.40 s \(Δ 1\.20 s, \+49\.8%\)/);
+  assert.match(confirmed.markdown, /Next step: correct the affected route\/profile and rerun Performance Integrity/);
+
+  const incompleteComparison = structuredClone(performanceComparison);
+  incompleteComparison.policy = {
+    status: 'incomplete',
+    confirmationReason: 'repeat sample set was incomplete',
+    confirmedViolations: []
+  };
+  const incomplete = await buildFailurePulse(incompleteComparison);
+  assert.match(incomplete.markdown, /Performance confirmation incomplete \(repeat sample set was incomplete\); no pass is inferred/);
+  assert.doesNotMatch(incomplete.markdown, /Confirmed performance violation\(s\)/);
+
+  const failedAfterPassComparison = structuredClone(performanceComparison);
+  failedAfterPassComparison.policy = { status: 'passed', confirmedViolations: [] };
+  const failedAfterPass = await buildFailurePulse(failedAfterPassComparison);
+  assert.match(failedAfterPass.markdown, /policy evidence reports no confirmed violation, but the performance job failed in another required operation/);
+
+  const malformedPolicyComparison = structuredClone(performanceComparison);
+  malformedPolicyComparison.policy = { status: 'failed', confirmedViolations: [{}] };
+  const malformedPolicy = await buildFailurePulse(malformedPolicyComparison);
+  assert.match(malformedPolicy.markdown, /Performance policy evidence is incomplete: the job failed without a valid confirmed-violation record/);
+
+  const legacy = await buildFailurePulse(performanceComparison);
+  assert.match(legacy.markdown, /comparison artifact predates structured policy evidence/);
+});
+
 test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than successful', async () => {
   const pulse = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -841,5 +954,5 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Unknown \/ performance evidence unavailable \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Unknown \/ PDF preview unavailable \|/);
   assert.match(pulse.markdown, /no clean result is inferred/);
-  assert.match(pulse.markdown, /no comparison is inferred/);
+  assert.match(pulse.markdown, /no comparison or pass is inferred/);
 });

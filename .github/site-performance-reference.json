@@ -1,5 +1,148 @@
 {
   "schemaVersion": 1,
-  "status": "pending",
-  "note": "Set this file to a reviewed performance-summary.json from a successful scheduled or manually dispatched measurement on main. Never use a pull-request measurement as the fixed reference."
+  "complete": true,
+  "capturedAt": "2026-11-26T13:09:47.365Z",
+  "source": {
+    "eventName": "workflow_dispatch",
+    "branch": "main",
+    "sha": "d98f58720d47b12748031b672a9ae5f42746b474",
+    "runId": "45825581908",
+    "runUrl": "https://github.com/basil-one/circle/actions/runs/45825581908"
+  },
+  "coverage": {
+    "routeCount": 4,
+    "formFactors": [
+      "mobile",
+      "desktop"
+    ],
+    "runCount": 3,
+    "routeProfiles": 8,
+    "measurementCount": 24
+  },
+  "environment": {
+    "runner": "ubuntu-24.04",
+    "lighthouse": "13.6.0",
+    "chrome": "Google Chrome for Testing 159.0.8154.6",
+    "ruby": "ruby 3.3.14 (2026-11-19 revision f4c37f481b) [x86_64-linux]",
+    "jekyll": "jekyll 3.10.0",
+    "node": "v22.23.5"
+  },
+  "conditions": {
+    "site": "Jekyll production build served locally",
+    "mobile": "Lighthouse default mobile configuration",
+    "desktop": "Lighthouse desktop preset",
+    "analyticsCollectionBlocked": true,
+    "labOnly": true
+  },
+  "timing": {
+    "measurementSeconds": 260.217
+  },
+  "firstPartyAssets": [
+    {
+      "path": "assets/css/site.css",
+      "bytes": 3676
+    },
+    {
+      "path": "assets/js/analytics.js",
+      "bytes": 1654
+    }
+  ],
+  "externalScripts": [
+    {
+      "source": "https://www.googletagmanager.com/gtag/js",
+      "samples": 8,
+      "successful": 8,
+      "medianTransferBytes": 183293
+    }
+  ],
+  "results": [
+    {
+      "route": "/",
+      "formFactor": "mobile",
+      "values": {
+        "first-contentful-paint": 905.7882,
+        "largest-contentful-paint": 2255.7882,
+        "speed-index": 905.7882,
+        "total-blocking-time": 149.5,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/",
+      "formFactor": "desktop",
+      "values": {
+        "first-contentful-paint": 246.80509999999998,
+        "largest-contentful-paint": 728.26495,
+        "speed-index": 246.80509999999998,
+        "total-blocking-time": 7,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/moves/",
+      "formFactor": "mobile",
+      "values": {
+        "first-contentful-paint": 907.8471999999999,
+        "largest-contentful-paint": 2257.8472,
+        "speed-index": 907.8471999999999,
+        "total-blocking-time": 147.5,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/moves/",
+      "formFactor": "desktop",
+      "values": {
+        "first-contentful-paint": 245.9651,
+        "largest-contentful-paint": 485.9651,
+        "speed-index": 245.9651,
+        "total-blocking-time": 5,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/lenses/",
+      "formFactor": "mobile",
+      "values": {
+        "first-contentful-paint": 906.1106,
+        "largest-contentful-paint": 2256.1106,
+        "speed-index": 906.1106,
+        "total-blocking-time": 151,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/lenses/",
+      "formFactor": "desktop",
+      "values": {
+        "first-contentful-paint": 246.0616,
+        "largest-contentful-paint": 723.8041000000001,
+        "speed-index": 246.0616,
+        "total-blocking-time": 5.5,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/method/",
+      "formFactor": "mobile",
+      "values": {
+        "first-contentful-paint": 905.3307,
+        "largest-contentful-paint": 2405.3307,
+        "speed-index": 905.3307,
+        "total-blocking-time": 146,
+        "cumulative-layout-shift": 0
+      }
+    },
+    {
+      "route": "/method/",
+      "formFactor": "desktop",
+      "values": {
+        "first-contentful-paint": 248.5125,
+        "largest-contentful-paint": 488.5125,
+        "speed-index": 248.5125,
+        "total-blocking-time": 5.5,
+        "cumulative-layout-shift": 0
+      }
+    }
+  ]
 }

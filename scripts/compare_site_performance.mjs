@@ -8,6 +8,10 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+  assessPerformance,
+  finalizePerformanceAssessment
+} from './site_performance_policy.mjs';
 
 const apiVersion = '2022-11-28';
 const historyLimit = 28;
@@ -399,6 +403,17 @@ function buildComparison(current, reference, history) {
     ? referenceReady
     : undefined;
   const referenceResults = getResults(readyReference);
+  const fixedReferenceReason = readyReference
+    ? undefined
+    : referenceReady
+      ? 'The reviewed fixed reference is incompatible with the current tool or runner environment.'
+      : 'The reviewed fixed reference is missing, incomplete, or lacks successful main-run provenance.';
+  const performanceAssessment = assessPerformance(
+    current.results,
+    readyReference ? reference.results : [],
+    Boolean(readyReference),
+    fixedReferenceReason
+  );
   const historyProvenance = compatibleHistory.map((summary) => ({
     runId: summary.source.runId,
     runUrl: summary.source.runUrl,
@@ -415,15 +430,15 @@ function buildComparison(current, reference, history) {
     `- **Fixed reference:** ${readyReference
       ? `[successful main run](${readyReference.source.runUrl})`
       : referenceReady
-        ? 'not comparable; tool or runner versions differ from the versioned reference'
-        : 'pending first reviewed successful main measurement'}.`,
+        ? 'not comparable; tool or runner versions differ from the reviewed reference'
+        : 'unavailable; no complete reviewed successful main reference is available'}.`,
     `- **Rolling daily-main baseline:** ${comparisonHistory.status === 'unavailable'
       ? `unavailable (${historyReason})`
       : comparisonHistory.status === 'available'
         ? `${historyLimit}/${historyLimit} compatible successful daily-main runs; available`
         : `collecting (${compatibleHistory.length}/${historyLimit} compatible successful daily-main runs)`}.`,
     '- **Environment compatibility:** runner, Lighthouse, Chrome, and Jekyll must match exactly; Ruby and Node must match by major.minor. Full versions remain in the summary artifact.',
-    '- Deltas are descriptive only; they do not fail this workflow or establish a performance-quality verdict.'
+    '- Rolling comparisons are descriptive only and never establish an enforcement threshold.'
   ];
   if (deltasAvailable) {
     lines.push('- A dash means no matching route/profile baseline metric is available for a selected Circle route.');
@@ -491,12 +506,11 @@ function buildComparison(current, reference, history) {
       ? { available: true, runUrl: readyReference.source.runUrl }
       : {
           available: false,
-          reason: referenceReady
-            ? 'The versioned reference uses a different tool or runner environment.'
-            : 'No versioned successful main reference has been established.'
+          reason: fixedReferenceReason
         },
     deltasAvailable,
     conditions: differences,
+    policy: performanceAssessment,
     comparisons: [...currentResults].map(([slot, result]) => {
       const fixedResult = referenceResults.get(slot);
       const rollingResult = rolling.get(slot);
@@ -531,7 +545,101 @@ function buildComparison(current, reference, history) {
   return { lines, comparison };
 }
 
+function sameMeasurementConditions(current, confirmation) {
+  return ['site', 'mobile', 'desktop', 'analyticsCollectionBlocked', 'labOnly'].every(
+    (key) => current.conditions?.[key] === confirmation.conditions?.[key]
+  );
+}
+
+function finalizeComparison(reportDirectory, confirmationDirectory) {
+  const comparisonPath = join(reportDirectory, 'performance-comparison.json');
+  const summaryPath = join(reportDirectory, 'performance-summary.json');
+  const comparison = JSON.parse(readFileSync(comparisonPath, 'utf8'));
+  const current = JSON.parse(readFileSync(summaryPath, 'utf8'));
+  const initialPolicy = comparison.policy;
+  if (!initialPolicy) {
+    throw new Error('Performance policy assessment is unavailable; this safeguard cannot pass.');
+  }
+  if (initialPolicy.initialViolations.length === 0) {
+    comparison.policy = finalizePerformanceAssessment(initialPolicy);
+  } else {
+    let confirmation;
+    try {
+      confirmation = JSON.parse(
+        readFileSync(join(confirmationDirectory, 'performance-summary.json'), 'utf8')
+      );
+    } catch {
+      confirmation = undefined;
+    }
+    const compatible = Boolean(
+      confirmation &&
+      sameMeasurementEnvironment(current, confirmation) &&
+      sameMeasurementConditions(current, confirmation)
+    );
+    const reason = !confirmation
+      ? 'Required confirmation measurement did not produce a readable summary.'
+      : !sameMeasurementEnvironment(current, confirmation)
+        ? 'Confirmation measurement environment differs from the initial measurement.'
+        : !sameMeasurementConditions(current, confirmation)
+          ? 'Confirmation measurement conditions differ from the initial measurement.'
+          : 'Confirmation measurement did not include every required route/profile sample.';
+    comparison.policy = finalizePerformanceAssessment(initialPolicy, confirmation, {
+      compatible,
+      reason
+    });
+  }
+  writeFileSync(comparisonPath, `${JSON.stringify(comparison, null, 2)}\n`);
+
+  const policy = comparison.policy;
+  const lines = ['', '## Performance safeguard'];
+  if (policy.status === 'passed' && policy.initialViolations.length === 0) {
+    lines.push('- Passed: all route/profile medians are within the absolute budgets.');
+  } else if (policy.status === 'passed') {
+    lines.push('- Passed: the initial violation(s) were not confirmed by the fresh three-sample measurements.');
+  } else if (policy.status === 'incomplete') {
+    lines.push(`- **Not passed:** required confirmation is incomplete. ${policy.confirmationReason}`);
+  } else {
+    lines.push('- **Failed:** one or more performance violations were confirmed.');
+  }
+  for (const violation of policy.confirmations ?? policy.initialViolations) {
+    const profile = `${violation.route} (${violation.formFactor})`;
+    const metric = violation.metric;
+    if (violation.criterion === 'absolute') {
+      const measured = formatValue(metric, violation.value);
+      const final = Number.isFinite(violation.confirmationValue)
+        ? `; confirmation ${formatValue(metric, violation.confirmationValue)}`
+        : '';
+      lines.push(`- ${profile}: ${metric} ${measured} exceeded the ${formatValue(metric, violation.limit)} absolute limit${final}; ${violation.result ?? 'confirmation required'}.`);
+    } else {
+      const confirmation = Number.isFinite(violation.confirmationValue)
+        ? `; confirmation ${formatValue(metric, violation.confirmationValue)}`
+        : '';
+      lines.push(`- ${profile}: LCP ${formatValue(metric, violation.value)} vs reviewed reference ${formatValue(metric, violation.referenceValue)} (+${formatValue(metric, violation.delta)}, +${violation.deltaPercentage.toFixed(1)}%; must exceed both ${formatValue(metric, violation.minimumMilliseconds)} and ${violation.minimumPercentage}%)${confirmation}; ${violation.result ?? 'confirmation required'}.`);
+    }
+  }
+  if (policy.referenceReason) {
+    lines.push(`- Relative deterioration gate: unavailable (${policy.referenceReason}); absolute budgets remain enforced.`);
+  }
+  if (policy.status === 'failed' || policy.status === 'incomplete') {
+    lines.push('- Next step: inspect the route/profile reports and address the confirmed regression or restore complete confirmation evidence before relying on this check.');
+  }
+  process.stdout.write(`${lines.join('\n')}\n`);
+  return policy.status === 'failed' || policy.status === 'incomplete' ? 1 : 0;
+}
+
 async function main() {
+  if (process.argv.includes('--finalize')) {
+    const reportDirectory = resolve(
+      process.env.PERFORMANCE_REPORT_DIR ?? resolve(process.cwd(), 'performance-reports')
+    );
+    const confirmationDirectory = resolve(
+      process.env.PERFORMANCE_CONFIRMATION_REPORT_DIR ??
+        join(tmpdir(), 'performance-confirmation-reports')
+    );
+    process.exitCode = finalizeComparison(reportDirectory, confirmationDirectory);
+    return;
+  }
+
   if (process.argv.includes('--load-history')) {
     const history = await loadDailyHistory();
     const historyPath = resolve(
@@ -576,7 +684,7 @@ async function main() {
   if (process.env.GITHUB_OUTPUT) {
     writeFileSync(
       process.env.GITHUB_OUTPUT,
-      `deltas_available=${comparison.deltasAvailable}\nhistory_status=${comparison.history.status}\nhistory_count=${comparison.history.availableDailySamples}\n`,
+      `deltas_available=${comparison.deltasAvailable}\nhistory_status=${comparison.history.status}\nhistory_count=${comparison.history.availableDailySamples}\nconfirmation_required=${comparison.policy.confirmationProfiles.length > 0}\nconfirmation_profiles=${JSON.stringify(comparison.policy.confirmationProfiles)}\n`,
       { flag: 'a' }
     );
   }
@@ -595,5 +703,6 @@ export {
   isCompleteSummary,
   isDailyPerformanceEvidence,
   loadDailyHistory,
-  referenceIsReady
+  referenceIsReady,
+  finalizeComparison
 };

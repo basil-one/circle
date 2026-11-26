@@ -57,3 +57,19 @@ test('Pulse waits for every substantive result and preserves least-privilege per
     ));
   }
 });
+
+test('Performance Integrity confirms only affected profiles and enforces the final result', async () => {
+  const performance = await readFile(
+    new URL('site-performance-integrity.yml', workflowDirectory),
+    'utf8'
+  );
+  assert.match(performance, /name: "Site: Performance Integrity"/);
+  assert.match(performance, /id: comparison[\s\S]*confirmation_required/);
+  assert.match(performance, /name: Confirm initially violating route profiles/);
+  assert.match(performance, /PERFORMANCE_PROFILES_JSON: \$\{\{ steps\.comparison\.outputs\.confirmation_profiles \}\}/);
+  assert.match(performance, /PERFORMANCE_REPORT_DIR: \$\{\{ runner\.temp \}\}\/performance-confirmation-reports/);
+  assert.match(performance, /node scripts\/compare_site_performance\.mjs --finalize/);
+  assert.match(performance, /name: performance-confirmation-reports/);
+  assert.match(performance, /performance-reports\/performance-summary\.json[\s\S]*performance-reports\/performance-comparison\.json/);
+  assert.doesNotMatch(performance, /performance-confirmation-reports\/performance-summary\.json[\s\S]*name: performance-summary/);
+});

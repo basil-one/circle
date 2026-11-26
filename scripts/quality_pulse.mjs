@@ -3,6 +3,10 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import {
+  formatPerformanceValue,
+  performanceBudgets
+} from './site_performance_policy.mjs';
 
 const dimensions = [
   { name: 'Site: Build Integrity', file: 'site-build-integrity.yml' },
@@ -293,12 +297,63 @@ function performanceDetail(result) {
     return `Lighthouse measurement executed; ${result.baseline ?? 'fixed-reference and rolling-baseline state are in the linked run summary.'}`;
   }
   if (result.state === 'failed') {
-    return `Measurement failed or a later step failed; ${result.baseline ?? 'inspect the linked summary for measurement and baseline state.'}`;
+    if (result.run?.cycle) return result.detail;
+    return `Performance safeguard failed or required measurement/confirmation was incomplete; ${result.baseline ?? 'inspect the linked run summary for confirmed violations and the next action.'}`;
   }
   if (result.state === 'skipped') {
     return 'Measurement was skipped; no current samples or comparison are claimed.';
   }
   return `${result.detail} ${result.baseline ? `Baseline: ${result.baseline}.` : 'Fixed-reference and rolling-baseline state is available only in the linked run summary.'}`;
+}
+
+function performancePolicyFailureDetail(policy) {
+  if (!policy) return undefined;
+  if (['incomplete', 'confirmation-required', 'pending'].includes(policy.status)) {
+    const reason = typeof policy.confirmationReason === 'string'
+      ? policy.confirmationReason
+      : 'required confirmation evidence is unavailable';
+    return `Performance confirmation incomplete (${reason}); no pass is inferred. Rerun the check to obtain complete confirmation evidence.`;
+  }
+  if (policy.status === 'passed') {
+    return 'The policy evidence reports no confirmed violation, but the performance job failed in another required operation. Inspect the failed step and rerun Performance Integrity.';
+  }
+  if (policy.status !== 'failed') {
+    return 'Performance policy evidence is incomplete: its final outcome is missing or unrecognized. Inspect the linked run and rerun to obtain a valid safeguard result.';
+  }
+  const violations = policy.confirmedViolations;
+  const validViolations = Array.isArray(violations) &&
+    violations.length > 0 &&
+    violations.every((violation) => {
+      const metricAllowed = Object.hasOwn(
+        performanceBudgets[violation?.formFactor] ?? {},
+        violation?.metric
+      );
+      if (
+        typeof violation?.route !== 'string' ||
+        !metricAllowed ||
+        !Number.isFinite(violation.value) ||
+        !Number.isFinite(violation.confirmationValue)
+      ) return false;
+      if (violation.criterion === 'absolute') return Number.isFinite(violation.limit);
+      return violation.criterion === 'reference-deterioration' &&
+        violation.metric === 'largest-contentful-paint' &&
+        Number.isFinite(violation.referenceValue) &&
+        Number.isFinite(violation.delta) &&
+        Number.isFinite(violation.deltaPercentage);
+    });
+  if (!validViolations) {
+    return 'Performance policy evidence is incomplete: the job failed without a valid confirmed-violation record. Inspect the linked run and rerun if confirmation evidence is missing.';
+  }
+  const findings = violations.map((violation) => {
+    const profile = `\`${violation.route}\`/${violation.formFactor}`;
+    const initial = formatPerformanceValue(violation.metric, violation.value);
+    const confirmation = formatPerformanceValue(violation.metric, violation.confirmationValue);
+    if (violation.criterion === 'absolute') {
+      return `${profile} ${violation.metric}: ${initial} initially, ${confirmation} confirmed vs ${formatPerformanceValue(violation.metric, violation.limit)} limit`;
+    }
+    return `${profile} LCP: ${initial} initially, ${confirmation} confirmed vs reference ${formatPerformanceValue(violation.metric, violation.referenceValue)} (Δ ${formatPerformanceValue(violation.metric, violation.delta)}, ${violation.deltaPercentage > 0 ? '+' : ''}${violation.deltaPercentage.toFixed(1)}%)`;
+  });
+  return `Confirmed performance violation(s): ${findings.join('; ')}. Next step: correct the affected route/profile and rerun Performance Integrity.`;
 }
 
 function describePerformanceComparison(comparison) {
@@ -558,7 +613,9 @@ function renderPulse({
     for (const item of needsReview) {
       const state = item.result.state;
       const action = state === 'failed'
-        ? 'Open the run and address the reported failure.'
+        ? item.name === 'Site: Performance Integrity' && item.result.run?.cycle
+          ? ''
+          : 'Open the run and address the reported failure.'
         : state === 'unknown'
           ? 'Check Actions/API access and inspect the last available workflow run.'
           : state === 'missing' || state === 'stale'
@@ -570,7 +627,7 @@ function renderPulse({
               : state === 'incomplete'
                 ? 'Inspect the cancelled or incomplete job and rerun the cycle if appropriate.'
                 : 'Wait for completion or inspect the late run; rerun if it does not finish.';
-      lines.push(`- **${item.name} — ${item.result.label}:** ${item.result.detail} ${action}`);
+      lines.push(`- **${item.name} — ${item.result.label}:** ${item.result.detail}${action ? ` ${action}` : ''}`);
     }
   } else {
     lines.push('No material failures or missing coverage were reported.');
@@ -701,6 +758,11 @@ async function buildOrchestratedPulse({
         throw new Error('Site: Performance Integrity summary has no valid measurement date');
       }
       performance.result.baseline = describePerformanceComparison(comparison);
+      if (performance.result.state === 'failed') {
+        performance.result.detail =
+          performancePolicyFailureDetail(comparison.policy) ??
+          'Performance check failed; this comparison artifact predates structured policy evidence. Inspect the linked run summary and failed step.';
+      }
       performance.result.trends = {
         state: performance.result.state,
         measurementDate,
@@ -715,7 +777,7 @@ async function buildOrchestratedPulse({
         performance.result.state = 'unknown';
         performance.result.label = 'Unknown / performance evidence unavailable';
       }
-      performance.result.detail += ` Performance evidence unavailable or invalid (${error.message}); no comparison is inferred.`;
+      performance.result.detail += ` Performance evidence incomplete or unavailable (${error.message}); no comparison or pass is inferred. Review the run and artifact upload, recover complete measurements/confirmations, and rerun Performance Integrity.`;
       performance.result.baseline = 'fixed reference: unknown; rolling baseline: unknown';
       performance.result.trends = {
         reason: `comparison artifact unavailable or invalid (${error.message})`,

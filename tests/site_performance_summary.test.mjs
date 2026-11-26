@@ -55,7 +55,7 @@ function makeSummary() {
         values: Object.fromEntries(metrics.map((metric) => [
           metric,
           metric === 'cumulative-layout-shift'
-            ? 0.125
+            ? 0.025
             : metric === 'largest-contentful-paint'
               ? formFactor === 'mobile' ? 1_234 : 567
               : metric === 'total-blocking-time'
@@ -86,7 +86,16 @@ function makeComparison({ available = false, historyStatus = 'collecting_history
       ...result,
       fixedReference: available ? Object.fromEntries(metrics.map((metric) => [metric, result.values[metric] - 100])) : null,
       rollingBaseline: available ? Object.fromEntries(metrics.map((metric) => [metric, result.values[metric] - 200])) : null
-    }))
+    })),
+    policy: {
+      status: 'passed',
+      referenceAvailable: available,
+      referenceReason: available ? undefined : 'No reviewed fixed reference is available.',
+      initialViolations: [],
+      confirmationProfiles: [],
+      confirmations: [],
+      confirmedViolations: []
+    }
   };
 }
 
@@ -105,6 +114,8 @@ function makeInputs(overrides = {}) {
       tests: 'success',
       classify: 'success',
       measure: 'success',
+      comparison: 'success',
+      evaluation: 'success',
       diagnostic: 'success',
       reports: 'success',
       summary: 'success'
@@ -113,19 +124,20 @@ function makeInputs(overrides = {}) {
   };
 }
 
-test('puts completed informational outcome first and summarizes representative LCP/TBT by page', () => {
+test('puts completed outcome first and summarizes representative LCP/TBT by page', () => {
   const report = renderPerformanceSummary(makeInputs());
 
   assert.match(report, /^# Site: Performance Integrity\n\n\*\*Measurement completed — 24\/24 Lighthouse samples\*\*/);
   assert.match(
     report,
-    /Measurements were collected using controlled Lighthouse tests, not actual visitors\. Comparisons are informational; no automatic regression thresholds are enforced\./
+    /Measurements were collected using controlled Lighthouse tests, not actual visitors\. Absolute budgets and substantial deterioration against a compatible reviewed reference are enforced after confirmation; rolling comparisons are informational\./
   );
   assert.match(report, /\| Home \| 1\.23 s \| 567 ms \| 89 ms \|/);
   assert.match(report, /\| Moves \|/);
   assert.match(report, /\| Lenses \|/);
   assert.match(report, /\| Method \| 1\.23 s \| 567 ms \| 89 ms \|/);
   assert.match(report, /Technical details/);
+  assert.equal([...report.matchAll(/## Performance safeguards/g)].length, 1);
   assert.match(report, /\| Page \| Profile \| FCP \| LCP \| Speed Index \| TBT \| CLS \|/);
   assert.match(
     report,
@@ -136,10 +148,10 @@ test('puts completed informational outcome first and summarizes representative L
   assert.match(report, /264\.1 seconds/);
 });
 
-test('reports pending fixed anchor and collecting rolling history without an empty comparison table', () => {
+test('reports unavailable fixed anchor and collecting rolling history without an empty comparison table', () => {
   const report = renderPerformanceSummary(makeInputs());
 
-  assert.match(report, /Fixed reference:\*\* pending reviewed successful `main` anchor/);
+  assert.match(report, /Fixed reference:\*\* unavailable \(No versioned successful main reference has been established\)/);
   assert.match(report, /Rolling daily-main baseline:\*\* collecting \(0\/28\)/);
   assert.match(report, /review and version it as the fixed anchor/);
   assert.doesNotMatch(report, /^\| Page \| Profile \| Fixed LCP/m);
@@ -254,19 +266,21 @@ test('intentional skip requires successful classification evidence and skipped m
   }
 });
 
-test('uncertain classification requires measurement, while missing baselines stay informational', () => {
+test('uncertain classification requires measurement, while absolute safeguards do not require a fixed reference', () => {
   const inputs = makeInputs({
     comparison: makeComparison(),
     steps: {
       tests: 'success',
       classify: 'failure',
-      measure: 'success'
+      measure: 'success',
+      comparison: 'success',
+      evaluation: 'success'
     }
   });
   assert.equal(performanceMeasurementExitCode(inputs), 0);
   const report = renderPerformanceSummary(inputs);
   assert.match(report, /Measurement completed — 24\/24 Lighthouse samples/);
-  assert.match(report, /pending reviewed successful `main` anchor/);
+  assert.match(report, /unavailable \(No versioned successful main reference has been established\)/);
   assert.match(report, /collecting \(0\/28\)/);
 });
 
@@ -320,12 +334,18 @@ test('summary executable returns workflow failure only for unverified required m
       PERFORMANCE_REPORT_DIR: reportDirectory,
       STEP_TESTS: 'success',
       STEP_CLASSIFY: 'failure',
-      STEP_MEASURE: 'success'
+      STEP_MEASURE: 'success',
+      STEP_COMPARISON: 'success',
+      STEP_EVALUATION: 'success'
     };
 
     writeFileSync(
       summaryPath,
       JSON.stringify(makeSummary())
+    );
+    writeFileSync(
+      join(reportDirectory, 'performance-comparison.json'),
+      JSON.stringify(makeComparison())
     );
     const uncertainClassification = spawnSync(
       process.execPath,
