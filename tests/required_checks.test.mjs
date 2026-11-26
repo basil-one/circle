@@ -79,4 +79,7 @@ test('all eight Common, Site, and Paper checks are required and performance has 
   assert.match(paper, /python3 scripts\/check_paper_content\.py scripts\/plop\.paper\.config\.yaml assets\/pdfs\/circle3-paper\.pdf/);
   assert.match(paper, /build: \$\{\{ needs\.paper-build\.result \}\}/);
   assert.match(paper, /content: \$\{\{ needs\.paper-content\.outputs\.status \}\}/);
+  assert.match(paper, /content_job: \$\{\{ needs\.paper-content\.result \}\}/);
+  assert.match(paper, /PAPER_PDF_PATH: assets\/pdfs\/circle3-paper\.pdf/);
+  assert.match(paper, /name: paper-content-report/);
 });

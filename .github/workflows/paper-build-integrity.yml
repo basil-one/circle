@@ -9,8 +9,11 @@ on:
         description: Same-cycle Paper Build job result
         value: ${{ jobs.paper-results.outputs.build }}
       content:
-        description: Same-cycle Paper Content job result
+        description: Same-cycle Paper Content validator status
         value: ${{ jobs.paper-results.outputs.content }}
+      content_job:
+        description: Same-cycle Paper Content job result
+        value: ${{ jobs.paper-results.outputs.content_job }}
   workflow_dispatch:
 
 permissions:
@@ -84,11 +87,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc poppler-utils
+      - name: Test content checks on same-cycle PDF
+        env:
+          PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
+        run: python3 -m unittest discover -s scripts -p 'test_paper_content.py' -v
       - name: Check configured paper content
         id: content
         run: |
           set +e
-          python3 scripts/check_paper_content.py scripts/plop.paper.config.yaml assets/pdfs/circle3-paper.pdf
+          python3 scripts/check_paper_content.py scripts/plop.paper.config.yaml assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-content-report.json"
           result=$?
           set -e
           case "$result" in
@@ -97,6 +104,14 @@ jobs:
             *) echo "status=incomplete" >> "$GITHUB_OUTPUT" ;;
           esac
           exit "$result"
+      - name: Upload content findings
+        if: ${{ always() && steps.content.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: paper-content-report
+          path: ${{ runner.temp }}/paper-content-report.json
+          if-no-files-found: error
+          retention-days: 30
 
   paper-results:
     name: "Paper: Cycle Results"
@@ -106,5 +121,6 @@ jobs:
     outputs:
       build: ${{ needs.paper-build.result }}
       content: ${{ needs.paper-content.outputs.status }}
+      content_job: ${{ needs.paper-content.result }}
     steps:
       - run: echo "Paper Build and Content outcomes are available to Quality Pulse."
