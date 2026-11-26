@@ -8,6 +8,7 @@
     "test:browser:accessibility-negative": "playwright test tests/browser/accessibility-negative.spec.js",
     "test:browser:responsive-negative": "playwright test tests/browser/responsive-negative.spec.js",
     "test:performance-history": "node --test tests/site_performance_history.test.mjs",
+    "test:performance-policy": "node --test tests/site_performance_policy.test.mjs",
     "test:performance-skip": "node --test tests/site_performance_skip.test.mjs",
     "test:performance-summary": "node --test tests/site_performance_summary.test.mjs",
     "test:quality-pulse": "node --test tests/daily_quality_workflow.test.mjs tests/quality_pulse.test.mjs tests/common_dependency_posture.test.mjs",

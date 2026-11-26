@@ -252,7 +252,7 @@ function performanceDetail(result) {
     return `Lighthouse measurement executed; ${result.baseline ?? 'fixed-reference and rolling-baseline state are in the linked run summary.'}`;
   }
   if (result.state === 'failed') {
-    return `Measurement failed or a later step failed; ${result.baseline ?? 'inspect the linked summary for measurement and baseline state.'}`;
+    return `Performance safeguard failed or required measurement/confirmation was incomplete; ${result.baseline ?? 'inspect the linked run summary for confirmed violations and the next action.'}`;
   }
   if (result.state === 'skipped') {
     return 'Measurement was skipped; no current samples or comparison are claimed.';

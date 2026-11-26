@@ -41,7 +41,7 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Site: Link Integrity](workflows/site-link-integrity.yml) | Internal links, fragments, assets, and external destinations. |
 | [Site: SEO Integrity](workflows/site-seo-integrity.yml) | Page titles, canonical URLs, and indexing directives. |
 | [Site: Rendering Integrity](workflows/site-rendering-integrity.yml) | Browser verification, accessibility, and responsive usability at 320px, 768px, and 1280px. |
-| [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Lighthouse measurements across representative pages on mobile and desktop. |
+| [Site: Performance Integrity](workflows/site-performance-integrity.yml) | Protects against confirmed absolute budget violations and substantial LCP deterioration against a compatible reviewed reference; rolling comparisons inform judgment. |
 | [Site: Publish](workflows/site-publish.yml) | Automatic publication of the website using the verified build environment. |
 | [Paper: Preview](workflows/paper-preview.yml) | Downloadable PDF generation for human review. |
 | [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
@@ -50,7 +50,7 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 
 Required checks protect against known defects before changes are merged. All Common and Site quality safeguards are required.
 
-Performance Integrity measures changes when warranted. Performance comparisons inform human judgment rather than automatically prevent merging.
+Performance Integrity protects against confirmed absolute budget violations and substantial LCP deterioration against a compatible reviewed reference. Rolling comparisons inform judgment and are not enforcement thresholds.
 
 ## Publication
 

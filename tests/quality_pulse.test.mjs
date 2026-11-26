@@ -806,6 +806,32 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
   assert.match(missing.markdown, /\| Site: Build Integrity \| Missing \|/);
 });
 
+test('orchestrated Pulse reports a failed performance safeguard as a failed dimension', async () => {
+  const pulse = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    token: 'test-token',
+    needs: {
+      'site-build': { result: 'success' },
+      link: { result: 'success' },
+      seo: { result: 'success' },
+      'code-quality': { result: 'success' },
+      'dependency-security': { result: 'success' },
+      rendering: { result: 'success' },
+      performance: { result: 'failure' }
+    },
+    runId: '892',
+    runUrl: 'https://github.com/basil-one/circle/actions/runs/892',
+    date,
+    fetchImpl: async () => {
+      throw new Error('Failed performance jobs do not need successful trend artifacts.');
+    }
+  });
+  assert.equal(pulse.successful, false);
+  assert.match(pulse.markdown, /\| Site: Performance Integrity \| Failed \|/);
+  assert.match(pulse.markdown, /Performance safeguard failed or required measurement\/confirmation was incomplete/);
+});
+
 test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than successful', async () => {
   const pulse = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',

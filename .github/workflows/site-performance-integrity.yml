@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
       - name: Run performance classifier and history tests
         id: tests
-        run: npm run test:performance-history && npm run test:performance-skip && npm run test:performance-summary
+        run: npm run test:performance-history && npm run test:performance-policy && npm run test:performance-skip && npm run test:performance-summary
       - name: Classify pull request changes for Lighthouse
         id: classify
         if: github.event_name == 'pull_request'
@@ -99,6 +99,27 @@ jobs:
           PERFORMANCE_REFERENCE_PATH: .github/site-performance-reference.json
           PERFORMANCE_EVENT_NAME: ${{ inputs.caller_event_name || github.event_name }}
           PERFORMANCE_SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+      - name: Confirm initially violating route profiles
+        id: confirmation
+        if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success' && steps.comparison.outputs.confirmation_required == 'true'
+        run: npm run measure:performance
+        env:
+          PERFORMANCE_RUNNER: ubuntu-24.04
+          PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-confirmation-reports
+          PERFORMANCE_PROFILES_JSON: ${{ steps.comparison.outputs.confirmation_profiles }}
+          PERFORMANCE_EVENT_NAME: ${{ inputs.caller_event_name || github.event_name }}
+          PERFORMANCE_SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+      - name: Enforce confirmed performance safeguards
+        id: evaluation
+        if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success'
+        run: node scripts/compare_site_performance.mjs --finalize
+        env:
+          PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
+          PERFORMANCE_CONFIRMATION_REPORT_DIR: ${{ runner.temp }}/performance-confirmation-reports
       - name: Verify missing-route diagnostic
         id: negative
         if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success'
@@ -119,6 +140,15 @@ jobs:
         with:
           name: performance-reports
           path: ${{ runner.temp }}/performance-reports/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload confirmation Lighthouse reports
+        id: confirmation_upload
+        if: always() && steps.confirmation.outcome != 'skipped'
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-confirmation-reports
+          path: ${{ runner.temp }}/performance-confirmation-reports/
           if-no-files-found: warn
           retention-days: 14
       - name: Upload performance summary
@@ -158,9 +188,13 @@ jobs:
           STEP_HISTORY: ${{ steps.history.outcome }}
           STEP_MEASURE: ${{ steps.measure.outcome }}
           STEP_COMPARISON: ${{ steps.comparison.outcome }}
+          STEP_CONFIRMATION: ${{ steps.confirmation.outcome }}
+          STEP_EVALUATION: ${{ steps.evaluation.outcome }}
           STEP_DIAGNOSTIC: ${{ steps.negative.outcome }}
           STEP_REPORTS: ${{ steps.upload.outcome }}
           STEP_SUMMARY: ${{ steps.summary_artifact.outcome }}
+          STEP_CONFIRMATION_REPORTS: ${{ steps.confirmation_upload.outcome }}
+          CONFIRMATION_REPORTS_URL: ${{ steps.confirmation_upload.outputs.artifact-url }}
         run: |
           if [ -f scripts/render_site_performance_summary.mjs ]; then
             node scripts/render_site_performance_summary.mjs
