@@ -71,6 +71,12 @@ jobs:
     permissions:
       contents: read
 
+  paper-link:
+    name: "Paper: Link Integrity"
+    uses: ./.github/workflows/paper-link-integrity.yml
+    permissions:
+      contents: read
+
   pulse:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
@@ -84,6 +90,7 @@ jobs:
       - performance
       - paper
       - paper-content
+      - paper-link
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
