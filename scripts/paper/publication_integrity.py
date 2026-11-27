@@ -834,13 +834,18 @@ def check_publication():
             previous = prior_release_data(intended_version, allow_missing=True)
             if previous:
                 previous_version, previous_changelog = previous
-                check_published_release(
-                    main_sha,
-                    previous_version,
-                    current,
-                    previous_changelog,
-                    allow_newer_current=True,
-                )
+                try:
+                    latest = api_release("latest")
+                except (NotFound, Unavailable):
+                    raise
+                if latest.get("tag_name") == f"v{previous_version}":
+                    check_published_release(
+                        main_sha,
+                        previous_version,
+                        current,
+                        previous_changelog,
+                        allow_newer_current=True,
+                    )
         raise
     check_pending_release(main_sha, intended_version, current, latest_tag_changelog, candidate)
 

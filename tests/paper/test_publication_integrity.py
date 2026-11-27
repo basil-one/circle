@@ -335,8 +335,19 @@ class PublicationIntegrityTests(unittest.TestCase):
             publication.check_pending_release(MAIN_SHA, "0.2.3", CHANGELOG, CHANGELOG, candidate)
         pending.assert_not_called()
 
-    def test_confirmed_prior_defect_precedes_unavailable_draft_release_api(self):
-        current = CHANGELOG.replace("0.2.2", "0.2.3")
+    def test_unavailable_current_release_preserves_unknown_when_it_is_latest(self):
+        current = CHANGELOG.replace(
+            "## [Unreleased]\n\n",
+            "## [Unreleased]\n\n## [0.2.3] - 2026-11-27\n\n### Added\n- New release.\n\n",
+        )
+
+        def fetch(url, _limit):
+            if url.endswith("/releases/tags/v0.2.3"):
+                raise publication.Unavailable("current release endpoint unavailable")
+            if url.endswith("/releases/latest"):
+                return json.dumps({"tag_name": "v0.2.3"}).encode()
+            raise AssertionError(url)
+
         with (
             patch.object(
                 publication,
@@ -345,20 +356,77 @@ class PublicationIntegrityTests(unittest.TestCase):
             ),
             patch.object(
                 publication,
-                "api_release",
-                side_effect=publication.Unavailable("draft release API unavailable"),
+                "prior_release_data",
+                return_value=("0.2.2", CHANGELOG),
+            ),
+            patch.object(publication, "fetch", side_effect=fetch),
+            patch.object(publication, "check_published_release") as check_prior,
+            self.assertRaisesRegex(publication.Unavailable, "current release endpoint unavailable"),
+        ):
+            publication.check_publication()
+        check_prior.assert_not_called()
+
+    def test_confirmed_prior_defect_precedes_unavailable_current_release_when_prior_is_latest(
+        self,
+    ):
+        current = CHANGELOG.replace(
+            "## [Unreleased]\n\n",
+            "## [Unreleased]\n\n## [0.2.3] - 2026-11-27\n\n### Added\n- New release.\n\n",
+        )
+        prior_release = release()
+        prior_release["assets"] = []
+
+        def fetch(url, _limit):
+            if url.endswith("/releases/tags/v0.2.3"):
+                raise publication.Unavailable("current release endpoint unavailable")
+            if url.endswith("/releases/latest"):
+                return json.dumps({"tag_name": "v0.2.2"}).encode()
+            if url.endswith("/releases/tags/v0.2.2"):
+                return json.dumps(prior_release).encode()
+            raise AssertionError(url)
+
+        with (
+            patch.object(
+                publication,
+                "publication_snapshot",
+                return_value=(MAIN_SHA, "0.2.3", current, current),
             ),
             patch.object(
                 publication,
                 "prior_release_data",
                 return_value=("0.2.2", CHANGELOG),
             ),
+            patch.object(publication, "fetch", side_effect=fetch),
+            self.assertRaisesRegex(publication.Mismatch, "missing assets"),
+        ):
+            publication.check_publication()
+
+    def test_unavailable_latest_identity_does_not_manufacture_prior_mismatch(self):
+        current = CHANGELOG.replace(
+            "## [Unreleased]\n\n",
+            "## [Unreleased]\n\n## [0.2.3] - 2026-11-27\n\n### Added\n- New release.\n\n",
+        )
+
+        def fetch(url, _limit):
+            if url.endswith("/releases/tags/v0.2.3"):
+                raise publication.Unavailable("current release endpoint unavailable")
+            if url.endswith("/releases/latest"):
+                raise publication.Unavailable("latest release identity unavailable")
+            raise AssertionError(url)
+
+        with (
             patch.object(
                 publication,
-                "check_published_release",
-                side_effect=publication.Mismatch("previous published PDF is corrupt"),
+                "publication_snapshot",
+                return_value=(MAIN_SHA, "0.2.3", current, current),
             ),
-            self.assertRaisesRegex(publication.Mismatch, "previous published PDF is corrupt"),
+            patch.object(
+                publication,
+                "prior_release_data",
+                return_value=("0.2.2", CHANGELOG),
+            ),
+            patch.object(publication, "fetch", side_effect=fetch),
+            self.assertRaisesRegex(publication.Unavailable, "latest release identity unavailable"),
         ):
             publication.check_publication()
 
