@@ -9,7 +9,7 @@ Technical quality protects people's ability to understand, trust, navigate, and 
 - **Human connection is the purpose.** Reliability, accessibility, clarity, and performance serve the reader's experience. A passing score is evidence, not a substitute for human judgment.
 - **Quality is sustained.** Relevant changes are checked before merging; conditions that can deteriorate without a code change are revisited over time.
 - **Automation brings actionable work to human judgment.** When a problem has a safe, practical remedy, an agent or workflow brings a reviewable pull request. Otherwise it brings a focused finding with evidence, impact, and a recommended next action. Humans decide what matters, approve changes, and merge.
-- **Coherence creates capacity.** The parts of the repository should express an understandable whole. Consistent names, organization, boundaries, and evidence help people and agents learn, maintain, and extend the work without unnecessary cognitive effort.
+- **Coherence creates capacity.** Consistent organization and clear relationships make the system easier to understand, maintain, and extend.
 - **Care creates capacity.** Healthy checks stay quiet. Alerts are proportionate, understandable, and worth acting on. The practice reduces maintenance work rather than displacing attention from human connection.
 
 ## How We Operate
@@ -60,9 +60,7 @@ Performance Integrity protects against confirmed budget violations and substanti
 
 ## Coherence Integrity
 
-Correct parts are not sufficient for an understandable whole. We sustain coherence across workflows, supporting code, tests, and documentation. As each capability evolves, it should reinforce the shared conceptual model rather than introduce accidental inconsistency.
-
-Common Code Quality verifies objective [repository conventions](REPOSITORY_CONVENTIONS.md) through executable contracts. These protect naming, organization, ordering, traceability, and dependency boundaries. Human judgment remains necessary for conceptual simplicity, teaching clarity, and intentional differences. We do not reduce coherence to a score or pursue uniformity for its own sake.
+Sustain conceptual integrity across workflows, code, tests, and documentation. Executable [repository conventions](REPOSITORY_CONVENTIONS.md) protect against architectural drift as humans and agents evolve the system. Human judgment guides simplicity, consistency, and intentional differences.
 
 ## Publication
 
