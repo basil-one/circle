@@ -631,6 +631,8 @@ function renderPulse({
         ? item.name === 'Site: Performance Integrity' && item.result.run?.cycle
           ? ''
           : 'Open the run and address the reported failure.'
+        : state === 'pending'
+         ? 'Review the release PR/run and rerun Paper: Publish with the same version; a pending publication is not healthy.'
         : state === 'unknown'
           ? 'Check Actions/API access and inspect the last available workflow run.'
           : state === 'missing' || state === 'stale'
@@ -713,6 +715,30 @@ function orchestratedJobResult(needs, jobId, name, run) {
     name,
     result: { state: mapped[0], label: mapped[1], run, detail: mapped[2] }
   };
+}
+
+function applyPendingPublicationResult(publication, needs, validatorRevision) {
+  const job = needs?.['paper-publication-integrity'];
+  const { status, detail, main_sha: mainSha, validator_sha: validatorSha } = job?.outputs ?? {};
+  if (status !== 'pending') return;
+  const validDetail = typeof detail === 'string' && detail.trim().length > 0 &&
+    detail.length <= 1000 && !/[\x00-\x1f\x7f]/.test(detail);
+  const isSha = (value) => typeof value === 'string' &&
+    /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(value);
+  const validProvenance = isSha(mainSha) && isSha(validatorSha) &&
+    (validatorRevision === undefined ||
+      (isSha(validatorRevision) && validatorSha === validatorRevision));
+  if (job?.result !== 'failure' || !validDetail || !validProvenance) {
+    publication.result.state = 'unknown';
+    publication.result.label = 'Unknown / publication evidence unavailable';
+    publication.result.detail =
+      'Pending publication evidence is incomplete or contradicts the validator job; inspect the run and rerun.';
+    return;
+  }
+  publication.result.state = 'pending';
+  publication.result.label = 'In progress / publication pending';
+  publication.result.detail =
+    `${detail} Published main: ${mainSha}; validator revision: ${validatorSha}.`;
 }
 
 function siteLinkResult(needs, run) {
@@ -928,6 +954,11 @@ async function buildOrchestratedPulse({
       publication.result.detail += ' Publication revision provenance is unavailable or inconsistent; inspect and rerun.';
     }
   }
+  applyPendingPublicationResult(
+    publication,
+    needs,
+    validatorRevision
+  );
   const paperContent = needs?.['paper-content-integrity']?.outputs?.status;
   const content = paperValidatorResult(
     dimensions.find(({ job }) => job === 'paper-content-integrity').name,

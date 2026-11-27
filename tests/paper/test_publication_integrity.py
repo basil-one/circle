@@ -5,6 +5,7 @@ import urllib.error
 from unittest.mock import patch
 
 from scripts.paper import publication_integrity as publication
+from scripts.paper.publish import CHECKS
 
 CHANGELOG = """# Changelog
 
@@ -44,6 +45,8 @@ class PublicationIntegrityTests(unittest.TestCase):
         data = release() if data is None else data
 
         def fetch(url, _limit):
+            if "/pulls?" in url:
+                return b"[]"
             if url.endswith("/tags/v0.2.2"):
                 return json.dumps(data).encode()
             if url.endswith("/releases/latest"):
@@ -201,7 +204,7 @@ class PublicationIntegrityTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(publication.Mismatch, "incomplete"):
                 publication.check_publication()
-            api.assert_called_once_with("latest")
+            self.assertEqual(api.call_args_list, [unittest.mock.call("tags/v0.2.2"), unittest.mock.call("latest")])
 
     def test_exit_codes_reserve_mismatch_from_unexpected_failure(self):
         with patch.object(
@@ -212,6 +215,128 @@ class PublicationIntegrityTests(unittest.TestCase):
             publication, "check_publication", side_effect=publication.Unavailable("offline")
         ):
             self.assertEqual(publication.main(), 2)
+        with patch.object(
+            publication, "check_publication", side_effect=publication.Pending("release is waiting")
+        ):
+            self.assertEqual(publication.main(), 4)
+
+    def test_exact_merged_release_pr_distinguishes_pending_from_unexplained_mismatch(self):
+        baseline = (
+            CHANGELOG.replace(
+                "## [Unreleased]\n\n",
+                "## [Unreleased]\n\n### Added\n- A reviewed change.\n\n",
+            )
+            + "\n[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.2...HEAD\n"
+            + "[0.2.2]: https://github.com/basil-one/circle/compare/v0.2.1...v0.2.2\n"
+        )
+        promoted = publication.promote_changelog(
+            "0.2.3", "2026-11-27", baseline, ["v0.2.2"]
+        )
+        snapshot = (MAIN_SHA, "0.2.2", promoted, CHANGELOG)
+        with (
+            patch.object(publication, "publication_snapshot", return_value=snapshot),
+            patch.object(
+                publication, "pending_release_pr", return_value={"number": 42, "merge_sha": "d" * 40}
+            ) as pending_pr,
+            patch.object(
+                publication, "check_published_release", return_value="v0.2.2 is intact."
+            ) as old_release,
+        ):
+            with self.assertRaisesRegex(publication.Pending, "PR #42"):
+                publication.check_publication()
+        pending_pr.assert_called_once_with("0.2.3", MAIN_SHA, promoted)
+        self.assertTrue(old_release.call_args.kwargs["allow_newer_current"])
+
+        with (
+            patch.object(publication, "publication_snapshot", return_value=snapshot),
+            patch.object(publication, "pending_release_pr", return_value=None),
+            self.assertRaisesRegex(publication.Mismatch, "no exact merged release PR"),
+        ):
+            publication.check_publication()
+
+    def test_pending_release_pr_requires_exact_identity_files_ancestry_and_promotion(self):
+        baseline = (
+            CHANGELOG.replace(
+                "## [Unreleased]\n\n",
+                "## [Unreleased]\n\n### Added\n- A reviewed change.\n\n",
+            )
+            + "\n[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.2...HEAD\n"
+            + "[0.2.2]: https://github.com/basil-one/circle/compare/v0.2.1...v0.2.2\n"
+        )
+        promoted = publication.promote_changelog(
+            "0.2.3", "2026-11-27", baseline, ["v0.2.2"]
+        )
+        pr = {
+            "number": 42,
+            "title": "Prepare Circle3 paper v0.2.3",
+            "state": "closed",
+            "merged": True,
+            "merge_commit_sha": "d" * 40,
+            "head": {
+                "ref": "paper-release/v0.2.3",
+                "sha": "e" * 40,
+                "repo": {"full_name": "basil-one/circle"},
+            },
+            "base": {
+                "ref": "main",
+                "repo": {"full_name": "basil-one/circle"},
+            },
+        }
+        with (
+            patch.object(
+                publication,
+                "fetch",
+                side_effect=[
+                    json.dumps([pr]).encode(),
+                    json.dumps([{"filename": "CHANGELOG.md"}]).encode(),
+                    json.dumps(
+                        {
+                            "check_runs": [
+                                {
+                                    "name": name,
+                                    "head_sha": "e" * 40,
+                                    "status": "completed",
+                                    "conclusion": "success",
+                                }
+                                for name in CHECKS
+                            ]
+                        }
+                    ).encode(),
+                ],
+            ),
+            patch.object(
+                publication,
+                "verify_exact_promotion",
+            ) as verify,
+            patch.object(
+                publication.subprocess,
+                "run",
+                side_effect=[
+                    subprocess.CompletedProcess([], 0, b"", b""),
+                    subprocess.CompletedProcess([], 0, promoted, ""),
+                ],
+            ),
+        ):
+            evidence = publication.pending_release_pr("0.2.3", MAIN_SHA, promoted)
+        self.assertEqual(evidence["number"], 42)
+        verify.assert_called_once_with("0.2.3", "d" * 40, promoted)
+
+    def test_draft_asset_absence_is_pending_only_when_explicitly_allowed(self):
+        data = release()
+        data["draft"] = True
+        data["assets"].pop()
+        with self.assertRaisesRegex(publication.Mismatch, "not a published"):
+            publication.validate_metadata("0.2.2", CHANGELOG, CHANGELOG, data, data)
+        with self.assertRaisesRegex(publication.Pending, "awaiting assets"):
+            publication.validate_metadata(
+                "0.2.2",
+                CHANGELOG,
+                CHANGELOG,
+                data,
+                {"tag_name": "v0.2.1"},
+                allow_draft=True,
+                allow_pending_assets=True,
+            )
 
     def test_public_download_404_is_distinct_from_redirect_or_denial(self):
         url = f"{publication.DOWNLOAD}/latest/download/{STABLE}"
@@ -243,7 +368,13 @@ class PublicationIntegrityTests(unittest.TestCase):
                 patch.object(publication, "git_tags", return_value=[TAG]),
                 patch.object(publication.subprocess, "run", return_value=completed),
                 patch.object(publication, "api_release", side_effect=publication.NotFound("404")),
-                patch.object(publication, "fetch", return_value=json.dumps(repository).encode()),
+                patch.object(
+                    publication,
+                    "fetch",
+                    side_effect=lambda url, _limit: (
+                        b"[]" if "/pulls?" in url else json.dumps(repository).encode()
+                    ),
+                ),
             ):
                 with self.assertRaises(outcome):
                     publication.check_publication()

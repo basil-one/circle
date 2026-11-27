@@ -4,6 +4,7 @@
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -16,9 +17,13 @@ from scripts.paper_release import (
     changelog_versions,
     git_tags,
     latest_stable_tag,
+    parse_version,
+    promote_changelog,
     release_section,
     required_asset_names,
+    stable_tag_versions,
 )
+from scripts.paper.publish import PublishError, validate_check_runs
 
 ROOT = Path(__file__).resolve().parents[2]
 API = "https://api.github.com/repos/basil-one/circle"
@@ -32,6 +37,10 @@ class Mismatch(ValueError):
 
 class Unavailable(ValueError):
     """Evidence could not be obtained or interpreted."""
+
+
+class Pending(ValueError):
+    """A verified human-reviewed release is progressing but is not published."""
 
 
 class NotFound(Unavailable):
@@ -79,9 +88,13 @@ def api_release(path):
         raise Unavailable(f"Invalid release API response for {path}: {error}") from error
 
 
-def validate_changelogs(version, current, tagged):
+def validate_changelogs(version, current, tagged, *, allow_newer_current=False):
     tag = f"v{version}"
-    if not changelog_versions(current) or changelog_versions(current)[0] != version:
+    current_versions = changelog_versions(current)
+    if not current_versions or (
+        current_versions[0] != version
+        and not (allow_newer_current and version in current_versions)
+    ):
         raise Mismatch(f"Latest stable tag {tag} differs from the latest changelog entry.")
     if not changelog_versions(tagged) or changelog_versions(tagged)[0] != version:
         raise Mismatch(f"The changelog at {tag} does not identify that version as latest.")
@@ -94,7 +107,7 @@ def validate_changelogs(version, current, tagged):
     return changes
 
 
-def validate_release_assets(tag, assets):
+def validate_release_assets(tag, assets, *, allow_pending=False):
     if not isinstance(assets, list):
         raise TypeError("assets is not a list")
     by_name = {asset["name"]: asset for asset in assets}
@@ -102,19 +115,45 @@ def validate_release_assets(tag, assets):
         raise TypeError("duplicate asset names")
     missing = required_asset_names(tag) - by_name.keys()
     if missing:
+        if allow_pending:
+            raise Pending(
+                f"Draft release {tag} is awaiting assets: {', '.join(sorted(missing))}."
+            )
         raise Mismatch(f"Release {tag} is missing assets: {', '.join(sorted(missing))}.")
+    digests = []
     for name in required_asset_names(tag):
         asset = by_name[name]
         if not isinstance(asset["size"], int) or isinstance(asset["size"], bool):
             raise TypeError(f"invalid asset size for {name}")
+        if allow_pending and asset["state"] != "uploaded":
+            raise Pending(f"Draft release {tag} is still uploading {name}.")
         if asset["state"] != "uploaded" or asset["size"] <= 0:
             raise Mismatch(f"Release asset {name} is incomplete or empty.")
+        digest = asset.get("digest")
+        if digest is not None:
+            if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+                raise TypeError(f"invalid asset digest for {name}")
+            digests.append(digest)
+    if allow_pending and len(digests) == 2 and len(set(digests)) != 1:
+        raise Mismatch(f"Draft release {tag} PDF assets have contradictory digests.")
     return by_name
 
 
-def validate_metadata(version, current, tagged, release, latest):
+def validate_metadata(
+    version,
+    current,
+    tagged,
+    release,
+    latest,
+    *,
+    allow_newer_current=False,
+    allow_draft=False,
+    allow_pending_assets=False,
+):
     tag = f"v{version}"
-    changes = validate_changelogs(version, current, tagged)
+    changes = validate_changelogs(
+        version, current, tagged, allow_newer_current=allow_newer_current
+    )
     try:
         if not all(isinstance(release[key], bool) for key in ("draft", "prerelease")):
             raise TypeError("invalid release state")
@@ -122,13 +161,17 @@ def validate_metadata(version, current, tagged, release, latest):
             raise TypeError("invalid release identity or notes")
         if release["tag_name"] != tag:
             raise Mismatch(f"Release identity does not match {tag}.")
-        if release["draft"] or release["prerelease"] or not release["published_at"]:
+        if release["prerelease"] or (release["draft"] and not allow_draft):
             raise Mismatch(f"Release {tag} is not a published stable release.")
-        if latest["tag_name"] != tag:
+        if not release["draft"] and not release["published_at"]:
+            raise Mismatch(f"Release {tag} is not a published stable release.")
+        if latest["tag_name"] != tag and not (allow_draft and release["draft"]):
             raise Mismatch(f"Latest published release is not {tag}.")
         if changes not in release["body"]:
             raise Mismatch(f"Release notes for {tag} differ from CHANGELOG.md.")
-        return validate_release_assets(tag, release["assets"])
+        return validate_release_assets(
+            tag, release["assets"], allow_pending=allow_pending_assets
+        )
     except (KeyError, TypeError, AttributeError) as error:
         raise Unavailable(f"Incomplete release API evidence for {tag}: {error}") from error
 
@@ -219,12 +262,189 @@ def latest_release(tag):
     return latest
 
 
-def check_publication():
-    main_sha, version, current, tagged = publication_snapshot()
+def pending_release_pr(version, main_sha, current):
+    branch = f"paper-release/v{version}"
+    title = f"Prepare Circle3 paper v{version}"
+    try:
+        pulls = json.loads(fetch(f"{API}/pulls?state=closed&base=main&per_page=100", 2_000_000))
+    except (ValueError, UnicodeDecodeError) as error:
+        raise Unavailable(f"Invalid pull request API response: {error}") from error
+    if not isinstance(pulls, list) or len(pulls) >= 100:
+        raise Unavailable("Pull request API evidence is malformed or incomplete.")
+    candidates = [
+        pr for pr in pulls
+        if isinstance(pr, dict)
+        and (pr.get("head") or {}).get("ref") == branch
+        and (pr.get("base") or {}).get("ref") == "main"
+    ]
+    if not candidates:
+        return None
+    if len(candidates) != 1:
+        raise Mismatch(f"Multiple release PRs exist for v{version}; reconcile them before publishing.")
+    pr = candidates[0]
+    head = pr.get("head") or {}
+    base = pr.get("base") or {}
+    merge_sha = pr.get("merge_commit_sha")
+    if (
+        pr.get("title") != title
+        or pr.get("state") != "closed"
+        or not pr.get("merged")
+        or (head.get("repo") or {}).get("full_name") != "basil-one/circle"
+        or (base.get("repo") or {}).get("full_name") != "basil-one/circle"
+        or not isinstance(merge_sha, str)
+        or not re.fullmatch(r"[0-9a-f]{40,64}", merge_sha)
+    ):
+        return None
+    try:
+        files = json.loads(fetch(f"{API}/pulls/{pr['number']}/files?per_page=100", 2_000_000))
+    except (KeyError, ValueError, UnicodeDecodeError) as error:
+        raise Unavailable(f"Invalid files evidence for release PR v{version}: {error}") from error
+    if not isinstance(files, list) or len(files) >= 100:
+        raise Unavailable(f"Release PR #{pr['number']} file evidence is incomplete.")
+    if [item.get("filename") for item in files if isinstance(item, dict)] != ["CHANGELOG.md"]:
+        raise Mismatch(f"Release PR #{pr['number']} contains unexpected files.")
+    try:
+        ancestry = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", merge_sha, main_sha],
+            check=False,
+            capture_output=True,
+            timeout=30,
+        )
+        merged_changelog = subprocess.run(
+            ["git", "show", f"{merge_sha}:CHANGELOG.md"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        ).stdout
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Unavailable(f"Could not inspect merged release PR #{pr['number']}: {error}") from error
+    if ancestry.returncode == 1:
+        raise Mismatch(f"Release PR #{pr['number']} merge revision is not on published main.")
+    if ancestry.returncode:
+        raise Unavailable(f"Could not establish release PR #{pr['number']} ancestry.")
+    if (
+        changelog_versions(current)[:1] != [version]
+        or changelog_versions(merged_changelog)[:1] != [version]
+        or unreleased_entries(current)
+        or unreleased_entries(merged_changelog)
+    ):
+        return None
+    head_sha = (head.get("sha") or "")
+    if not re.fullmatch(r"[0-9a-f]{40,64}", head_sha):
+        raise Mismatch(f"Release PR #{pr['number']} has no valid approved head revision.")
+    try:
+        check_data = json.loads(
+            fetch(f"{API}/commits/{head_sha}/check-runs?per_page=100", 2_000_000)
+        )
+    except (ValueError, UnicodeDecodeError) as error:
+        raise Unavailable(f"Invalid required-check evidence for PR #{pr['number']}: {error}") from error
+    check_runs = check_data.get("check_runs") if isinstance(check_data, dict) else None
+    if not isinstance(check_runs, list) or len(check_runs) >= 100:
+        raise Unavailable(f"Required-check evidence for PR #{pr['number']} is incomplete.")
+    try:
+        checks_passed, detail = validate_check_runs(check_runs, head_sha)
+    except PublishError as error:
+        raise Mismatch(str(error)) from error
+    if not checks_passed:
+        raise Unavailable(f"Required-check evidence for PR #{pr['number']} is incomplete: {detail}")
+    try:
+        verify_exact_promotion(version, merge_sha, merged_changelog)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Unavailable(f"Could not verify release PR #{pr['number']} promotion: {error}") from error
+    try:
+        if release_section(version, current) != release_section(version, merged_changelog):
+            return None
+    except ReleaseError:
+        return None
+    return {"number": pr["number"], "merge_sha": merge_sha}
+
+
+def verify_exact_promotion(version, revision, expected_changelog):
+    commits = subprocess.run(
+        ["git", "log", "--reverse", "--format=%H", revision, "--", "CHANGELOG.md"],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    ).stdout.splitlines()
+    for commit in commits:
+        current = subprocess.run(
+            ["git", "show", f"{commit}:CHANGELOG.md"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        ).stdout
+        if version not in changelog_versions(current):
+            continue
+        parents = subprocess.run(
+            ["git", "rev-list", "--parents", "-n", "1", commit],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        ).stdout.split()[1:]
+        for parent in parents:
+            baseline = subprocess.run(
+                ["git", "show", f"{parent}:CHANGELOG.md"],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            ).stdout
+            if version in changelog_versions(baseline):
+                continue
+            heading = re.search(
+                rf"^## \[{re.escape(version)}\] - (\d{{4}}-\d{{2}}-\d{{2}})$",
+                current,
+                re.MULTILINE,
+            )
+            if not heading:
+                raise Mismatch(f"Release PR changelog heading for v{version} is invalid.")
+            tags = subprocess.run(
+                ["git", "tag", "--list", "v*", "--merged", parent],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            ).stdout.splitlines()
+            try:
+                promoted = promote_changelog(version, heading.group(1), baseline, tags)
+            except ReleaseError as error:
+                raise Mismatch(f"Release PR changelog promotion is invalid: {error}") from error
+            if promoted != current or current != expected_changelog:
+                raise Mismatch(f"Release PR for v{version} is not the exact expected changelog promotion.")
+            return
+    raise Mismatch(f"Could not establish the original changelog promotion for v{version}.")
+
+
+def unreleased_entries(changelog):
+    lines = changelog.splitlines()
+    headings = [index for index, line in enumerate(lines) if line == "## [Unreleased]"]
+    if len(headings) != 1:
+        return "invalid"
+    end = next(
+        (index for index in range(headings[0] + 1, len(lines)) if lines[index].startswith("## [")),
+        len(lines),
+    )
+    return "\n".join(lines[headings[0] + 1 : end]).strip()
+
+
+def check_published_release(
+    main_sha, version, current, tagged, *, allow_newer_current=False
+):
     tag = f"v{version}"
     latest = latest_release(tag)
     release = api_release(f"tags/{tag}")
-    assets = validate_metadata(version, current, tagged, release, latest)
+    assets = validate_metadata(
+        version,
+        current,
+        tagged,
+        release,
+        latest,
+        allow_newer_current=allow_newer_current,
+    )
     stable_name = "circle3-paper.pdf"
     versioned_name = f"circle3-paper-{tag}.pdf"
     downloads = {}
@@ -266,6 +486,102 @@ def check_publication():
     return f"{tag} at published main {main_sha}: release, changelog and readable public PDFs agree."
 
 
+def check_publication():
+    main_sha, latest_tag_version, current, latest_tag_changelog = publication_snapshot()
+    changelog_head = changelog_versions(current)
+    if not changelog_head:
+        raise Mismatch("CHANGELOG.md has no stable release entry.")
+    intended_version = changelog_head[0]
+    pending = None
+    if intended_version != latest_tag_version:
+        try:
+            is_newer = parse_version(intended_version) > parse_version(latest_tag_version)
+        except ReleaseError as error:
+            raise Mismatch(str(error)) from error
+        if is_newer:
+            pending = pending_release_pr(intended_version, main_sha, current)
+        if not pending:
+            raise Mismatch(
+                f"Latest stable tag v{latest_tag_version} differs from the latest changelog "
+                "entry; no exact merged release PR verifies an in-flight publication."
+            )
+        tagged = latest_tag_changelog
+        published = check_published_release(
+            main_sha,
+            latest_tag_version,
+            current,
+            tagged,
+            allow_newer_current=True,
+        )
+        raise Pending(
+            f"Release PR #{pending['number']} for v{intended_version} is merged, but its tag "
+            f"is not present yet. Existing publication verified: {published} Rerun Paper: "
+            "Publish with the same version to resume."
+        )
+
+    try:
+        candidate = api_release(f"tags/v{intended_version}")
+    except NotFound:
+        candidate = None
+    if candidate is None or candidate.get("draft") is True:
+        evidence = pending_release_pr(intended_version, main_sha, current)
+        if evidence:
+            previous = latest_stable_tag(
+                [
+                    f"v{tag_version}" for tag_version in stable_tag_versions(git_tags())
+                    if parse_version(tag_version) < parse_version(intended_version)
+                ]
+            )
+            if previous is None:
+                raise Mismatch(f"No prior stable release exists before v{intended_version}.")
+            previous_changelog = subprocess.run(
+                ["git", "show", f"v{previous}:CHANGELOG.md"],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            ).stdout
+            draft_state = None
+            if candidate is not None:
+                latest = api_release("latest")
+                try:
+                    validate_metadata(
+                        intended_version,
+                        current,
+                        latest_tag_changelog,
+                        candidate,
+                        latest,
+                        allow_draft=True,
+                        allow_pending_assets=True,
+                    )
+                except Pending as error:
+                    draft_state = str(error)
+            published = check_published_release(
+                main_sha,
+                previous,
+                current,
+                previous_changelog,
+                allow_newer_current=True,
+            )
+            state = "tag exists but its GitHub release is not yet available"
+            if candidate is not None:
+                state = draft_state or (
+                    "tag and verified draft release exist, but assets are ready for publication"
+                )
+            raise Pending(
+                f"Release PR #{evidence['number']} for v{intended_version} is in a verified "
+                f"pending state: {state}. Existing publication verified: {published} Rerun "
+                "Paper: Publish with the same version to resume."
+            )
+
+    return check_published_release(
+        main_sha,
+        latest_tag_version,
+        current,
+        latest_tag_changelog,
+    )
+
+
 def public_pdf(url, name):
     try:
         return fetch(url, MAX_BYTES)
@@ -278,6 +594,8 @@ def public_pdf(url, name):
 def main():
     try:
         status, detail, code = "passed", check_publication(), 0
+    except Pending as error:
+        status, detail, code = "pending", f"{error} Human attention is still required.", 4
     except Mismatch as error:
         status, detail, code = "failed", f"{error} Review release evidence before repair.", 3
     except Unavailable as error:

@@ -58,6 +58,7 @@ test('Pulse waits for every substantive result and preserves least-privilege per
   assert.match(orchestrator, /common-dependency-security:\n    name: "Common: Dependency Security"\n    uses: \.\/\.github\/workflows\/common-dependency-security\.yml\n    permissions:\n      contents: read\n      vulnerability-alerts: read/);
   assert.match(orchestrator, /common-coherence-integrity:\n    name: "Common: Coherence Integrity"\n    uses: \.\/\.github\/workflows\/common-coherence-integrity\.yml\n    permissions:\n      contents: read/);
   assert.match(orchestrator, /site-performance-integrity:\n    name: "Site: Performance Integrity"\n    uses: \.\/\.github\/workflows\/site-performance-integrity\.yml\n    with:\n      caller_event_name: \$\{\{ github\.event_name \}\}\n    permissions:\n      actions: read\n      contents: read/);
+  assert.match(orchestrator, /paper-publication-integrity:\n    name: "Paper: Publication Integrity"\n    uses: \.\/\.github\/workflows\/paper-publication-integrity\.yml\n    permissions:\n      checks: read\n      contents: read\n      pull-requests: read/);
   assert.match(orchestrator, /group: daily-quality-\$\{\{ github\.ref \}\}\n  cancel-in-progress: false/);
   for (const [file, group] of [
     ['site-performance-integrity.yml', 'site-performance-integrity'],
@@ -75,7 +76,7 @@ test('publication audit is read-only, independently callable, and preserves its 
   assert.match(yaml, /^  workflow_dispatch:$/m);
   assert.doesNotMatch(yaml, /^  pull_request:$/m);
   assert.match(yaml, /name: "Paper: Publication Integrity"/);
-  assert.match(yaml, /permissions:\n  contents: read/);
+  assert.match(yaml, /permissions:\n  checks: read\n  contents: read\n  pull-requests: read/);
   assert.doesNotMatch(yaml, /^\s+ref:/m);
   assert.match(yaml, /validator_sha: \$\{\{ steps\.checkout\.outputs\.commit \}\}/);
   assert.match(yaml, /fetch-depth: 0\n          persist-credentials: false/);
