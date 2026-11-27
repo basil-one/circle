@@ -76,7 +76,8 @@ class PaperReleaseTests(unittest.TestCase):
             "python3 -m unittest discover -s tests/paper -p 'test_paper_config.py' -v", integrity
         )
         self.assertIn(
-            "python3 -m unittest discover -s tests/paper -p 'test_paper_release.py' -v", code_quality
+            "python3 -m unittest discover -s tests/paper -p 'test_paper_release.py' -v",
+            code_quality,
         )
         self.assertIn(
             "python3 -m unittest discover -s tests/paper -p 'test_paper_publication_integrity.py' -v",
@@ -138,7 +139,9 @@ class PaperReleaseTests(unittest.TestCase):
 
             subprocess.run(["git", "init", "-q"], cwd=checkout, check=True)
             subprocess.run(["git", "config", "user.name", "Fixture"], cwd=checkout, check=True)
-            subprocess.run(["git", "config", "user.email", "fixture@example.invalid"], cwd=checkout, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "fixture@example.invalid"], cwd=checkout, check=True
+            )
             subprocess.run(["git", "add", "-A"], cwd=checkout, check=True)
             subprocess.run(["git", "commit", "-qm", "Historical fixture"], cwd=checkout, check=True)
             subprocess.run(["git", "tag", "v0.2.2"], cwd=checkout, check=True)
@@ -315,7 +318,8 @@ class PaperReleaseTests(unittest.TestCase):
             with (
                 patch("scripts.paper_release.run_gh", side_effect=states) as run,
                 patch(
-                    "scripts.paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                    "scripts.paper_release.download_release_assets",
+                    return_value={"circle3-paper.pdf": pdf},
                 ),
                 patch("scripts.paper_release.verify_asset_parity"),
             ):
@@ -373,7 +377,8 @@ class PaperReleaseTests(unittest.TestCase):
             with (
                 patch("scripts.paper_release.run_gh", side_effect=states) as run,
                 patch(
-                    "scripts.paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                    "scripts.paper_release.download_release_assets",
+                    return_value={"circle3-paper.pdf": pdf},
                 ),
                 patch("scripts.paper_release.verify_asset_parity"),
             ):
@@ -423,7 +428,8 @@ class PaperReleaseTests(unittest.TestCase):
             first.write_bytes(b"released")
             second.write_bytes(b"other")
             with patch(
-                "scripts.paper_release.download_release_assets", return_value={"a": first, "b": second}
+                "scripts.paper_release.download_release_assets",
+                return_value={"a": first, "b": second},
             ):
                 with self.assertRaisesRegex(ReleaseError, "differ"):
                     verify_asset_parity(
@@ -473,11 +479,18 @@ class PaperReleaseTests(unittest.TestCase):
                             uploads[name] = path.read_bytes()
 
                 with (
-                    patch("scripts.paper_release.get_release", side_effect=[initial, complete, published]),
                     patch(
-                        "scripts.paper_release.download_release_assets", return_value={existing: surviving}
+                        "scripts.paper_release.get_release",
+                        side_effect=[initial, complete, published],
                     ),
-                    patch("scripts.paper_release.upload_missing_release_assets", side_effect=capture),
+                    patch(
+                        "scripts.paper_release.download_release_assets",
+                        return_value={existing: surviving},
+                    ),
+                    patch(
+                        "scripts.paper_release.upload_missing_release_assets",
+                        side_effect=capture,
+                    ),
                     patch("scripts.paper_release.verify_asset_parity"),
                     patch("scripts.paper_release.mark_release_published"),
                 ):

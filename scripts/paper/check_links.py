@@ -15,7 +15,6 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urldefrag, urlsplit
 
-from scripts.site.check_links import check_external, same_site
 from pypdf import PdfReader
 from pypdf.generic import (
     ArrayObject,
@@ -26,6 +25,8 @@ from pypdf.generic import (
     NullObject,
     NumberObject,
 )
+
+from scripts.site.check_links import check_external, same_site
 
 ROOT = Path(__file__).resolve().parents[2]
 
