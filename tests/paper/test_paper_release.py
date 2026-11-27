@@ -146,19 +146,22 @@ class PaperReleaseTests(unittest.TestCase):
 
             tools = runner_temp / "bin"
             tools.mkdir()
-            for name in ("sudo", "fc-cache", "pdfinfo"):
+            for name in ("sudo", "fc-cache", "pdfinfo", "xelatex"):
                 command = tools / name
                 command.write_text("#!/bin/sh\nexit 0\n")
                 command.chmod(0o755)
-            python_stub = tools / "python3"
-            python_stub.write_text(
-                "#!/bin/sh\n"
-                "test \"$#\" -eq 2\n"
-                "test \"$1\" = scripts/build-pdf.py\n"
-                "test \"$2\" = scripts/plop.paper.config.yaml\n"
-                "printf 'fixture PDF\\n' > assets/pdfs/circle3-paper.pdf\n"
+            pandoc_stub = tools / "pandoc"
+            pandoc_stub.write_text(
+                "#!/usr/bin/env python3\n"
+                "import pathlib, sys\n"
+                "arguments = sys.argv[1:]\n"
+                "if '-t' in arguments and arguments[arguments.index('-t') + 1] == 'latex':\n"
+                "    sys.stdout.write(sys.stdin.read())\n"
+                "else:\n"
+                "    output = pathlib.Path(arguments[arguments.index('--output') + 1])\n"
+                "    output.write_bytes(b'%PDF-1.4\\nfixture\\n')\n"
             )
-            python_stub.chmod(0o755)
+            pandoc_stub.chmod(0o755)
             environment = os.environ.copy()
             environment["PATH"] = f"{tools}{os.pathsep}{environment['PATH']}"
             subprocess.run(

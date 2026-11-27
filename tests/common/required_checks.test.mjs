@@ -211,6 +211,18 @@ test('all eleven current Common, Site, and Paper checks have substantive evidenc
   const pulse = await readFile(new URL('../../.github/workflows/quality-pulse.yml', import.meta.url), 'utf8');
   assert.match(pulse, /site-performance-integrity:\n    name: "Site: Performance Integrity"\n    uses: \.\/\.github\/workflows\/site-performance-integrity\.yml\n    with:\n      caller_event_name: \$\{\{ github\.event_name \}\}/);
 
+  const siteRendering = await readFile(
+    new URL('../../.github/workflows/site-rendering-integrity.yml', import.meta.url),
+    'utf8'
+  );
+  const summaryEnvironment = siteRendering.split('- name: Summarize rendered-site checks')[1] ?? '';
+  assert.match(siteRendering, /SOURCE_SHA: \$\{\{ steps\.revision\.outputs\.sha \}\}/);
+  assert.equal(
+    [...summaryEnvironment.matchAll(/^\s+SOURCE_SHA:/gm)].length,
+    1,
+    'rendering summary has one source revision'
+  );
+
   const summary = await readFile(new URL('../../scripts/site/render_performance_summary.mjs', import.meta.url), 'utf8');
   assert.match(summary, /performanceMeasurementExitCode/);
 

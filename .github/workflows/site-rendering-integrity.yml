@@ -116,6 +116,5 @@ jobs:
           NEGATIVE_OUTCOME: ${{ steps.negative.outcome }}
           ACCESSIBILITY_NEGATIVE_OUTCOME: ${{ steps.accessibility_negative.outcome }}
           RESPONSIVE_NEGATIVE_OUTCOME: ${{ steps.responsive_negative.outcome }}
-          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           RESULTS_FILE: ${{ runner.temp }}/browser-results.json
         run: node scripts/site/render_rendering_summary.mjs
