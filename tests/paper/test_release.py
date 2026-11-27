@@ -108,7 +108,7 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn("checks: read", publish)
         self.assertIn("PUBLISH_WAIT_SECONDS: 1800", publish)
         self.assertIn('python3 "$PAPER_RELEASE_DIR/publish.py" finalize', publish)
-        self.assertIn("approve the requested GitHub Actions checks", publish)
+        self.assertIn("approve requested GitHub Actions runs if", publish)
         self.assertNotIn("git push --atomic", publish)
         self.assertNotIn("HEAD:refs/heads/main", publish)
         self.assertNotIn("tags:", publish)
