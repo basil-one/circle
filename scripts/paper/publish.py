@@ -420,65 +420,69 @@ class Publisher:
             raise PublishError("GitHub returned an unexpected release PR URL.")
         return "pr", str(pr["number"]), url
 
-    def verify_merged_pr(self, version: str, number: int, wait: bool) -> tuple[str, str]:
+    def checked_merged_pr(self, version: str, number: int):
         branch = branch_name(version)
+        pr = gh_api(f"repos/{self.repo}/pulls/{number}")
+        validate_pull_request(pr, number, version, branch)
+        self.files_for_pr(number)
+        if pr.get("state") == "closed" and not pr.get("merged"):
+            raise PublishError(f"PR #{number} closed without merging; no release was published.")
+        if not pr.get("merged"):
+            return None, "awaiting human merge", pr
+        head_sha = (pr.get("head") or {}).get("sha")
+        merge_sha = pr.get("merge_commit_sha")
+        if not re.fullmatch(r"[0-9a-f]{40,64}", str(head_sha)) or not re.fullmatch(
+            r"[0-9a-f]{40,64}", str(merge_sha)
+        ):
+            raise PublishError(f"PR #{number} is merged but its source/merge SHA is invalid.")
+        check_data = gh_api(f"repos/{self.repo}/commits/{head_sha}/check-runs?per_page=100")
+        checks = check_data.get("check_runs") if isinstance(check_data, dict) else None
+        if not isinstance(checks, list):
+            raise PublishError(f"Required check evidence for PR #{number} is unavailable.")
+        all_passed, detail = validate_check_runs(checks, head_sha)
+        if not all_passed:
+            return None, detail, pr
+        self.verify_merged_source(version, number, head_sha, merge_sha)
+        return (merge_sha, pr["html_url"]), detail, pr
+
+    def verify_merged_source(
+        self, version: str, number: int, head_sha: str, merge_sha: str
+    ) -> None:
+        git(
+            [
+                "fetch",
+                "origin",
+                f"refs/pull/{number}/head:refs/remotes/paper-pr/{number}",
+            ],
+            check=False,
+        )
+        pr_head = f"refs/remotes/paper-pr/{number}"
+        if not git(["rev-parse", "--verify", pr_head], check=False):
+            raise PublishError(f"PR #{number} source revision is unavailable.")
+        self.verify_promoted_revision(pr_head, version)
+        main_sha = self.fetch_main()
+        if not is_ancestor(merge_sha, main_sha):
+            raise PublishError(f"PR #{number} merge SHA {merge_sha} is not on current main.")
+        merged_changelog = changelog_at(merge_sha)
+        if merged_changelog != changelog_at(pr_head):
+            raise PublishError(f"PR #{number} merged changelog differs from its reviewed head.")
+        if changelog_versions(merged_changelog)[:1] != [version]:
+            raise PublishError(
+                f"PR #{number} merge revision does not promote v{version} as latest."
+            )
+        if unreleased_entries(merged_changelog):
+            raise PublishError(
+                f"PR #{number} merge revision changed Unreleased beyond the promotion."
+            )
+
+    def verify_merged_pr(self, version: str, number: int, wait: bool) -> tuple[str, str]:
         deadline = time.monotonic() + self.wait_seconds
         while True:
-            pr = gh_api(f"repos/{self.repo}/pulls/{number}")
-            validate_pull_request(pr, number, version, branch)
-            self.files_for_pr(number)
-            if pr.get("state") == "closed" and not pr.get("merged"):
-                raise PublishError(
-                    f"PR #{number} closed without merging; no release was published."
-                )
-            if pr.get("merged"):
-                head_sha = (pr.get("head") or {}).get("sha")
-                merge_sha = pr.get("merge_commit_sha")
-                if not re.fullmatch(r"[0-9a-f]{40,64}", str(head_sha)) or not re.fullmatch(
-                    r"[0-9a-f]{40,64}", str(merge_sha)
-                ):
-                    raise PublishError(
-                        f"PR #{number} is merged but its source/merge SHA is invalid."
-                    )
-                checks = gh_api(
-                    f"repos/{self.repo}/commits/{head_sha}/check-runs?per_page=100"
-                ).get("check_runs")
-                if not isinstance(checks, list):
-                    raise PublishError(f"Required check evidence for PR #{number} is unavailable.")
-                all_passed, detail = validate_check_runs(checks, head_sha)
-                if all_passed:
-                    git(
-                        [
-                            "fetch",
-                            "origin",
-                            f"refs/pull/{number}/head:refs/remotes/paper-pr/{number}",
-                        ],
-                        check=False,
-                    )
-                    pr_head = f"refs/remotes/paper-pr/{number}"
-                    if not git(["rev-parse", "--verify", pr_head], check=False):
-                        raise PublishError(f"PR #{number} source revision is unavailable.")
-                    self.verify_promoted_revision(pr_head, version)
-                    main_sha = self.fetch_main()
-                    if not is_ancestor(merge_sha, main_sha):
-                        raise PublishError(
-                            f"PR #{number} merge SHA {merge_sha} is not on current main."
-                        )
-                    merged_changelog = changelog_at(merge_sha)
-                    if merged_changelog != changelog_at(pr_head):
-                        raise PublishError(
-                            f"PR #{number} merged changelog differs from its reviewed head."
-                        )
-                    if changelog_versions(merged_changelog)[:1] != [version]:
-                        raise PublishError(
-                            f"PR #{number} merge revision does not promote v{version} as latest."
-                        )
-                    if unreleased_entries(merged_changelog):
-                        raise PublishError(
-                            f"PR #{number} merge revision changed Unreleased beyond the promotion."
-                        )
-                    print(f"RESUMED: PR #{number} merged; {detail} Source: {merge_sha}.")
-                    return merge_sha, pr["html_url"]
+            result, detail, pr = self.checked_merged_pr(version, number)
+            if result:
+                merge_sha, url = result
+                print(f"RESUMED: PR #{number} merged; {detail} Source: {merge_sha}.")
+                return merge_sha, url
             if not wait:
                 raise PublishError(
                     f"PR #{number} has not been merged with verified check evidence."
@@ -489,8 +493,8 @@ class Publisher:
                     "rerun Paper: Publish with the same version to resume."
                 )
             print(
-                f"WAITING: PR #{number} {pr.get('html_url')} — review, approve required "
-                "workflow runs if prompted, and merge through the Quality Gate."
+                f"WAITING: PR #{number} {pr.get('html_url')} — {detail}; review, approve "
+                "required workflow runs if prompted, and merge through the Quality Gate."
             )
             time.sleep(self.interval)
 
