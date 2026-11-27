@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from scripts.paper import publish
 
-
 VERSION = "0.2.3"
 BRANCH = "paper-release/v0.2.3"
 HEAD_SHA = "a" * 40
@@ -96,8 +95,17 @@ class PaperPublishTests(unittest.TestCase):
         runs = check_runs()
         runs[-1]["status"] = "in_progress"
         self.assertFalse(publish.validate_check_runs(runs, HEAD_SHA)[0])
-        for conclusion in ("failure", "cancelled", "skipped", "timed_out", "action_required"):
-            with self.subTest(conclusion=conclusion), self.assertRaises(publish.PublishError):
+        for conclusion in (
+            "failure",
+            "cancelled",
+            "skipped",
+            "timed_out",
+            "action_required",
+        ):
+            with (
+                self.subTest(conclusion=conclusion),
+                self.assertRaises(publish.PublishError),
+            ):
                 publish.validate_check_runs(check_runs(conclusion), HEAD_SHA)
         wrong_revision = check_runs()
         wrong_revision[0]["head_sha"] = "d" * 40
@@ -251,14 +259,19 @@ class PaperPublishTests(unittest.TestCase):
 
     def test_pull_request_permission_failure_is_actionable(self):
         publisher = publish.Publisher()
+
         def create_failure(path, method="GET", data=None):
-            if path.endswith("/pulls?state=all&per_page=100&head=basil-one:paper-release/v0.2.3"):
+            if path.endswith(
+                "/pulls?state=all&per_page=100&head=basil-one:paper-release/v0.2.3"
+            ):
                 return []
             raise publish.PublishError("Resource not accessible")
 
         with (
             patch.object(publish, "gh_api", side_effect=create_failure),
-            self.assertRaisesRegex(publish.PublishError, "Actions settings allow.*create pull requests"),
+            self.assertRaisesRegex(
+                publish.PublishError, "Actions settings allow.*create pull requests"
+            ),
         ):
             publisher.create_or_find_pr(VERSION, BRANCH)
 
@@ -266,14 +279,20 @@ class PaperPublishTests(unittest.TestCase):
         publisher = publish.Publisher(wait_seconds=0, interval=0)
         with (
             patch.object(
-                publish, "gh_api",
-                side_effect=[pull_request(state="closed", merged=False), [{"filename": "CHANGELOG.md"}]],
+                publish,
+                "gh_api",
+                side_effect=[
+                    pull_request(state="closed", merged=False),
+                    [{"filename": "CHANGELOG.md"}],
+                ],
             ),
             self.assertRaisesRegex(publish.PublishError, "closed without merging"),
         ):
             publisher.verify_merged_pr(VERSION, 42, wait=True)
         with (
-            patch.object(publish, "gh_api", side_effect=publish.PublishError("API denied")),
+            patch.object(
+                publish, "gh_api", side_effect=publish.PublishError("API denied")
+            ),
             self.assertRaisesRegex(publish.PublishError, "API denied"),
         ):
             publisher.verify_merged_pr(VERSION, 42, wait=True)
@@ -282,7 +301,8 @@ class PaperPublishTests(unittest.TestCase):
         publisher = publish.Publisher(wait_seconds=1, interval=1)
         with (
             patch.object(
-                publish, "gh_api",
+                publish,
+                "gh_api",
                 side_effect=[pull_request(), [{"filename": "CHANGELOG.md"}]],
             ),
             patch.object(publish.time, "monotonic", side_effect=[0, 2]),
@@ -297,7 +317,8 @@ class PaperPublishTests(unittest.TestCase):
         publisher = publish.Publisher(wait_seconds=30, interval=1)
         with (
             patch.object(
-                publish, "gh_api",
+                publish,
+                "gh_api",
                 side_effect=[pull_request(), [{"filename": "CHANGELOG.md"}]],
             ),
             patch.object(publish.time, "monotonic", return_value=0),
@@ -355,7 +376,8 @@ class PaperPublishTests(unittest.TestCase):
                 publisher = publish.Publisher()
                 with (
                     patch.object(
-                        publish, "gh_api",
+                        publish,
+                        "gh_api",
                         side_effect=[
                             merged,
                             [{"filename": "CHANGELOG.md"}],
@@ -374,7 +396,8 @@ class PaperPublishTests(unittest.TestCase):
                 subprocess.run(["git", "init", "-q", "-b", "main"], check=True)
                 subprocess.run(["git", "config", "user.name", "Fixture"], check=True)
                 subprocess.run(
-                    ["git", "config", "user.email", "fixture@example.invalid"], check=True
+                    ["git", "config", "user.email", "fixture@example.invalid"],
+                    check=True,
                 )
                 Path("CHANGELOG.md").write_text(
                     """# Changelog
@@ -395,7 +418,10 @@ class PaperPublishTests(unittest.TestCase):
                 subprocess.run(["git", "add", "CHANGELOG.md"], check=True)
                 subprocess.run(["git", "commit", "-qm", "base"], check=True)
                 main_sha = subprocess.run(
-                    ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+                    ["git", "rev-parse", "HEAD"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
                 ).stdout.strip()
                 subprocess.run(["git", "tag", "v0.2.2"], check=True)
                 subprocess.run(["git", "switch", "-qc", BRANCH], check=True)
@@ -416,7 +442,10 @@ class PaperPublishTests(unittest.TestCase):
                 subprocess.run(["git", "add", "unrelated.txt"], check=True)
                 subprocess.run(["git", "commit", "-qm", "main advanced"], check=True)
                 concurrent_main = subprocess.run(
-                    ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+                    ["git", "rev-parse", "HEAD"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
                 ).stdout.strip()
                 subprocess.run(["git", "switch", "-q", BRANCH], check=True)
                 with self.assertRaisesRegex(publish.PublishError, "behind main"):
@@ -424,7 +453,9 @@ class PaperPublishTests(unittest.TestCase):
                 Path("unexpected.txt").write_text("extra", encoding="utf-8")
                 subprocess.run(["git", "add", "unexpected.txt"], check=True)
                 subprocess.run(["git", "commit", "-qm", "unexpected"], check=True)
-                with self.assertRaisesRegex(publish.PublishError, "beyond the expected"):
+                with self.assertRaisesRegex(
+                    publish.PublishError, "beyond the expected"
+                ):
                     publisher.verify_branch(VERSION, BRANCH, main_sha)
             finally:
                 os.chdir(original_directory)
@@ -437,7 +468,8 @@ class PaperPublishTests(unittest.TestCase):
                 subprocess.run(["git", "init", "-q", "-b", "main"], check=True)
                 subprocess.run(["git", "config", "user.name", "Fixture"], check=True)
                 subprocess.run(
-                    ["git", "config", "user.email", "fixture@example.invalid"], check=True
+                    ["git", "config", "user.email", "fixture@example.invalid"],
+                    check=True,
                 )
                 Path("CHANGELOG.md").write_text(
                     """# Changelog
@@ -459,11 +491,16 @@ class PaperPublishTests(unittest.TestCase):
                 subprocess.run(["git", "commit", "-qm", "base"], check=True)
                 subprocess.run(["git", "tag", "v0.2.2"], check=True)
                 main_sha = subprocess.run(
-                    ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+                    ["git", "rev-parse", "HEAD"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
                 ).stdout.strip()
                 remote = Path(temporary) / "remote.git"
                 subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
-                subprocess.run(["git", "remote", "add", "origin", str(remote)], check=True)
+                subprocess.run(
+                    ["git", "remote", "add", "origin", str(remote)], check=True
+                )
                 subprocess.run(["git", "push", "-q", "origin", "main"], check=True)
                 publisher = publish.Publisher()
                 with patch.object(publish, "validate_latest_release"):
@@ -475,10 +512,15 @@ class PaperPublishTests(unittest.TestCase):
                         text=True,
                     ).stdout.strip()
                     subprocess.run(["git", "switch", "-q", "main"], check=True)
-                    subprocess.run(["git", "branch", "-D", BRANCH], check=True, capture_output=True)
+                    subprocess.run(
+                        ["git", "branch", "-D", BRANCH], check=True, capture_output=True
+                    )
                     publisher.create_release_branch(VERSION, BRANCH, main_sha)
                 resumed_tip = subprocess.run(
-                    ["git", "rev-parse", BRANCH], check=True, capture_output=True, text=True
+                    ["git", "rev-parse", BRANCH],
+                    check=True,
+                    capture_output=True,
+                    text=True,
                 ).stdout.strip()
                 self.assertEqual(resumed_tip, original_tip)
             finally:
@@ -487,13 +529,19 @@ class PaperPublishTests(unittest.TestCase):
     def test_merge_squash_and_rebase_accept_only_the_merged_candidate_sha(self):
         original_directory = Path.cwd()
         for strategy in ("merge", "squash", "rebase"):
-            with self.subTest(strategy=strategy), tempfile.TemporaryDirectory() as temporary:
+            with (
+                self.subTest(strategy=strategy),
+                tempfile.TemporaryDirectory() as temporary,
+            ):
                 os.chdir(temporary)
                 try:
                     subprocess.run(["git", "init", "-q", "-b", "main"], check=True)
-                    subprocess.run(["git", "config", "user.name", "Fixture"], check=True)
                     subprocess.run(
-                        ["git", "config", "user.email", "fixture@example.invalid"], check=True
+                        ["git", "config", "user.name", "Fixture"], check=True
+                    )
+                    subprocess.run(
+                        ["git", "config", "user.email", "fixture@example.invalid"],
+                        check=True,
                     )
                     Path("CHANGELOG.md").write_text("base\n", encoding="utf-8")
                     subprocess.run(["git", "add", "CHANGELOG.md"], check=True)
@@ -502,13 +550,18 @@ class PaperPublishTests(unittest.TestCase):
                     Path("CHANGELOG.md").write_text("candidate\n", encoding="utf-8")
                     subprocess.run(["git", "commit", "-qam", "candidate"], check=True)
                     head_sha = subprocess.run(
-                        ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+                        ["git", "rev-parse", "HEAD"],
+                        check=True,
+                        capture_output=True,
+                        text=True,
                     ).stdout.strip()
                     subprocess.run(["git", "switch", "-q", "main"], check=True)
                     if strategy == "rebase":
                         Path("main.txt").write_text("base moved\n", encoding="utf-8")
                         subprocess.run(["git", "add", "main.txt"], check=True)
-                        subprocess.run(["git", "commit", "-qm", "base moved"], check=True)
+                        subprocess.run(
+                            ["git", "commit", "-qm", "base moved"], check=True
+                        )
                     if strategy == "merge":
                         subprocess.run(
                             ["git", "merge", "--no-ff", "-m", "merge", "candidate"],
@@ -525,7 +578,10 @@ class PaperPublishTests(unittest.TestCase):
                     else:
                         subprocess.run(["git", "cherry-pick", head_sha], check=True)
                     merged_sha = subprocess.run(
-                        ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+                        ["git", "rev-parse", "HEAD"],
+                        check=True,
+                        capture_output=True,
+                        text=True,
                     ).stdout.strip()
                     self.assertTrue(publish.is_ancestor(merged_sha, "main"))
                     if strategy != "merge":
@@ -543,11 +599,16 @@ class PaperPublishTests(unittest.TestCase):
         ):
             publisher.finalize(VERSION, MERGE_SHA, 42)
         self.assertFalse(
-            any(call.args[0][:2] in (["tag", "-a"], ["push", "origin"]) for call in git.call_args_list)
+            any(
+                call.args[0][:2] in (["tag", "-a"], ["push", "origin"])
+                for call in git.call_args_list
+            )
         )
 
     def test_workflow_uses_one_reviewed_job_without_direct_main_push(self):
-        workflow = (Path(__file__).resolve().parents[2] / ".github/workflows/paper-publish.yml").read_text()
+        workflow = (
+            Path(__file__).resolve().parents[2] / ".github/workflows/paper-publish.yml"
+        ).read_text()
         self.assertIn("workflow_dispatch:", workflow)
         self.assertIn("timeout-minutes: 120", workflow)
         self.assertIn("PUBLISH_WAIT_SECONDS: 1800", workflow)
@@ -557,7 +618,9 @@ class PaperPublishTests(unittest.TestCase):
         self.assertIn("approve requested GitHub Actions runs if", workflow)
         self.assertNotIn("git push --atomic", workflow)
         self.assertNotIn("HEAD:refs/heads/main", workflow)
-        job_headers = re.findall(r"^  [a-z][a-z0-9-]*:$", workflow.split("\njobs:\n", 1)[1], re.M)
+        job_headers = re.findall(
+            r"^  [a-z][a-z0-9-]*:$", workflow.split("\njobs:\n", 1)[1], re.MULTILINE
+        )
         self.assertEqual(job_headers, ["  paper-publish:"])
 
 

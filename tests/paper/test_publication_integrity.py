@@ -73,7 +73,8 @@ class PublicationIntegrityTests(unittest.TestCase):
         ):
             result = publication.check_publication()
             self.assertIn(
-                ["git", "show", f"{MAIN_SHA}:CHANGELOG.md"], [c.args[0] for c in run.call_args_list]
+                ["git", "show", f"{MAIN_SHA}:CHANGELOG.md"],
+                [c.args[0] for c in run.call_args_list],
             )
             return result
 
@@ -91,7 +92,10 @@ class PublicationIntegrityTests(unittest.TestCase):
                 data["assets"][0]["size"] = 0
             else:
                 data["assets"][0]["state"] = "new"
-            with self.subTest(mutation=mutation), self.assertRaises(publication.Mismatch):
+            with (
+                self.subTest(mutation=mutation),
+                self.assertRaises(publication.Mismatch),
+            ):
                 self.check(data)
 
     def test_downloads_and_metadata_must_match(self):
@@ -107,21 +111,30 @@ class PublicationIntegrityTests(unittest.TestCase):
             for kind in ("empty", "unreadable", "metadata"):
                 with self.subTest(defective=defective, kind=kind):
                     other = VERSIONED if defective == STABLE else STABLE
-                    values = {defective: b"bad", other: publication.Unavailable(f"{other} offline")}
+                    values = {
+                        defective: b"bad",
+                        other: publication.Unavailable(f"{other} offline"),
+                    }
                     if kind == "empty":
                         values[defective] = b""
 
-                    def validate(data, name, _directory):
+                    def validate(
+                        data, name, _directory, kind=kind, defective=defective
+                    ):
                         if kind == "empty" and not data:
                             raise publication.Mismatch(f"Downloaded {name} is empty.")
                         if kind == "unreadable" and name == defective:
-                            raise publication.Mismatch(f"Downloaded {name} is not a readable PDF.")
+                            raise publication.Mismatch(
+                                f"Downloaded {name} is not a readable PDF."
+                            )
 
                     data = release()
                     if kind == "metadata":
-                        next(asset for asset in data["assets"] if asset["name"] == defective)[
-                            "digest"
-                        ] = "sha256:" + "0" * 64
+                        next(
+                            asset
+                            for asset in data["assets"]
+                            if asset["name"] == defective
+                        )["digest"] = "sha256:" + "0" * 64
                     with self.assertRaises(publication.Mismatch) as caught:
                         self.check(data, values[STABLE], values[VERSIONED], validate)
                     self.assertIn(defective, str(caught.exception))
@@ -150,7 +163,9 @@ class PublicationIntegrityTests(unittest.TestCase):
         data["assets"][0]["digest"] = "sha256:" + "0" * 64
         with self.assertRaises(publication.Mismatch) as caught:
             self.check(data, pdf_error=publication.Unavailable("pdfinfo unavailable"))
-        self.assertIn(f"{STABLE} differs from its release asset metadata", str(caught.exception))
+        self.assertIn(
+            f"{STABLE} differs from its release asset metadata", str(caught.exception)
+        )
         self.assertIn("pdfinfo unavailable", str(caught.exception))
 
     def test_confirmed_missing_download_survives_other_unavailable_download(self):
@@ -179,12 +194,18 @@ class PublicationIntegrityTests(unittest.TestCase):
             )
 
     def test_inaccessible_and_malformed_api_are_unknown(self):
-        with patch.object(publication, "fetch", side_effect=publication.Unavailable("network")):
-            with self.assertRaises(publication.Unavailable):
-                publication.api_release("latest")
-        with patch.object(publication, "fetch", return_value=b"not json"):
-            with self.assertRaises(publication.Unavailable):
-                publication.api_release("latest")
+        with (
+            patch.object(
+                publication, "fetch", side_effect=publication.Unavailable("network")
+            ),
+            self.assertRaises(publication.Unavailable),
+        ):
+            publication.api_release("latest")
+        with (
+            patch.object(publication, "fetch", return_value=b"not json"),
+            self.assertRaises(publication.Unavailable),
+        ):
+            publication.api_release("latest")
         data = release()
         del data["assets"]
         with self.assertRaises(publication.Unavailable):
@@ -200,27 +221,40 @@ class PublicationIntegrityTests(unittest.TestCase):
             patch.object(publication, "git_tags", return_value=[TAG]),
             patch.object(publication.Path, "read_text", return_value=CHANGELOG),
             patch.object(publication.subprocess, "run", return_value=completed),
-            patch.object(publication, "api_release", return_value={"tag_name": "v0.2.1"}) as api,
+            patch.object(
+                publication, "api_release", return_value={"tag_name": "v0.2.1"}
+            ) as api,
         ):
             with self.assertRaisesRegex(publication.Mismatch, "incomplete"):
                 publication.check_publication()
-            self.assertEqual(api.call_args_list, [unittest.mock.call("tags/v0.2.2"), unittest.mock.call("latest")])
+            self.assertEqual(
+                api.call_args_list,
+                [unittest.mock.call("tags/v0.2.2"), unittest.mock.call("latest")],
+            )
 
     def test_exit_codes_reserve_mismatch_from_unexpected_failure(self):
         with patch.object(
-            publication, "check_publication", side_effect=publication.Mismatch("mismatch")
+            publication,
+            "check_publication",
+            side_effect=publication.Mismatch("mismatch"),
         ):
             self.assertEqual(publication.main(), 3)
         with patch.object(
-            publication, "check_publication", side_effect=publication.Unavailable("offline")
+            publication,
+            "check_publication",
+            side_effect=publication.Unavailable("offline"),
         ):
             self.assertEqual(publication.main(), 2)
         with patch.object(
-            publication, "check_publication", side_effect=publication.Pending("release is waiting")
+            publication,
+            "check_publication",
+            side_effect=publication.Pending("release is waiting"),
         ):
             self.assertEqual(publication.main(), 4)
 
-    def test_exact_merged_release_pr_distinguishes_pending_from_unexplained_mismatch(self):
+    def test_exact_merged_release_pr_distinguishes_pending_from_unexplained_mismatch(
+        self,
+    ):
         baseline = (
             CHANGELOG.replace(
                 "## [Unreleased]\n\n",
@@ -236,14 +270,16 @@ class PublicationIntegrityTests(unittest.TestCase):
         with (
             patch.object(publication, "publication_snapshot", return_value=snapshot),
             patch.object(
-                publication, "pending_release_pr", return_value={"number": 42, "merge_sha": "d" * 40}
+                publication,
+                "pending_release_pr",
+                return_value={"number": 42, "merge_sha": "d" * 40},
             ) as pending_pr,
             patch.object(
                 publication, "check_published_release", return_value="v0.2.2 is intact."
             ) as old_release,
+            self.assertRaisesRegex(publication.Pending, "PR #42"),
         ):
-            with self.assertRaisesRegex(publication.Pending, "PR #42"):
-                publication.check_publication()
+            publication.check_publication()
         pending_pr.assert_called_once_with("0.2.3", MAIN_SHA, promoted)
         self.assertTrue(old_release.call_args.kwargs["allow_newer_current"])
 
@@ -254,7 +290,9 @@ class PublicationIntegrityTests(unittest.TestCase):
         ):
             publication.check_publication()
 
-    def test_pending_release_pr_requires_exact_identity_files_ancestry_and_promotion(self):
+    def test_pending_release_pr_requires_exact_identity_files_ancestry_and_promotion(
+        self,
+    ):
         baseline = (
             CHANGELOG.replace(
                 "## [Unreleased]\n\n",
@@ -350,34 +388,43 @@ class PublicationIntegrityTests(unittest.TestCase):
             with (
                 self.subTest(error_url=error_url),
                 patch.object(publication, "fetch", side_effect=error),
+                self.assertRaises(exception),
             ):
-                with self.assertRaises(exception):
-                    publication.public_pdf(url, STABLE)
-        with patch.object(publication, "fetch", side_effect=publication.Unavailable("403")):
-            with self.assertRaises(publication.Unavailable):
                 publication.public_pdf(url, STABLE)
+        with (
+            patch.object(
+                publication, "fetch", side_effect=publication.Unavailable("403")
+            ),
+            self.assertRaises(publication.Unavailable),
+        ):
+            publication.public_pdf(url, STABLE)
 
     def test_missing_latest_release_requires_confirmed_public_repository(self):
         completed = subprocess.CompletedProcess(["git"], 0, CHANGELOG, "")
         for repository, outcome in (
             ({"private": False, "full_name": "basil-one/circle"}, publication.Mismatch),
-            ({"private": True, "full_name": "basil-one/circle"}, publication.Unavailable),
+            (
+                {"private": True, "full_name": "basil-one/circle"},
+                publication.Unavailable,
+            ),
         ):
             with (
                 self.subTest(repository=repository),
                 patch.object(publication, "git_tags", return_value=[TAG]),
                 patch.object(publication.subprocess, "run", return_value=completed),
-                patch.object(publication, "api_release", side_effect=publication.NotFound("404")),
+                patch.object(
+                    publication, "api_release", side_effect=publication.NotFound("404")
+                ),
                 patch.object(
                     publication,
                     "fetch",
-                    side_effect=lambda url, _limit: (
+                    side_effect=lambda url, _limit, repository=repository: (
                         b"[]" if "/pulls?" in url else json.dumps(repository).encode()
                     ),
                 ),
+                self.assertRaises(outcome),
             ):
-                with self.assertRaises(outcome):
-                    publication.check_publication()
+                publication.check_publication()
 
     def test_empty_and_unreadable_pdf_fail_but_missing_tool_is_unknown(self):
         from pathlib import Path
@@ -386,16 +433,24 @@ class PublicationIntegrityTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             with self.assertRaises(publication.Mismatch):
                 publication.validate_pdf(b"", STABLE, Path(directory))
-            with patch.object(
-                publication.subprocess, "run", return_value=subprocess.CompletedProcess([], 1)
+            with (
+                patch.object(
+                    publication.subprocess,
+                    "run",
+                    return_value=subprocess.CompletedProcess([], 1),
+                ),
+                self.assertRaises(publication.Mismatch),
             ):
-                with self.assertRaises(publication.Mismatch):
-                    publication.validate_pdf(b"bad", STABLE, Path(directory))
-            with patch.object(
-                publication.subprocess, "run", side_effect=FileNotFoundError("pdfinfo")
+                publication.validate_pdf(b"bad", STABLE, Path(directory))
+            with (
+                patch.object(
+                    publication.subprocess,
+                    "run",
+                    side_effect=FileNotFoundError("pdfinfo"),
+                ),
+                self.assertRaises(publication.Unavailable),
             ):
-                with self.assertRaises(publication.Unavailable):
-                    publication.validate_pdf(b"pdf", STABLE, Path(directory))
+                publication.validate_pdf(b"pdf", STABLE, Path(directory))
 
 
 if __name__ == "__main__":
