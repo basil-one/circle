@@ -8,6 +8,8 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-27
+
 ### Added
 - Established a continuous quality practice across the website and paper, with Common, Site, and Paper quality domains.
 - Introduced Quality Gate safeguards and a daily Quality Pulse with actionable evidence.
@@ -172,7 +174,8 @@ For licensing, see `LICENSE.md`.
 3. Fit: Do the Lenses belong in the submission, and is the framing clear for a PLoP/PLoPCon workshop?
 
 
-[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/basil-one/circle/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/basil-one/circle/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/basil-one/circle/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/basil-one/circle/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/basil-one/circle/compare/v0.1.11...v0.2.0
