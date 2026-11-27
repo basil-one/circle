@@ -9,6 +9,7 @@ Circle is a Jekyll website and the source of the Circle3 paper, three guiding mo
 ## Understand before changing
 
 - Start with [README.md](README.md), including its intellectual stewardship principles. Understand our quality commitments in [QUALITY.md](.github/QUALITY.md) and follow the repository conventions in [CONVENTIONS.md](.github/CONVENTIONS.md).
+- For automation work involving workflows or their supporting scripts and tests, also read [automation guidance](.github/AGENTS.md).
 - For paper work, read [scripts/README.md](scripts/README.md) and inspect the paper configuration, sources, and relevant workflows.
 - Establish the intended outcome, what must stay true, and how to verify it before implementing. Surface unresolved editorial or operating decisions early rather than inventing a policy.
 - Inspect current `main`, the working branch, and affected consumers. Reconcile concurrent changes without undoing merged features, protections, or tests.
@@ -19,7 +20,7 @@ Circle is a Jekyll website and the source of the Circle3 paper, three guiding mo
 - Prefer the smallest coherent change that solves the stated problem. Explain necessary deviations; avoid speculative refactoring, redundant infrastructure, and unrelated cleanup.
 - Preserve the owner's approved language, links, positioning, and visitor experience. Do not rewrite content or make editorial choices under the guise of technical improvement.
 - Use existing conventions and safeguards. Do not weaken quality gates, security, or access controls just to make a check green.
-- Preserve licensing, attribution, and AI disclosures. Do not change version tags, release assets, or published paper versions without explicit authorization.
+- Preserve licensing, attribution, and AI disclosures. Do not change version tags, release assets, or published versions without explicit authorization.
 
 ## Verify outcomes, not just code
 

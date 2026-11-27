@@ -8,6 +8,9 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+### Changed
+- Reconciled contributor guidance, automation stewardship, and repository documentation with Agency's shared quality practice while preserving Circle's paper-specific responsibilities.
+
 ## [0.3.0] - 2026-11-27
 
 ### Added

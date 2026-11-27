@@ -8,17 +8,22 @@ Source for [Circle3](https://circle.basil.one), a Jekyll site and paper presenti
 
 We keep Circle's website and paper dependable, accessible, and easy to use so readers can engage with the work. Automation carries repetitive checks and brings evidence and practical remedies to human judgment. The practice creates capacity rather than maintenance overhead.
 
-Our [quality stance and practice](.github/QUALITY.md) describes the quality domains, safeguards in operation, and direction of the practice.
+Our [quality stance and practice](.github/QUALITY.md) describes the quality domains, safeguards in operation, and how people review their evidence.
 
 ## Development
 
-1. Open in GitHub Codespaces (uses the provided dev container), or use Ruby with Bundler locally.
-2. Install dependencies via terminal: `bundle install`
-3. Run locally via terminal: `bundle exec jekyll serve`
+Use GitHub Codespaces (the provided dev container uses Ruby 3.2) or Ruby 3.2+ with Bundler locally. CI uses Ruby 3.3.
 
-The site will be available at http://localhost:4000.
+```sh
+bundle install
+bundle exec jekyll serve
+```
 
-See the [repository conventions](.github/CONVENTIONS.md) for workflow, script, and test locations and focused validation commands.
+The local site is available at http://localhost:4000.
+
+See the [repository conventions](.github/CONVENTIONS.md) for workflow, script, and test locations and focused validation commands. Agents start with [AGENTS.md](AGENTS.md), including the linked automation guidance.
+
+For paper development, preview, and publication, see the [paper build and workflow guide](scripts/README.md).
 
 ## Site Publication
 
