@@ -461,7 +461,7 @@ def pending_release_checks(pr_number, head_sha):
     return detail
 
 
-def pending_release_pr(version, main_sha, current):
+def verified_release_pr(version, main_sha, current, *, require_checks):
     pr = pending_release_candidate(version)
     if not pr:
         return None
@@ -475,8 +475,13 @@ def pending_release_pr(version, main_sha, current):
         raise Mismatch(f"Release PR #{number} has no valid approved head revision.")
     if not pending_release_changelog(version, number, head_sha, merge_sha, main_sha, current):
         return None
-    pending_release_checks(number, head_sha)
+    if require_checks:
+        pending_release_checks(number, head_sha)
     return {"number": number, "merge_sha": merge_sha}
+
+
+def pending_release_pr(version, main_sha, current):
+    return verified_release_pr(version, main_sha, current, require_checks=True)
 
 
 def verify_exact_promotion(version, revision, expected_changelog):
@@ -650,7 +655,7 @@ def check_pending_changelog(main_sha, latest_tag_version, current, latest_tag_ch
     )
 
 
-def prior_release_data(version):
+def prior_release_data(version, *, allow_missing=False):
     previous = latest_stable_tag(
         [
             f"v{tag_version}"
@@ -659,6 +664,8 @@ def prior_release_data(version):
         ]
     )
     if previous is None:
+        if allow_missing:
+            return None
         raise Mismatch(f"No prior stable release exists before v{version}.")
     previous_changelog = subprocess.run(
         ["git", "show", f"v{previous}:CHANGELOG.md"],
@@ -753,18 +760,34 @@ def validate_pending_draft(version, current, candidate, tag_sha):
 def check_pending_release(main_sha, version, current, latest_tag_changelog, candidate):
     if not is_draft_release_candidate(version, candidate):
         return
+    if candidate is None and version == "0.2.2":
+        return
+    previous_unavailable = None
+    try:
+        previous, previous_changelog = prior_release_data(version)
+        published = check_published_release(
+            main_sha,
+            previous,
+            current,
+            previous_changelog,
+            allow_newer_current=True,
+        )
+    except Mismatch:
+        raise
+    except Unavailable as error:
+        previous_unavailable = error
     context = verified_pending_release(main_sha, version, current, candidate)
     if not context:
+        if previous_unavailable:
+            raise previous_unavailable
         return
-    evidence, tag_sha, previous, previous_changelog = context
+    evidence, tag_sha, _, _ = context
     draft_state = validate_pending_draft(version, current, candidate, tag_sha)
-    published = check_published_release(
-        main_sha,
-        previous,
-        current,
-        previous_changelog,
-        allow_newer_current=True,
-    )
+    if previous_unavailable:
+        raise Unavailable(
+            f"Release PR #{evidence['number']} is verified, but the prior published release "
+            f"cannot be confirmed: {previous_unavailable}"
+        )
     state = "tag exists but its GitHub release is not yet available"
     if tag_sha is None:
         state = "verified release PR is merged; its tag has not yet been created"
@@ -782,7 +805,7 @@ def check_pending_release(main_sha, version, current, latest_tag_changelog, cand
 def verify_published_tag_provenance(main_sha, version, current):
     if version == "0.2.2":
         return
-    evidence = pending_release_pr(version, main_sha, current)
+    evidence = verified_release_pr(version, main_sha, current, require_checks=False)
     if not evidence:
         raise Mismatch(f"Published v{version} has no exact merged release PR provenance.")
     tag_sha = existing_tag_commit(version)
@@ -806,6 +829,19 @@ def check_publication():
         candidate = api_release(f"tags/v{intended_version}")
     except NotFound:
         candidate = None
+    except Unavailable:
+        if intended_version == latest_tag_version:
+            previous = prior_release_data(intended_version, allow_missing=True)
+            if previous:
+                previous_version, previous_changelog = previous
+                check_published_release(
+                    main_sha,
+                    previous_version,
+                    current,
+                    previous_changelog,
+                    allow_newer_current=True,
+                )
+        raise
     check_pending_release(main_sha, intended_version, current, latest_tag_changelog, candidate)
 
     published = check_published_release(

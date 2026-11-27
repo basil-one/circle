@@ -676,9 +676,6 @@ class Publisher:
     ) -> tuple[str, str]:
         if git(["rev-parse", "HEAD"]) != source_sha:
             raise PublishError("Checked-out revision does not equal the verified release source.")
-        main_sha = self.fetch_main()
-        if not is_ancestor(source_sha, main_sha):
-            raise PublishError(f"Approved source {source_sha} is not an ancestor of main.")
         changelog = changelog_at(source_sha)
         if changelog_versions(changelog)[:1] != [version] or unreleased_entries(changelog):
             raise PublishError(f"Approved source does not contain the exact v{version} promotion.")
@@ -700,6 +697,9 @@ class Publisher:
                 or git(["show", "-s", "--format=%s", source_sha]) != "Release v0.2.2"
             ):
                 raise PublishError("Existing tag is not a recognized historical release.")
+        main_sha = self.fetch_main()
+        if not is_ancestor(source_sha, main_sha):
+            raise PublishError(f"Approved source {source_sha} is not an ancestor of main.")
         return main_sha, changelog
 
     def verify_current_release_state(

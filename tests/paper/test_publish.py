@@ -349,6 +349,7 @@ class PaperPublishTests(unittest.TestCase):
     def test_finalize_halts_if_main_release_entry_changed_after_approval(self):
         publisher = publish.Publisher()
         altered = CHANGELOG.replace("A reviewed change.", "A different change.")
+        pr_verified = False
 
         def git_call(args, check=True):
             if args[:2] == ["rev-parse", "HEAD"]:
@@ -357,9 +358,18 @@ class PaperPublishTests(unittest.TestCase):
                 return ""
             return ""
 
+        def verify_pr(*_args, **_kwargs):
+            nonlocal pr_verified
+            pr_verified = True
+            return MERGE_SHA, URL
+
+        def latest_main():
+            self.assertTrue(pr_verified, "main must be refreshed after PR verification")
+            return "d" * 40
+
         with (
-            patch.object(publisher, "fetch_main", return_value=MAIN_SHA),
-            patch.object(publisher, "verify_merged_pr", return_value=(MERGE_SHA, URL)),
+            patch.object(publisher, "fetch_main", side_effect=latest_main),
+            patch.object(publisher, "verify_merged_pr", side_effect=verify_pr),
             patch.object(publish, "is_ancestor", return_value=True),
             patch.object(publish, "changelog_at", side_effect=[CHANGELOG, altered]),
             patch.object(publish, "git_tags", return_value=["v0.2.2"]),
@@ -957,7 +967,9 @@ class PaperPublishTests(unittest.TestCase):
         with (
             patch.object(publish, "git", return_value=MERGE_SHA) as git,
             patch.object(publisher, "fetch_main", return_value=MAIN_SHA),
+            patch.object(publisher, "verify_merged_pr", return_value=(MERGE_SHA, URL)),
             patch.object(publish, "is_ancestor", return_value=False),
+            patch.object(publish, "changelog_at", return_value=CHANGELOG),
             self.assertRaisesRegex(publish.PublishError, "not an ancestor"),
         ):
             publisher.finalize(VERSION, MERGE_SHA, 42)

@@ -312,6 +312,56 @@ class PublicationIntegrityTests(unittest.TestCase):
             publication.check_publication()
         pending.assert_not_called()
 
+    def test_confirmed_previous_release_defect_precedes_unavailable_draft_provenance(self):
+        candidate = {"draft": True}
+        with (
+            patch.object(
+                publication,
+                "prior_release_data",
+                return_value=("0.2.2", CHANGELOG),
+            ),
+            patch.object(
+                publication,
+                "check_published_release",
+                side_effect=publication.Mismatch("previous published PDF is corrupt"),
+            ),
+            patch.object(
+                publication,
+                "verified_pending_release",
+                side_effect=publication.Unavailable("release PR API unavailable"),
+            ) as pending,
+            self.assertRaisesRegex(publication.Mismatch, "previous published PDF is corrupt"),
+        ):
+            publication.check_pending_release(MAIN_SHA, "0.2.3", CHANGELOG, CHANGELOG, candidate)
+        pending.assert_not_called()
+
+    def test_confirmed_prior_defect_precedes_unavailable_draft_release_api(self):
+        current = CHANGELOG.replace("0.2.2", "0.2.3")
+        with (
+            patch.object(
+                publication,
+                "publication_snapshot",
+                return_value=(MAIN_SHA, "0.2.3", current, current),
+            ),
+            patch.object(
+                publication,
+                "api_release",
+                side_effect=publication.Unavailable("draft release API unavailable"),
+            ),
+            patch.object(
+                publication,
+                "prior_release_data",
+                return_value=("0.2.2", CHANGELOG),
+            ),
+            patch.object(
+                publication,
+                "check_published_release",
+                side_effect=publication.Mismatch("previous published PDF is corrupt"),
+            ),
+            self.assertRaisesRegex(publication.Mismatch, "previous published PDF is corrupt"),
+        ):
+            publication.check_publication()
+
     def test_pending_release_pr_requires_exact_identity_files_ancestry_and_promotion(
         self,
     ):
@@ -368,7 +418,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             raise AssertionError(url)
 
         with (
-            patch.object(publication, "fetch", side_effect=fetch),
+            patch.object(publication, "fetch", side_effect=fetch) as fetch_api,
             patch.object(
                 publication,
                 "verify_exact_promotion",
@@ -385,6 +435,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             evidence = publication.pending_release_pr("0.2.3", MAIN_SHA, promoted)
         self.assertEqual(evidence["number"], 42)
         verify.assert_called_once_with("0.2.3", "d" * 40, promoted)
+        self.assertTrue(any("/check-runs?" in call.args[0] for call in fetch_api.call_args_list))
 
     def test_draft_asset_absence_is_pending_only_when_explicitly_allowed(self):
         data = release()
@@ -458,6 +509,12 @@ class PublicationIntegrityTests(unittest.TestCase):
                 return_value={"number": 42, "merge_sha": "d" * 40},
             ),
             patch.object(publication, "existing_tag_commit", return_value="e" * 40),
+            patch.object(
+                publication,
+                "prior_release_data",
+                return_value=("0.2.2", CHANGELOG),
+            ),
+            patch.object(publication, "check_published_release", return_value="v0.2.2 intact"),
             self.assertRaisesRegex(publication.Mismatch, "not verified PR merge"),
         ):
             publication.check_pending_release(MAIN_SHA, "0.2.3", CHANGELOG, CHANGELOG, None)
@@ -465,14 +522,40 @@ class PublicationIntegrityTests(unittest.TestCase):
     def test_published_release_requires_verified_tag_provenance_except_legacy_release(self):
         evidence = {"number": 42, "merge_sha": "d" * 40}
         with (
-            patch.object(publication, "pending_release_pr", return_value=evidence),
+            patch.object(publication, "verified_release_pr", return_value=evidence) as verified,
             patch.object(publication, "existing_tag_commit", return_value="e" * 40),
+            patch.object(publication, "pending_release_checks") as checks,
             self.assertRaisesRegex(publication.Mismatch, "not verified PR merge"),
         ):
             publication.verify_published_tag_provenance(MAIN_SHA, "0.2.3", CHANGELOG)
-        with patch.object(publication, "pending_release_pr") as pending:
+        verified.assert_called_once_with("0.2.3", MAIN_SHA, CHANGELOG, require_checks=False)
+        checks.assert_not_called()
+        with patch.object(publication, "verified_release_pr") as pending:
             publication.verify_published_tag_provenance(MAIN_SHA, "0.2.2", CHANGELOG)
             pending.assert_not_called()
+
+    def test_completed_release_pr_verification_does_not_require_expired_checks(self):
+        pr = {"number": 42}
+        with (
+            patch.object(publication, "pending_release_candidate", return_value=pr),
+            patch.object(
+                publication,
+                "pending_release_identity",
+                return_value=("d" * 40, "e" * 40),
+            ),
+            patch.object(publication, "validate_pending_release_files"),
+            patch.object(publication, "pending_release_changelog", return_value=True),
+            patch.object(
+                publication,
+                "pending_release_checks",
+                side_effect=AssertionError("completed releases must not query expiring checks"),
+            ) as checks,
+        ):
+            evidence = publication.verified_release_pr(
+                "0.2.3", MAIN_SHA, CHANGELOG, require_checks=False
+            )
+        self.assertEqual(evidence, {"number": 42, "merge_sha": "d" * 40})
+        checks.assert_not_called()
 
     def test_pending_required_check_evidence_is_paginated_and_complete(self):
         complete = [
