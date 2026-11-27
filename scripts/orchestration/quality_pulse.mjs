@@ -10,6 +10,7 @@ import {
 
 const dimensions = [
   { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'common-code-quality' },
+  { name: 'Common: Coherence Integrity', file: 'common-coherence-integrity.yml', job: 'common-coherence-integrity' },
   { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'common-dependency-security' },
   { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build-integrity' },
   { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'site-link-integrity' },

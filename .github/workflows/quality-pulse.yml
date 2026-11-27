@@ -19,6 +19,12 @@ jobs:
     permissions:
       contents: read
 
+  common-coherence-integrity:
+    name: "Common: Coherence Integrity"
+    uses: ./.github/workflows/common-coherence-integrity.yml
+    permissions:
+      contents: read
+
   common-dependency-security:
     name: "Common: Dependency Security"
     uses: ./.github/workflows/common-dependency-security.yml
@@ -94,6 +100,7 @@ jobs:
     if: ${{ always() && !cancelled() }}
     needs:
       - common-code-quality
+      - common-coherence-integrity
       - common-dependency-security
       - site-build-integrity
       - site-link-integrity

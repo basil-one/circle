@@ -36,7 +36,8 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 
 | Capability | Purpose |
 | --- | --- |
-| [Common: Code Quality](workflows/common-code-quality.yml) | Source quality, workflow correctness, coherence integrity, and maintainability. Function complexity is capped at 10. |
+| [Common: Code Quality](workflows/common-code-quality.yml) | Source quality, workflow correctness, and maintainability. Function complexity is capped at 10. |
+| [Common: Coherence Integrity](workflows/common-coherence-integrity.yml) | Conceptual integrity of repository organization, conventions, and architectural relationships. |
 | [Common: Dependency Security](workflows/common-dependency-security.yml) | Dependency changes and open vulnerability alerts at moderate severity or higher. |
 | [Site: Build Integrity](workflows/site-build-integrity.yml) | Successful production website generation. |
 | [Site: Link Integrity](workflows/site-link-integrity.yml) | Internal links, fragments, assets, and external destinations; uncertain external responses are reported as advisories. |

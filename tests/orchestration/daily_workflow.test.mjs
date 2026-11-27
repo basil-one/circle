@@ -5,6 +5,7 @@ import test from 'node:test';
 const workflowDirectory = new URL('../../.github/workflows/', import.meta.url);
 const children = [
   ['common-code-quality.yml', 'common-code-quality'],
+  ['common-coherence-integrity.yml', 'common-coherence-integrity'],
   ['common-dependency-security.yml', 'common-dependency-security'],
   ['site-build-integrity.yml', 'site-build-integrity'],
   ['site-link-integrity.yml', 'site-link-integrity'],
@@ -18,7 +19,7 @@ const children = [
   ['paper-publication-integrity.yml', 'paper-publication-integrity']
 ];
 
-test('one daily workflow owns the schedule and calls all twelve reusable checks', async () => {
+test('one daily workflow owns the schedule and calls all thirteen reusable checks', async () => {
   const files = await readdir(workflowDirectory);
   const scheduled = [];
   for (const file of files.filter((name) => name.endsWith('.yml'))) {
@@ -55,6 +56,7 @@ test('Pulse waits for every substantive result and preserves least-privilege per
   assert.match(pulse, /actions: read/);
   assert.match(pulse, /contents: read/);
   assert.match(orchestrator, /common-dependency-security:\n    name: "Common: Dependency Security"\n    uses: \.\/\.github\/workflows\/common-dependency-security\.yml\n    permissions:\n      contents: read\n      vulnerability-alerts: read/);
+  assert.match(orchestrator, /common-coherence-integrity:\n    name: "Common: Coherence Integrity"\n    uses: \.\/\.github\/workflows\/common-coherence-integrity\.yml\n    permissions:\n      contents: read/);
   assert.match(orchestrator, /site-performance-integrity:\n    name: "Site: Performance Integrity"\n    uses: \.\/\.github\/workflows\/site-performance-integrity\.yml\n    with:\n      caller_event_name: \$\{\{ github\.event_name \}\}\n    permissions:\n      actions: read\n      contents: read/);
   assert.match(orchestrator, /group: daily-quality-\$\{\{ github\.ref \}\}\n  cancel-in-progress: false/);
   for (const [file, group] of [

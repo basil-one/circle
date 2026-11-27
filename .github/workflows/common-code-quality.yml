@@ -66,8 +66,8 @@ jobs:
       - name: Test daily quality orchestration and Pulse
         id: pulse_tests
         run: npm run test:quality-pulse
-      - name: Test required-check contracts
-        id: repository_contracts
+      - name: Test workflow and operational contracts
+        id: workflow_contracts
         run: npm run test:required-checks
       - name: Test paper release logic
         id: paper_release_tests
@@ -92,7 +92,7 @@ jobs:
           ACTIONS_OUTCOME: ${{ steps.jactionlint.outcome }}
           INVALID_PERMISSIONS_OUTCOME: ${{ steps.invalid_permissions.outcome }}
           PULSE_TESTS_OUTCOME: ${{ steps.pulse_tests.outcome }}
-          CONTRACTS_OUTCOME: ${{ steps.repository_contracts.outcome }}
+          WORKFLOW_CONTRACTS_OUTCOME: ${{ steps.workflow_contracts.outcome }}
           PAPER_RELEASE_OUTCOME: ${{ steps.paper_release_tests.outcome }}
           PUBLICATION_OUTCOME: ${{ steps.publication_tests.outcome }}
           ROUTE_TESTS_OUTCOME: ${{ steps.route_tests.outcome }}
@@ -115,7 +115,7 @@ jobs:
             summary_outcome "$ACTIONS_OUTCOME" "GitHub Actions validation (jactionlint)"
             summary_outcome "$INVALID_PERMISSIONS_OUTCOME" "Invalid permission fixture rejected with the expected diagnostic"
             summary_outcome "$PULSE_TESTS_OUTCOME" "Quality Pulse and daily orchestration tests"
-            summary_outcome "$CONTRACTS_OUTCOME" "Coherence, workflow, and repository contracts"
+            summary_outcome "$WORKFLOW_CONTRACTS_OUTCOME" "Workflow, publication, and operational regression contracts"
             summary_outcome "$PAPER_RELEASE_OUTCOME" "Paper release tests"
             summary_outcome "$PUBLICATION_OUTCOME" "Paper publication integrity tests"
             summary_outcome "$ROUTE_TESTS_OUTCOME" "Generated-site route tests"

@@ -720,6 +720,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     'site-link-integrity',
     'site-seo-integrity',
     'common-code-quality',
+    'common-coherence-integrity',
     'common-dependency-security',
     'site-rendering-integrity',
     'site-performance-integrity',
@@ -789,7 +790,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   });
 
   assert.equal(pulse.successful, true);
-  assert.match(pulse.markdown, /All 12 dimensions passed in this cycle/);
+  assert.match(pulse.markdown, /All 13 dimensions passed in this cycle/);
   assert.ok(pulse.markdown.includes(`Validator revision:** \`${'b'.repeat(40)}\``));
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
@@ -807,6 +808,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     .map(([, name]) => name);
   assert.deepEqual(inventory, [
     'Common: Code Quality',
+    'Common: Coherence Integrity',
     'Common: Dependency Security',
     'Site: Build Integrity',
     'Site: Link Integrity',
@@ -854,7 +856,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
     unzipImpl
   });
   assert.equal(siteLinkAdvisory.successful, true);
-  assert.match(siteLinkAdvisory.markdown, /Cycle successful with advisories — 1 of 12 dimensions/);
+  assert.match(siteLinkAdvisory.markdown, /Cycle successful with advisories — 1 of 13 dimensions/);
   assert.match(siteLinkAdvisory.markdown, /\| Site: Link Integrity \| Advisory \|/);
   needs['site-link-integrity'].outputs.status = 'success';
 
@@ -875,7 +877,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
       : unzipImpl(command, args)
   });
   assert.equal(linkAdvisory.successful, true);
-  assert.match(linkAdvisory.markdown, /Cycle successful with advisories — 1 of 12 dimensions/);
+  assert.match(linkAdvisory.markdown, /Cycle successful with advisories — 1 of 13 dimensions/);
   assert.match(linkAdvisory.markdown, /\| Paper: Publication Integrity \| Passed \|/);
   needs['paper-link-integrity'].outputs.status = 'success';
 
@@ -912,7 +914,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(advisoryPulse.successful, false);
   assert.match(advisoryPulse.markdown, /\| Paper: Content Integrity \| Unknown outcome \|/);
   assert.match(advisoryPulse.markdown, /External source timed out; retry/);
-  assert.doesNotMatch(advisoryPulse.markdown, /Cycle successful with advisories|All 11 dimensions passed/);
+  assert.doesNotMatch(advisoryPulse.markdown, /Cycle successful with advisories|All 13 dimensions passed/);
 });
 
 test('paper validator outcomes and bounded reports never infer a pass', () => {
@@ -1004,6 +1006,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
       'site-link-integrity': { result: 'skipped' },
       'site-seo-integrity': { result: 'cancelled' },
       'common-code-quality': { result: 'unexpected' },
+      'common-coherence-integrity': { result: 'skipped' },
       'common-dependency-security': { result: 'skipped' },
       'site-rendering-integrity': { result: 'skipped' },
       'site-performance-integrity': { result: 'skipped' },
@@ -1020,7 +1023,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
     }
   });
   assert.equal(pulse.successful, false);
-  assert.match(pulse.markdown, /Cycle incomplete — 12 of 12 dimensions/);
+  assert.match(pulse.markdown, /Cycle incomplete — 13 of 13 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
   assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
@@ -1059,6 +1062,7 @@ test('orchestrated Pulse reports confirmed performance detail and distinguishes 
     'site-link-integrity': { result: 'success', outputs: { status: 'success' } },
     'site-seo-integrity': { result: 'success' },
     'common-code-quality': { result: 'success' },
+    'common-coherence-integrity': { result: 'success' },
     'common-dependency-security': { result: 'success' },
     'site-rendering-integrity': { result: 'success' },
     'site-performance-integrity': { result: 'failure' },
@@ -1175,6 +1179,7 @@ test('orchestrated Pulse marks missing same-cycle artifacts unknown rather than 
       'site-link-integrity': { result: 'success', outputs: { status: 'success' } },
       'site-seo-integrity': { result: 'success' },
       'common-code-quality': { result: 'success' },
+      'common-coherence-integrity': { result: 'success' },
       'common-dependency-security': { result: 'success' },
       'site-rendering-integrity': { result: 'success' },
       'site-performance-integrity': { result: 'success' },
