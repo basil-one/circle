@@ -61,7 +61,7 @@ Performance Integrity protects against confirmed budget violations and substanti
 
 ## Coherence Integrity
 
-Sustain conceptual integrity across workflows, code, tests, and documentation. Executable [repository conventions](REPOSITORY_CONVENTIONS.md) protect against architectural drift as humans and agents evolve the system. Human judgment guides simplicity, consistency, and intentional differences.
+Sustain conceptual integrity across workflows, code, tests, and documentation. Executable [repository conventions](CONVENTIONS.md) protect against architectural drift as humans and agents evolve the system. Human judgment guides simplicity, consistency, and intentional differences.
 
 ## Publication
 

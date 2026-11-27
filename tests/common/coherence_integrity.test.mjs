@@ -432,28 +432,28 @@ test('repository architecture, placement, boundaries, and references are enforce
 
   const readme = await readFile(new URL('../../README.md', import.meta.url), 'utf8');
   const quality = await readFile(new URL('../../.github/QUALITY.md', import.meta.url), 'utf8');
-  const conventions = await readFile(new URL('../../.github/REPOSITORY_CONVENTIONS.md', import.meta.url), 'utf8');
+  const conventions = await readFile(new URL('../../.github/CONVENTIONS.md', import.meta.url), 'utf8');
   const scriptsReadme = await readFile(new URL('../../scripts/README.md', import.meta.url), 'utf8');
   const documentationPathErrors = [
     ['README.md', readme],
-    ['.github/REPOSITORY_CONVENTIONS.md', conventions],
+    ['.github/CONVENTIONS.md', conventions],
     ['scripts/README.md', scriptsReadme]
   ].flatMap(([source, contents]) => repositoryPathDiagnostics(source, contents));
   assert.deepEqual(documentationPathErrors, [], documentationPathErrors.join('\n'));
   const jekyllConfig = await readFile(new URL('../../_config.yml', import.meta.url), 'utf8');
   const exclusions = jekyllConfig.match(/^exclude:\n((?:  - .+\n)*)/m)?.[1] ?? '';
-  assert.match(readme, /\.github\/REPOSITORY_CONVENTIONS\.md/);
+  assert.match(readme, /\.github\/CONVENTIONS\.md/);
   assert.match(conventions, /Common → Site → Paper/);
   assert.deepEqual([
     ...markdownLinkDiagnostics('README.md', readme),
     ...markdownLinkDiagnostics('.github/QUALITY.md', quality),
-    ...markdownLinkDiagnostics('.github/REPOSITORY_CONVENTIONS.md', conventions),
+    ...markdownLinkDiagnostics('.github/CONVENTIONS.md', conventions),
     ...markdownLinkDiagnostics('scripts/README.md', scriptsReadme)
   ], []);
   assert.match(
     markdownLinkDiagnostics(
       '.github/QUALITY.md',
-      quality.replace('(REPOSITORY_CONVENTIONS.md)', '(MISSING_CONVENTIONS.md)')
+      quality.replace('(CONVENTIONS.md)', '(MISSING_CONVENTIONS.md)')
     )[0],
     /\.github\/QUALITY\.md: documentation link MISSING_CONVENTIONS\.md does not resolve/
   );

@@ -1,4 +1,4 @@
-# Repository map and checks
+# Repository Conventions
 
 Circle's shared quality practice covers the website and paper. The domains are ordered **Common → Site → Paper**; [Quality Stance](QUALITY.md) describes the capabilities, and this guide describes where their implementation lives.
 
