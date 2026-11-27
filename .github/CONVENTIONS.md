@@ -35,6 +35,10 @@ The order is purposeful, not a template: Site Publish validates and deploys a sa
 - `npm run test:site-routes` and `npm run test:rendering-summary` — generated-route and browser-summary contracts. The browser suite needs a built `_site` and the installed Playwright browser.
 - `bundle exec jekyll build --trace` — production site build.
 
+## Changelog stewardship
+
+Record notable changes in the Unreleased section of [CHANGELOG.md](../CHANGELOG.md) as part of the change that introduces them. Summarize meaningful outcomes rather than individual commits or implementation details. Preserve existing release entries.
+
 ## Sustaining coherence
 
 Common: Coherence Integrity runs the architectural contracts on pull requests and in Quality Pulse. It checks the capability inventory/order and job IDs; resolves direct script, Python module, unittest discovery, package-script, and documented local path references; enforces domain script/test naming and placement; and rejects production imports from tests or across Site/Paper ownership. Common: Code Quality retains workflow correctness, source lint/complexity, and operational regression tests. Site Build verifies that the generated `_site` excludes repository scripts and tests. When changing a capability, consider its relationship to the whole: follow the existing conventions, update affected references and contracts, and make intentional exceptions explicit. Reviewers still judge conceptual simplicity, teaching clarity, and whether a boundary or exception earns its maintenance cost; these are not reducible to a score.
