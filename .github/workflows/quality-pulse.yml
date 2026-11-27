@@ -13,44 +13,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  site-build:
+  site-build-integrity:
     name: "Site: Build Integrity"
     uses: ./.github/workflows/site-build-integrity.yml
     permissions:
       contents: read
 
-  link:
+  site-link-integrity:
     name: "Site: Link Integrity"
     uses: ./.github/workflows/site-link-integrity.yml
     permissions:
       contents: read
 
-  seo:
+  site-seo-integrity:
     name: "Site: SEO Integrity"
     uses: ./.github/workflows/site-seo-integrity.yml
     permissions:
       contents: read
 
-  code-quality:
+  common-code-quality:
     name: "Common: Code Quality"
     uses: ./.github/workflows/common-code-quality.yml
     permissions:
       contents: read
 
-  dependency-security:
+  common-dependency-security:
     name: "Common: Dependency Security"
     uses: ./.github/workflows/common-dependency-security.yml
     permissions:
       contents: read
       vulnerability-alerts: read
 
-  rendering:
+  site-rendering-integrity:
     name: "Site: Rendering Integrity"
     uses: ./.github/workflows/site-rendering-integrity.yml
     permissions:
       contents: read
 
-  performance:
+  site-performance-integrity:
     name: "Site: Performance Integrity"
     uses: ./.github/workflows/site-performance-integrity.yml
     with:
@@ -59,31 +59,31 @@ jobs:
       actions: read
       contents: read
 
-  paper:
+  paper-build-integrity:
     name: "Paper: Build Integrity"
     uses: ./.github/workflows/paper-build-integrity.yml
     permissions:
       contents: read
 
-  paper-content:
+  paper-content-integrity:
     name: "Paper: Content Integrity"
     uses: ./.github/workflows/paper-content-integrity.yml
     permissions:
       contents: read
 
-  paper-link:
+  paper-link-integrity:
     name: "Paper: Link Integrity"
     uses: ./.github/workflows/paper-link-integrity.yml
     permissions:
       contents: read
 
-  paper-rendering:
+  paper-rendering-integrity:
     name: "Paper: Rendering Integrity"
     uses: ./.github/workflows/paper-rendering-integrity.yml
     permissions:
       contents: read
 
-  paper-publication:
+  paper-publication-integrity:
     name: "Paper: Publication Integrity"
     uses: ./.github/workflows/paper-publication-integrity.yml
     permissions:
@@ -93,18 +93,18 @@ jobs:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
     needs:
-      - site-build
-      - link
-      - seo
-      - code-quality
-      - dependency-security
-      - rendering
-      - performance
-      - paper
-      - paper-publication
-      - paper-content
-      - paper-link
-      - paper-rendering
+      - site-build-integrity
+      - site-link-integrity
+      - site-seo-integrity
+      - common-code-quality
+      - common-dependency-security
+      - site-rendering-integrity
+      - site-performance-integrity
+      - paper-build-integrity
+      - paper-publication-integrity
+      - paper-content-integrity
+      - paper-link-integrity
+      - paper-rendering-integrity
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

@@ -117,7 +117,7 @@ test('all eleven current Common, Site, and Paper checks have substantive evidenc
   assert.match(yaml, /STEP_CLASSIFY: \$\{\{ steps\.classify\.outcome \}\}/);
   assert.match(yaml, /STEP_MEASURE: \$\{\{ steps\.measure\.outcome \}\}/);
   const pulse = await readFile(new URL('../.github/workflows/quality-pulse.yml', import.meta.url), 'utf8');
-  assert.match(pulse, /performance:\n    name: "Site: Performance Integrity"\n    uses: \.\/\.github\/workflows\/site-performance-integrity\.yml\n    with:\n      caller_event_name: \$\{\{ github\.event_name \}\}/);
+  assert.match(pulse, /site-performance-integrity:\n    name: "Site: Performance Integrity"\n    uses: \.\/\.github\/workflows\/site-performance-integrity\.yml\n    with:\n      caller_event_name: \$\{\{ github\.event_name \}\}/);
 
   const summary = await readFile(new URL('../scripts/render_site_performance_summary.mjs', import.meta.url), 'utf8');
   assert.match(summary, /performanceMeasurementExitCode/);

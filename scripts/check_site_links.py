@@ -380,7 +380,7 @@ def report_for_site(
     config_path: Path,
     check_externals: bool = True,
     external_delay: float = 0.25,
-) -> tuple[str, int, int]:
+) -> tuple[str, int, int, int]:
     site_url, baseurl, action_links = parse_config(config_path)
     if not site_url:
         raise ValueError(f"{config_path} must define the site's url")
@@ -428,7 +428,10 @@ def report_for_site(
     likely_broken_count = sum(
         category == "likely broken" for category, _ in external_results.values()
     )
-    return "\n".join(lines) + "\n", len(internal), likely_broken_count
+    uncertain_count = sum(
+        category == "uncertain" for category, _ in external_results.values()
+    )
+    return "\n".join(lines) + "\n", len(internal), likely_broken_count, uncertain_count
 
 
 def main() -> int:
@@ -436,18 +439,26 @@ def main() -> int:
     parser.add_argument("--site-dir", type=Path, default=Path("_site"))
     parser.add_argument("--config", type=Path, default=Path("_config.yml"))
     parser.add_argument("--report", type=Path, default=Path("link-audit-report.md"))
+    parser.add_argument("--status-file", type=Path)
     parser.add_argument("--skip-external", action="store_true")
     parser.add_argument("--fail-on-likely-external", action="store_true")
     args = parser.parse_args()
 
     try:
-        report, internal_errors, likely_external_errors = report_for_site(
+        report, internal_errors, likely_external_errors, uncertain_external_errors = report_for_site(
             args.site_dir, args.config, check_externals=not args.skip_external
         )
     except (OSError, ValueError) as error:
         parser.error(str(error))
 
     args.report.write_text(report, encoding="utf-8")
+    if args.status_file:
+        status = (
+            "failure" if internal_errors or likely_external_errors
+            else "advisory" if uncertain_external_errors
+            else "success"
+        )
+        args.status_file.write_text(f"{status}\n", encoding="utf-8")
     print(report, end="")
     return 1 if internal_errors or (args.fail_on_likely_external and likely_external_errors) else 0
 

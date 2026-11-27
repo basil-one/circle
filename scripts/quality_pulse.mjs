@@ -9,18 +9,18 @@ import {
 } from './site_performance_policy.mjs';
 
 const dimensions = [
-  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build' },
-  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'link' },
-  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml', job: 'seo' },
-  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'code-quality' },
-  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'dependency-security' },
-  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'rendering' },
-  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'performance' },
-  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper' },
-  { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content' },
-  { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml', job: 'paper-link' },
-  { name: 'Paper: Rendering Integrity', file: 'paper-rendering-integrity.yml', job: 'paper-rendering' },
-  { name: 'Paper: Publication Integrity', file: 'paper-publication-integrity.yml', job: 'paper-publication' }
+  { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build-integrity' },
+  { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'site-link-integrity' },
+  { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml', job: 'site-seo-integrity' },
+  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'common-code-quality' },
+  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'common-dependency-security' },
+  { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'site-rendering-integrity' },
+  { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'site-performance-integrity' },
+  { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper-build-integrity' },
+  { name: 'Paper: Content Integrity', file: 'paper-content-integrity.yml', job: 'paper-content-integrity' },
+  { name: 'Paper: Link Integrity', file: 'paper-link-integrity.yml', job: 'paper-link-integrity' },
+  { name: 'Paper: Rendering Integrity', file: 'paper-rendering-integrity.yml', job: 'paper-rendering-integrity' },
+  { name: 'Paper: Publication Integrity', file: 'paper-publication-integrity.yml', job: 'paper-publication-integrity' }
 ];
 
 const cutoffTime = '18:00:00Z';
@@ -710,6 +710,36 @@ function orchestratedJobResult(needs, jobId, name, run) {
   };
 }
 
+function siteLinkResult(needs, run) {
+  const jobId = 'site-link-integrity';
+  const item = orchestratedJobResult(needs, jobId, 'Site: Link Integrity', run);
+  if (!needs || !Object.hasOwn(needs, jobId)) return item;
+  const job = needs[jobId]?.result;
+  const status = needs[jobId]?.outputs?.status;
+  const outcomes = {
+    success: ['fresh', 'Passed', 'The substantive check completed successfully in this cycle.'],
+    advisory: ['advisory', 'Advisory', 'Verification completed with uncertain external responses; review the reported findings.'],
+    failure: ['failed', 'Failed', 'Confirmed link defects require correction; inspect the audit report.'],
+    incomplete: ['incomplete', 'Incomplete / link verification', 'Link verification did not establish complete evidence; inspect the job and rerun.']
+  };
+  if (job === 'success' && ['success', 'advisory'].includes(status)) {
+    const [state, label, detail] = outcomes[status];
+    return { name: 'Site: Link Integrity', result: { state, label, run, detail } };
+  }
+  if (job === 'failure' && status === 'failure') {
+    const [state, label, detail] = outcomes.failure;
+    return { name: 'Site: Link Integrity', result: { state, label, run, detail } };
+  }
+  if ((job === 'failure' && [undefined, 'incomplete'].includes(status)) || job === 'cancelled') {
+    const [state, label, detail] = outcomes.incomplete;
+    return { name: 'Site: Link Integrity', result: { state, label, run, detail } };
+  }
+  item.result.state = 'unknown';
+  item.result.label = 'Unknown / link evidence unavailable';
+  item.result.detail = 'Site Link job and audit outcomes are missing or contradictory; no pass is inferred.';
+  return item;
+}
+
 function paperValidatorResult(name, job, status, run) {
   const domain = name.replace(/^Paper: /, '').replace(/ Integrity$/, '').toLowerCase();
   const result = orchestratedJobResult(
@@ -807,19 +837,21 @@ async function buildOrchestratedPulse({
     html_url: runUrl,
     cycle: true
   };
-  const results = dimensions.filter((dimension) => !['paper-content', 'paper-link', 'paper-rendering'].includes(dimension.job)).map(({ job, name }) =>
-    orchestratedJobResult(needs, job, name, run)
-  );
+  const results = dimensions
+    .filter((dimension) => !['paper-content-integrity', 'paper-link-integrity', 'paper-rendering-integrity'].includes(dimension.job))
+    .map(({ job, name }) => job === 'site-link-integrity'
+      ? siteLinkResult(needs, run)
+      : orchestratedJobResult(needs, job, name, run));
   const publication = results.find((item) => item.name === 'Paper: Publication Integrity');
   if (!['fresh', 'failed'].includes(publication.result.state) &&
-      needs['paper-publication']?.outputs?.status === 'failed') {
+      needs['paper-publication-integrity']?.outputs?.status === 'failed') {
     publication.result.state = 'failed';
     publication.result.label = 'Failed';
     publication.result.detail = 'The publication validator reported a defect with incomplete job evidence; inspect and rerun.';
   }
   if (['fresh', 'failed'].includes(publication.result.state)) {
     const { status, detail, main_sha: mainSha, validator_sha: validatorSha } =
-      needs['paper-publication']?.outputs ?? {};
+      needs['paper-publication-integrity']?.outputs ?? {};
     const validDetail = typeof detail === 'string' && detail.trim().length > 0 &&
       detail.length <= 1000 && !/[\x00-\x1f\x7f]/.test(detail);
     const isSha = (value) => typeof value === 'string' &&
@@ -847,10 +879,10 @@ async function buildOrchestratedPulse({
     if (coherent && validDetail) {
       publication.result.detail = detail;
     }
-    if (status === 'failed' && needs['paper-publication']?.result === 'success') {
+    if (status === 'failed' && needs['paper-publication-integrity']?.result === 'success') {
       publication.result.detail += ' The job result contradicts the validator; inspect and rerun.';
     }
-    if (status === 'failed' && !['success', 'failure'].includes(needs['paper-publication']?.result)) {
+    if (status === 'failed' && !['success', 'failure'].includes(needs['paper-publication-integrity']?.result)) {
       publication.result.detail += ' The job outcome is incomplete or unavailable; inspect and rerun.';
     }
     if (validProvenance) {
@@ -859,22 +891,22 @@ async function buildOrchestratedPulse({
       publication.result.detail += ' Publication revision provenance is unavailable or inconsistent; inspect and rerun.';
     }
   }
-  const paperContent = needs?.['paper-content']?.outputs?.status;
+  const paperContent = needs?.['paper-content-integrity']?.outputs?.status;
   const content = paperValidatorResult(
-    dimensions.find(({ job }) => job === 'paper-content').name,
-    needs?.['paper-content']?.result, paperContent, run
+    dimensions.find(({ job }) => job === 'paper-content-integrity').name,
+    needs?.['paper-content-integrity']?.result, paperContent, run
   );
   results.push(content);
-  const paperLink = needs?.['paper-link']?.outputs?.status;
+  const paperLink = needs?.['paper-link-integrity']?.outputs?.status;
   const link = paperValidatorResult(
-    dimensions.find(({ job }) => job === 'paper-link').name,
-    needs?.['paper-link']?.result, paperLink, run
+    dimensions.find(({ job }) => job === 'paper-link-integrity').name,
+    needs?.['paper-link-integrity']?.result, paperLink, run
   );
   results.push(link);
-  const paperRendering = needs?.['paper-rendering']?.outputs?.status;
+  const paperRendering = needs?.['paper-rendering-integrity']?.outputs?.status;
   const rendering = paperValidatorResult(
-    dimensions.find(({ job }) => job === 'paper-rendering').name,
-    needs?.['paper-rendering']?.result, paperRendering, run
+    dimensions.find(({ job }) => job === 'paper-rendering-integrity').name,
+    needs?.['paper-rendering-integrity']?.result, paperRendering, run
   );
   results.push(rendering);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
@@ -978,13 +1010,13 @@ async function buildOrchestratedPulse({
     }
   }
   if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(content.result.state)) {
-    await applyPaperReport(content, needs?.['paper-content']?.result, paperContent, artifactOptions, repository, runId, 'paper-content-report');
+    await applyPaperReport(content, needs?.['paper-content-integrity']?.result, paperContent, artifactOptions, repository, runId, 'paper-content-report');
   }
   if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(link.result.state)) {
-    await applyPaperReport(link, needs?.['paper-link']?.result, paperLink, artifactOptions, repository, runId, 'paper-link-report');
+    await applyPaperReport(link, needs?.['paper-link-integrity']?.result, paperLink, artifactOptions, repository, runId, 'paper-link-report');
   }
   if (['fresh', 'failed', 'incomplete', 'advisory', 'unknown'].includes(rendering.result.state)) {
-    await applyPaperReport(rendering, needs?.['paper-rendering']?.result, paperRendering, artifactOptions, repository, runId, 'paper-rendering-report');
+    await applyPaperReport(rendering, needs?.['paper-rendering-integrity']?.result, paperRendering, artifactOptions, repository, runId, 'paper-rendering-report');
   }
 
   const markdown = renderPulse({
@@ -1195,6 +1227,7 @@ export {
   homepageTrendRows,
   isPerformanceComparison,
   paperValidatorResult,
+  siteLinkResult,
   validPaperReport,
   renderPerformanceTrends,
   renderPulse
