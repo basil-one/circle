@@ -837,6 +837,26 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.equal(manualPulse.successful, true);
   assert.match(manualPulse.markdown, /manually dispatched cycle/);
 
+  needs['site-link-integrity'].outputs.status = 'advisory';
+  const siteLinkAdvisory = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    token: 'test-token',
+    needs,
+    runId,
+    runUrl,
+    eventName: 'workflow_dispatch',
+    validatorRevision: 'b'.repeat(40),
+    date,
+    generatedAt: `${date}T06:40:00Z`,
+    fetchImpl,
+    unzipImpl
+  });
+  assert.equal(siteLinkAdvisory.successful, true);
+  assert.match(siteLinkAdvisory.markdown, /Cycle successful with advisories — 1 of 12 dimensions/);
+  assert.match(siteLinkAdvisory.markdown, /\| Site: Link Integrity \| Advisory \|/);
+  needs['site-link-integrity'].outputs.status = 'success';
+
   needs['paper-link-integrity'].outputs.status = 'advisory';
   const linkAdvisory = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',
@@ -928,24 +948,6 @@ test('paper validator outcomes and bounded reports never infer a pass', () => {
     results: [paperValidatorResult('Paper: Link Integrity', 'success', 'advisory', run)]
   });
 
-  test('Site Link Pulse outcomes distinguish advisory, defects, and incomplete evidence', () => {
-    const run = { id: '2', html_url: 'https://example.test/2', cycle: true };
-    for (const [job, status, expected] of [
-      ['success', 'success', 'fresh'],
-      ['success', 'advisory', 'advisory'],
-      ['failure', 'failure', 'failed'],
-      ['failure', undefined, 'incomplete'],
-      ['failure', 'incomplete', 'incomplete'],
-      ['success', undefined, 'unknown'],
-      ['success', 'failure', 'unknown'],
-      ['failure', 'advisory', 'unknown']
-    ]) {
-      const result = siteLinkResult({
-        'site-link-integrity': { result: job, outputs: status === undefined ? undefined : { status } }
-      }, run);
-      assert.equal(result.result.state, expected);
-    }
-  });
   assert.match(advisoryOnly, /Cycle successful with advisories/);
   const mixed = renderPulse({
     date, generatedAt: `${date}T06:40:00Z`, orchestrated: true,
@@ -959,6 +961,36 @@ test('paper validator outcomes and bounded reports never infer a pass', () => {
   assert.match(mixed, /Paper: Link Integrity \| Advisory/);
   assert.match(mixed, /Paper: Content Integrity \| Failed/);
   assert.match(mixed, /Paper: Rendering Integrity \| Incomplete/);
+});
+
+test('Site Link Pulse outcomes preserve defects and distinguish incomplete evidence', () => {
+  const run = { id: '2', html_url: 'https://example.test/2', cycle: true };
+  for (const [job, status, expected] of [
+    ['success', 'success', 'fresh'],
+    ['success', 'advisory', 'advisory'],
+    ['success', 'failure', 'failed'],
+    ['cancelled', 'failure', 'failed'],
+    [undefined, 'failure', 'failed'],
+    ['failure', undefined, 'incomplete'],
+    ['failure', '', 'incomplete'],
+    ['failure', 'incomplete', 'incomplete'],
+    ['cancelled', 'success', 'incomplete'],
+    ['skipped', undefined, 'skipped'],
+    ['success', undefined, 'unknown'],
+    ['success', '', 'unknown'],
+    ['failure', 'advisory', 'unknown']
+  ]) {
+    const result = siteLinkResult({
+      'site-link-integrity': { result: job, outputs: status === undefined ? undefined : { status } }
+    }, run);
+    assert.equal(result.result.state, expected);
+  }
+  assert.match(siteLinkResult({
+    'site-link-integrity': { result: 'success', outputs: { status: 'failure' } }
+  }, run).result.detail, /despite the failed audit status/);
+  assert.match(siteLinkResult({
+    'site-link-integrity': { result: 'cancelled', outputs: { status: 'failure' } }
+  }, run).result.detail, /cancelled after/);
 });
 
 test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or missing jobs as passed', async () => {
@@ -989,7 +1021,7 @@ test('orchestrated Pulse never treats failed, skipped, cancelled, unknown, or mi
   assert.equal(pulse.successful, false);
   assert.match(pulse.markdown, /Cycle incomplete — 12 of 12 dimensions/);
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Failed \|/);
-  assert.match(pulse.markdown, /\| Site: Link Integrity \| Unknown \/ link evidence unavailable \|/);
+  assert.match(pulse.markdown, /\| Site: Link Integrity \| Skipped \|/);
   assert.match(pulse.markdown, /\| Site: SEO Integrity \| Incomplete \/ cancelled \|/);
   assert.match(pulse.markdown, /\| Common: Code Quality \| Unknown outcome \|/);
   assert.match(pulse.markdown, /\| Site: Performance Integrity \| Skipped \|/);

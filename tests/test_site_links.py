@@ -125,6 +125,46 @@ class CheckLinksTests(unittest.TestCase):
         self.assertIn("## Key visitor destinations", report)
         self.assertIn("source pages: /", report)
 
+    def test_confirmed_defect_and_uncertainty_are_both_reported(self):
+        broken = "https://broken.example/missing"
+        uncertain = "https://blocked.example/private"
+        self.write("index.html", f'<a href="{broken}">Broken</a><a href="{uncertain}">Blocked</a>')
+        config = self.root / "_config.yml"
+        config.write_text('url: "https://circle.example"\nbaseurl: ""\n')
+        report_path = self.root / "report.md"
+        status_path = self.root / "status"
+
+        with patch(
+            "scripts.check_site_links.check_external",
+            side_effect=[
+                ("likely broken", "HTTP 404 Not Found"),
+                ("uncertain", "HTTP 403 Forbidden"),
+            ],
+        ):
+            with patch(
+                "sys.argv",
+                [
+                    "check_site_links.py",
+                    "--site-dir",
+                    str(self.site),
+                    "--config",
+                    str(config),
+                    "--report",
+                    str(report_path),
+                    "--status-file",
+                    str(status_path),
+                    "--fail-on-likely-external",
+                ],
+            ):
+                self.assertEqual(main(), 1)
+
+        report = report_path.read_text(encoding="utf-8")
+        self.assertEqual(status_path.read_text(encoding="utf-8").strip(), "failure")
+        self.assertIn("## Likely broken external links", report)
+        self.assertIn(broken, report)
+        self.assertIn("## Uncertain external responses", report)
+        self.assertIn(uncertain, report)
+
     def test_status_file_distinguishes_healthy_advisory_and_failure(self):
         config = self.root / "_config.yml"
         config.write_text('url: "https://circle.example"\nbaseurl: ""\n')

@@ -722,17 +722,49 @@ function siteLinkResult(needs, run) {
     failure: ['failed', 'Failed', 'Confirmed link defects require correction; inspect the audit report.'],
     incomplete: ['incomplete', 'Incomplete / link verification', 'Link verification did not establish complete evidence; inspect the job and rerun.']
   };
+  if (status === 'failure') {
+    item.result.state = 'failed';
+    item.result.label = 'Failed';
+    item.result.detail = 'Confirmed link defects require correction; inspect the audit report.';
+    if (job === 'success') {
+      item.result.detail += ' The job reported success despite the failed audit status.';
+    } else if (job === 'cancelled') {
+      item.result.detail += ' The workflow was cancelled after the audit reported the defect.';
+    } else if (job !== 'failure') {
+      item.result.detail += ' The job outcome is unavailable or contradictory; inspect and rerun.';
+    }
+    return item;
+  }
   if (job === 'success' && ['success', 'advisory'].includes(status)) {
     const [state, label, detail] = outcomes[status];
     return { name: 'Site: Link Integrity', result: { state, label, run, detail } };
   }
-  if (job === 'failure' && status === 'failure') {
-    const [state, label, detail] = outcomes.failure;
-    return { name: 'Site: Link Integrity', result: { state, label, run, detail } };
-  }
-  if ((job === 'failure' && [undefined, 'incomplete'].includes(status)) || job === 'cancelled') {
+  if (job === 'failure' && [undefined, '', 'incomplete'].includes(status)) {
     const [state, label, detail] = outcomes.incomplete;
     return { name: 'Site: Link Integrity', result: { state, label, run, detail } };
+  }
+  if (job === 'cancelled') {
+    const [state, label, detail] = outcomes.incomplete;
+    return {
+      name: 'Site: Link Integrity',
+      result: {
+        state,
+        label,
+        run,
+        detail: `${detail} The workflow was cancelled before a complete status was established.`
+      }
+    };
+  }
+  if (job === 'skipped') {
+    return {
+      name: 'Site: Link Integrity',
+      result: {
+        state: 'skipped',
+        label: 'Skipped',
+        run,
+        detail: 'The Site Link workflow was skipped; confirm the skip was intentional.'
+      }
+    };
   }
   item.result.state = 'unknown';
   item.result.label = 'Unknown / link evidence unavailable';
