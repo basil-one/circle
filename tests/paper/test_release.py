@@ -301,7 +301,9 @@ class PaperReleaseTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             operations = [json.loads(line) for line in gh_log.read_text().splitlines()]
-            uploads = [operation for operation in operations if operation[:2] == ["release", "upload"]]
+            uploads = [
+                operation for operation in operations if operation[:2] == ["release", "upload"]
+            ]
             self.assertEqual(len(uploads), 1)
             self.assertEqual(uploads[0][2], "v0.2.2")
             self.assertEqual(Path(uploads[0][3]).name, "circle3-paper.pdf")
