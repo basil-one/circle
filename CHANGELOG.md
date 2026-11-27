@@ -8,6 +8,19 @@ For licensing, see `LICENSE.md`.
 
 ## [Unreleased]
 
+### Added
+- Established a continuous quality practice across the website and paper, with Common, Site, and Paper quality domains.
+- Introduced Quality Gate safeguards and a daily Quality Pulse with actionable evidence.
+- Added independent verification of paper generation, content, links, rendering, and publication integrity.
+- Established Coherence Integrity to sustain conceptual integrity across human and agent contributions.
+- Documented repository conventions and contributor responsibilities.
+
+### Changed
+- Migrated website publication to a repository-controlled GitHub Actions workflow.
+- Organized supporting scripts, tests, and workflows around consistent architectural boundaries.
+- Strengthened paper publication verification and recovery safeguards.
+- Improved website accessibility, performance safeguards, and dependency security.
+
 ## [0.2.2] - 2026-11-25
 
 ### Changed
