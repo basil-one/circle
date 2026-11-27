@@ -1,4 +1,4 @@
-# Circle3
+# circle.basil.one
 
 Source for [Circle3](https://circle.basil.one), a Jekyll site and paper presenting three guiding moves for leading difficult change.
 
