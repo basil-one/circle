@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { resolve } from "node:path";
-import { discoverHtmlRoutes, responsiveViewports } from "../../../scripts/site/routes.js";
+import {
+  discoverHtmlRoutes,
+  responsiveViewports,
+} from "../../../scripts/site/routes.js";
 import { assertResponsivePage, assertResponsiveTarget } from "./responsive.js";
 
 test.use({ hasTouch: true });
@@ -38,22 +41,22 @@ for (const route of routes) {
       }
 
       const collectionLinks =
-          route === "/moves/"
-            ? [["move entry", page.locator('main a[href^="/moves/"]')]]
-            : route === "/lenses/"
-              ? [["lens entry", page.locator('main a[href^="/lenses/"]')]]
-              : route === "/method/"
-                ? [
-                    [
-                      "collection index",
-                      page.locator(
-                        'main a[href="/moves/"], main a[href="/lenses/"]',
-                      ),
-                    ],
-                  ]
-                : route === "/"
-                  ? [["method page", page.locator('main a[href="/method/"]')]]
-                  : [];
+        route === "/moves/"
+          ? [["move entry", page.locator('main a[href^="/moves/"]')]]
+          : route === "/lenses/"
+            ? [["lens entry", page.locator('main a[href^="/lenses/"]')]]
+            : route === "/method/"
+              ? [
+                  [
+                    "collection index",
+                    page.locator(
+                      'main a[href="/moves/"], main a[href="/lenses/"]',
+                    ),
+                  ],
+                ]
+              : route === "/"
+                ? [["method page", page.locator('main a[href="/method/"]')]]
+                : [];
       for (const [label, locator] of collectionLinks) {
         for (const link of await locator.all()) {
           await assertResponsiveTarget(
