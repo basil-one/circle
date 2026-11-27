@@ -69,6 +69,40 @@ function assertQualityLinks(quality, files) {
   assert.match(files.get('workflows/quality-pulse.yml') ?? '', /^name: Quality Pulse$/m);
 }
 
+function workflowInventoryDiagnostics(actualFiles) {
+  const expectedFiles = new Set([
+    ...capabilities.map(([, path]) => `.github/${path}`),
+    '.github/workflows/quality-pulse.yml'
+  ]);
+  const actual = new Set(actualFiles);
+  const errors = [];
+  for (const path of [...actual].filter((file) => !expectedFiles.has(file)).sort()) {
+    errors.push(`${path}: unregistered workflow; add it to the canonical capability inventory or remove it.`);
+  }
+  for (const path of [...expectedFiles].filter((file) => !actual.has(file)).sort()) {
+    errors.push(`${path}: canonical workflow is missing; restore it or update the capability inventory.`);
+  }
+  return errors;
+}
+
+function coherenceCommandDiagnostics(workflows, packageScripts) {
+  const expectedScript = 'node --test tests/common/coherence_integrity.test.mjs';
+  const command = 'npm run test:coherence-integrity';
+  const errors = [];
+  if (packageScripts['test:coherence-integrity'] !== expectedScript) {
+    errors.push(`package.json: test:coherence-integrity must run ${expectedScript}.`);
+  }
+  const owners = workflows
+    .filter(([, contents]) => contents.includes(command))
+    .map(([file]) => file);
+  if (owners.length !== 1 || owners[0] !== 'common-coherence-integrity.yml') {
+    errors.push(
+      `${command} must be invoked only by common-coherence-integrity.yml; found ${owners.join(', ') || 'no workflow'}.`
+    );
+  }
+  return errors;
+}
+
 function expectedJobIds(file) {
   if (file === 'common-dependency-security.yml') {
     return ['common-dependency-security-review', 'common-dependency-security-posture'];
@@ -267,10 +301,6 @@ test('quality capability table links the canonical workflow inventory', async ()
     )
   ));
   assertQualityLinks(quality, files);
-  assert.match(
-    quality,
-    /\[Common: Coherence Integrity\]\(workflows\/common-coherence-integrity\.yml\) \| Conceptual integrity of repository organization, conventions, and architectural relationships\./
-  );
   assert.doesNotMatch(
     quality,
     /\[Common: Code Quality\][^\n]*coherence integrity/i,
@@ -298,11 +328,21 @@ test('quality capability table links the canonical workflow inventory', async ()
 
 test('repository architecture, placement, boundaries, and references are enforced', async () => {
   const workflowDirectory = new URL('../../.github/workflows/', import.meta.url);
-  const workflowFiles = (await readdir(workflowDirectory)).filter((file) => file.endsWith('.yml'));
+  const workflowFiles = (await readdir(workflowDirectory))
+    .filter((file) => /\.(?:yml|yaml)$/.test(file))
+    .sort();
+  const workflowInventory = workflowFiles.map((file) => `.github/workflows/${file}`);
+  assert.deepEqual(workflowInventoryDiagnostics(workflowInventory), []);
+  assert.match(
+    workflowInventoryDiagnostics([...workflowInventory, '.github/workflows/unregistered-check.yaml'])[0],
+    /\.github\/workflows\/unregistered-check\.yaml: unregistered workflow; add it to the canonical capability inventory or remove it\./
+  );
   const pathErrors = [];
   const repositoryCodeFiles = [...repositoryFiles('scripts'), ...repositoryFiles('tests')];
+  const workflowContents = [];
   for (const file of workflowFiles) {
     const yaml = await readFile(new URL(file, workflowDirectory), 'utf8');
+    workflowContents.push([file, yaml]);
     if (file !== 'quality-pulse.yml') {
       const jobs = yaml.slice(yaml.indexOf('\njobs:\n') + '\njobs:\n'.length);
       const ids = [...jobs.matchAll(/^  ([a-z][a-z0-9-]*):\s*$/gm)].map(([, id]) => id);
@@ -376,6 +416,14 @@ test('repository architecture, placement, boundaries, and references are enforce
   );
 
   const packageJson = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'));
+  assert.deepEqual(coherenceCommandDiagnostics(workflowContents, packageJson.scripts), []);
+  assert.match(
+    coherenceCommandDiagnostics(
+      [...workflowContents, ['common-code-quality.yml', 'run: npm run test:coherence-integrity']],
+      packageJson.scripts
+    )[0],
+    /must be invoked only by common-coherence-integrity\.yml; found common-coherence-integrity\.yml, common-code-quality\.yml/
+  );
   const packageErrors = repositoryPathDiagnostics('package.json', JSON.stringify(packageJson.scripts));
   assert.deepEqual(packageErrors, [], packageErrors.join('\n'));
   const misplaced = placementDiagnostics(repositoryCodeFiles);
@@ -383,6 +431,7 @@ test('repository architecture, placement, boundaries, and references are enforce
   assert.deepEqual([...misplaced, ...boundaries], [], [...misplaced, ...boundaries].join('\n'));
 
   const readme = await readFile(new URL('../../README.md', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../../.github/QUALITY.md', import.meta.url), 'utf8');
   const conventions = await readFile(new URL('../../.github/REPOSITORY_CONVENTIONS.md', import.meta.url), 'utf8');
   const scriptsReadme = await readFile(new URL('../../scripts/README.md', import.meta.url), 'utf8');
   const documentationPathErrors = [
@@ -397,9 +446,17 @@ test('repository architecture, placement, boundaries, and references are enforce
   assert.match(conventions, /Common → Site → Paper/);
   assert.deepEqual([
     ...markdownLinkDiagnostics('README.md', readme),
+    ...markdownLinkDiagnostics('.github/QUALITY.md', quality),
     ...markdownLinkDiagnostics('.github/REPOSITORY_CONVENTIONS.md', conventions),
     ...markdownLinkDiagnostics('scripts/README.md', scriptsReadme)
   ], []);
+  assert.match(
+    markdownLinkDiagnostics(
+      '.github/QUALITY.md',
+      quality.replace('(REPOSITORY_CONVENTIONS.md)', '(MISSING_CONVENTIONS.md)')
+    )[0],
+    /\.github\/QUALITY\.md: documentation link MISSING_CONVENTIONS\.md does not resolve/
+  );
   assert.match(scriptsReadme, /\.github\/QUALITY\.md/);
   assert.match(exclusions, /^  - scripts$/m, 'supporting scripts stay out of the generated site');
   assert.match(exclusions, /^  - tests$/m, 'automated tests stay out of the generated site');
