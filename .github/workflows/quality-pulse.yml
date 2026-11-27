@@ -13,6 +13,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  common-code-quality:
+    name: "Common: Code Quality"
+    uses: ./.github/workflows/common-code-quality.yml
+    permissions:
+      contents: read
+
+  common-dependency-security:
+    name: "Common: Dependency Security"
+    uses: ./.github/workflows/common-dependency-security.yml
+    permissions:
+      contents: read
+      vulnerability-alerts: read
+
   site-build-integrity:
     name: "Site: Build Integrity"
     uses: ./.github/workflows/site-build-integrity.yml
@@ -30,19 +43,6 @@ jobs:
     uses: ./.github/workflows/site-seo-integrity.yml
     permissions:
       contents: read
-
-  common-code-quality:
-    name: "Common: Code Quality"
-    uses: ./.github/workflows/common-code-quality.yml
-    permissions:
-      contents: read
-
-  common-dependency-security:
-    name: "Common: Dependency Security"
-    uses: ./.github/workflows/common-dependency-security.yml
-    permissions:
-      contents: read
-      vulnerability-alerts: read
 
   site-rendering-integrity:
     name: "Site: Rendering Integrity"
@@ -93,18 +93,18 @@ jobs:
     name: Quality Pulse
     if: ${{ always() && !cancelled() }}
     needs:
+      - common-code-quality
+      - common-dependency-security
       - site-build-integrity
       - site-link-integrity
       - site-seo-integrity
-      - common-code-quality
-      - common-dependency-security
       - site-rendering-integrity
       - site-performance-integrity
       - paper-build-integrity
-      - paper-publication-integrity
       - paper-content-integrity
       - paper-link-integrity
       - paper-rendering-integrity
+      - paper-publication-integrity
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

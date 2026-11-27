@@ -802,6 +802,22 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
   assert.match(pulse.markdown, /actions\/runs\/888\/artifacts\/457/);
   assert.match(pulse.markdown, /No fixed wall-clock completion cutoff is applied/);
   assert.doesNotMatch(pulse.markdown, /18:00:00Z|prior verification/);
+  const inventory = [...pulse.markdown.matchAll(/^\| ([^|]+) \| (?:Passed|Advisory|Failed|Unknown|Incomplete)/gm)]
+    .map(([, name]) => name);
+  assert.deepEqual(inventory, [
+    'Common: Code Quality',
+    'Common: Dependency Security',
+    'Site: Build Integrity',
+    'Site: Link Integrity',
+    'Site: SEO Integrity',
+    'Site: Rendering Integrity',
+    'Site: Performance Integrity',
+    'Paper: Build Integrity',
+    'Paper: Content Integrity',
+    'Paper: Link Integrity',
+    'Paper: Rendering Integrity',
+    'Paper: Publication Integrity'
+  ]);
 
   performanceSummary.source.eventName = 'workflow_dispatch';
   const manualPulse = await buildOrchestratedPulse({

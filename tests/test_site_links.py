@@ -136,7 +136,9 @@ class CheckLinksTests(unittest.TestCase):
             ("https://broken.example/path", "failure"),
         ):
             self.write("index.html", f'<a href="{destination}">External</a>')
-            category = {"success": "healthy", "advisory": "uncertain", "failure": "likely broken"}[expected]
+            category = {"success": "healthy", "advisory": "uncertain", "failure": "likely broken"}[
+                expected
+            ]
             with patch(
                 "scripts.check_site_links.check_external",
                 return_value=(category, "HTTP 200" if expected == "success" else "HTTP 403"),

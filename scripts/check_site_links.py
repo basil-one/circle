@@ -428,9 +428,7 @@ def report_for_site(
     likely_broken_count = sum(
         category == "likely broken" for category, _ in external_results.values()
     )
-    uncertain_count = sum(
-        category == "uncertain" for category, _ in external_results.values()
-    )
+    uncertain_count = sum(category == "uncertain" for category, _ in external_results.values())
     return "\n".join(lines) + "\n", len(internal), likely_broken_count, uncertain_count
 
 
@@ -445,8 +443,8 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        report, internal_errors, likely_external_errors, uncertain_external_errors = report_for_site(
-            args.site_dir, args.config, check_externals=not args.skip_external
+        report, internal_errors, likely_external_errors, uncertain_external_errors = (
+            report_for_site(args.site_dir, args.config, check_externals=not args.skip_external)
         )
     except (OSError, ValueError) as error:
         parser.error(str(error))
@@ -454,8 +452,10 @@ def main() -> int:
     args.report.write_text(report, encoding="utf-8")
     if args.status_file:
         status = (
-            "failure" if internal_errors or likely_external_errors
-            else "advisory" if uncertain_external_errors
+            "failure"
+            if internal_errors or likely_external_errors
+            else "advisory"
+            if uncertain_external_errors
             else "success"
         )
         args.status_file.write_text(f"{status}\n", encoding="utf-8")

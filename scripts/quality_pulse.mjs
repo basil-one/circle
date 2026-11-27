@@ -9,11 +9,11 @@ import {
 } from './site_performance_policy.mjs';
 
 const dimensions = [
+  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'common-code-quality' },
+  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'common-dependency-security' },
   { name: 'Site: Build Integrity', file: 'site-build-integrity.yml', job: 'site-build-integrity' },
   { name: 'Site: Link Integrity', file: 'site-link-integrity.yml', job: 'site-link-integrity' },
   { name: 'Site: SEO Integrity', file: 'site-seo-integrity.yml', job: 'site-seo-integrity' },
-  { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'common-code-quality' },
-  { name: 'Common: Dependency Security', file: 'common-dependency-security.yml', job: 'common-dependency-security' },
   { name: 'Site: Rendering Integrity', file: 'site-rendering-integrity.yml', job: 'site-rendering-integrity' },
   { name: 'Site: Performance Integrity', file: 'site-performance-integrity.yml', job: 'site-performance-integrity' },
   { name: 'Paper: Build Integrity', file: 'paper-build-integrity.yml', job: 'paper-build-integrity' },
@@ -909,6 +909,8 @@ async function buildOrchestratedPulse({
     needs?.['paper-rendering-integrity']?.result, paperRendering, run
   );
   results.push(rendering);
+  results.splice(results.indexOf(publication), 1);
+  results.push(publication);
   const artifactOptions = { apiUrl, repository, token, runId, fetchImpl, unzipImpl };
   const performance = results.find((item) => item.name === 'Site: Performance Integrity');
   if (['fresh', 'failed'].includes(performance.result.state)) {

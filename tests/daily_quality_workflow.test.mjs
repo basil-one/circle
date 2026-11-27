@@ -4,11 +4,11 @@ import test from 'node:test';
 
 const workflowDirectory = new URL('../.github/workflows/', import.meta.url);
 const children = [
+  ['common-code-quality.yml', 'common-code-quality'],
+  ['common-dependency-security.yml', 'common-dependency-security'],
   ['site-build-integrity.yml', 'site-build-integrity'],
   ['site-link-integrity.yml', 'site-link-integrity'],
   ['site-seo-integrity.yml', 'site-seo-integrity'],
-  ['common-code-quality.yml', 'common-code-quality'],
-  ['common-dependency-security.yml', 'common-dependency-security'],
   ['site-rendering-integrity.yml', 'site-rendering-integrity'],
   ['site-performance-integrity.yml', 'site-performance-integrity'],
   ['paper-build-integrity.yml', 'paper-build-integrity'],
@@ -30,6 +30,9 @@ test('one daily workflow owns the schedule and calls all twelve reusable checks'
   const orchestrator = await readFile(new URL('quality-pulse.yml', workflowDirectory), 'utf8');
   assert.match(orchestrator, /cron: '17 3 \* \* \*'/);
   assert.match(orchestrator, /^  workflow_dispatch:$/m);
+  const jobIds = [...orchestrator.matchAll(/^  ([a-z][a-z0-9-]+):\n    name:/gm)]
+    .map(([, jobId]) => jobId).filter((jobId) => jobId !== 'pulse');
+  assert.deepEqual(jobIds, children.map(([, jobId]) => jobId));
   for (const [file, jobId] of children) {
     assert.equal(file.replace(/\.yml$/, ''), jobId, `${file} uses its filename stem as the Pulse job ID`);
     const child = await readFile(new URL(file, workflowDirectory), 'utf8');
@@ -46,6 +49,8 @@ test('Pulse waits for every substantive result and preserves least-privilege per
   for (const [, jobId] of children) {
     assert.match(pulse, new RegExp(`^      - ${jobId}$`, 'm'));
   }
+  const needs = [...pulse.matchAll(/^      - ([a-z][a-z0-9-]+)$/gm)].map(([, jobId]) => jobId);
+  assert.deepEqual(needs, children.map(([, jobId]) => jobId));
   assert.match(pulse, /PULSE_RESULTS_JSON: \$\{\{ toJSON\(needs\) \}\}/);
   assert.match(pulse, /actions: read/);
   assert.match(pulse, /contents: read/);
