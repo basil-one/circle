@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import test from 'node:test';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -141,7 +143,9 @@ function repositoryPathDiagnostics(source, contents) {
   for (const [path] of contents.matchAll(/\b(?:scripts|tests)\/[A-Za-z0-9_./*-]+/g)) {
     addPath(path);
   }
-  for (const [, moduleName] of contents.matchAll(/\bpython(?:3)?\s+-m\s+(scripts(?:\.[A-Za-z_]\w*)+)\b/g)) {
+  const moduleInvocation =
+    /(?:["'](?:[^"'\n]*\/)?python(?:3)?["']|(?:[^\s"'=]*\/)?python(?:3)?)\s+-m\s+(scripts(?:\.[A-Za-z_]\w*)+)\b/g;
+  for (const [, moduleName] of contents.matchAll(moduleInvocation)) {
     const modulePath = `${moduleName.replaceAll('.', '/')}.py`;
     if (!existsSync(resolve(repositoryRoot, modulePath))) {
       errors.push(`${source}: Python module ${moduleName} does not resolve to ${modulePath}; correct the -m invocation.`);
@@ -163,13 +167,36 @@ function repositoryPathDiagnostics(source, contents) {
     }
     const matches = repositoryFiles(startPath).filter((path) => {
       const relativePath = path.slice(startPath.length + 1);
-      return !relativePath.includes('/') && globRegex(pattern).test(relativePath);
+      return (
+        !relativePath.includes('/') &&
+        /^test_[a-z][a-z0-9_]*\.py$/.test(relativePath) &&
+        globRegex(pattern).test(relativePath)
+      );
     });
     if (matches.length === 0) {
       errors.push(`${source}: unittest discovery ${startPath} with pattern ${pattern} matches no tests; correct the directory or pattern.`);
     }
   }
   return [...new Set(errors)];
+}
+
+function workflowRunScript(contents, stepName) {
+  const step = contents.indexOf(`      - name: ${stepName}\n`);
+  assert.notEqual(step, -1, `workflow contains step ${stepName}`);
+  const run = contents.indexOf('        run: |\n', step);
+  assert.notEqual(run, -1, `step ${stepName} contains a shell block`);
+  const lines = contents.slice(run + '        run: |\n'.length).split('\n');
+  const script = [];
+  for (const line of lines) {
+    if (line === '') {
+      script.push('');
+    } else if (line.startsWith('          ')) {
+      script.push(line.slice(10));
+    } else {
+      break;
+    }
+  }
+  return script.join('\n');
 }
 
 function isTestFile(path) {
@@ -352,9 +379,31 @@ test('workflow IDs, script references, test placement, and developer navigation 
     repositoryPathDiagnostics('fixture.yml', 'run: python3 -m scripts.paper.missing_check')[0],
     /Python module scripts\.paper\.missing_check does not resolve/
   );
+  assert.deepEqual(
+    repositoryPathDiagnostics(
+      'fixture.yml',
+      'run: "$RUNNER_TEMP/paper-links-venv/bin/python" -m scripts.paper.check_links'
+    ),
+    []
+  );
+  assert.match(
+    repositoryPathDiagnostics(
+      'fixture.yml',
+      'run: "$RUNNER_TEMP/paper-links-venv/bin/python" -m scripts.paper.missing_check'
+    )[0],
+    /Python module scripts\.paper\.missing_check does not resolve/
+  );
   assert.match(
     repositoryPathDiagnostics('fixture.yml', "run: python3 -m unittest discover -s tests/paper -p 'test_missing_*.py'")[0],
     /unittest discovery tests\/paper with pattern test_missing_\*\.py matches no tests/
+  );
+  assert.match(
+    repositoryPathDiagnostics('fixture.yml', "run: python3 -m unittest discover -s scripts/paper -p 'check_links.py'")[0],
+    /unittest discovery scripts\/paper with pattern check_links\.py matches no tests/
+  );
+  assert.match(
+    repositoryPathDiagnostics('fixture.yml', "run: python3 -m unittest discover -s tests/site -p '*.test.mjs'")[0],
+    /unittest discovery tests\/site with pattern \*\.test\.mjs matches no tests/
   );
   assert.match(
     repositoryPathDiagnostics('fixture.yml', 'run: npm run missing-contract-test')[0],
@@ -413,6 +462,68 @@ test('workflow IDs, script references, test placement, and developer navigation 
   assert.match(scriptsReadme, /\.github\/QUALITY\.md/);
   assert.match(exclusions, /^  - scripts$/m, 'supporting scripts stay out of the generated site');
   assert.match(exclusions, /^  - tests$/m, 'automated tests stay out of the generated site');
+});
+
+test('Paper Link summary distinguishes audit results from supporting evidence', async () => {
+  const workflow = await readFile(new URL('../../.github/workflows/paper-link-integrity.yml', import.meta.url), 'utf8');
+  const script = workflowRunScript(workflow, 'Summarize link integrity');
+  const directory = mkdtempSync(join(tmpdir(), 'paper-link-summary-'));
+  const runnerTemp = join(directory, 'runner');
+  mkdirSync(runnerTemp);
+  const summaryPath = join(directory, 'summary.md');
+  const summarize = (overrides = {}) => {
+    writeFileSync(summaryPath, '');
+    execFileSync('bash', ['-c', script], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        SOURCE_SHA: 'fixture-sha',
+        BUILD_OUTCOME: 'success',
+        TOOLS_OUTCOME: 'success',
+        AUDIT_OUTCOME: 'success',
+        AUDIT_STATUS: 'success',
+        TEST_OUTCOME: 'success',
+        UPLOAD_OUTCOME: 'success',
+        ARTIFACT_URL: 'https://example.test/paper-link-report',
+        RUNNER_TEMP: runnerTemp,
+        GITHUB_STEP_SUMMARY: summaryPath,
+        ...overrides
+      }
+    });
+    const summary = readFileSync(summaryPath, 'utf8');
+    return summary.match(/- Overall verification: \*\*([^*]+)\*\*/)?.[1];
+  };
+
+  try {
+    assert.equal(summarize(), 'passed');
+    assert.equal(summarize({ AUDIT_STATUS: 'advisory' }), 'advisory');
+    assert.equal(
+      summarize({
+        AUDIT_STATUS: 'failure',
+        AUDIT_OUTCOME: 'failure',
+        BUILD_OUTCOME: 'failure',
+        TOOLS_OUTCOME: 'failure',
+        TEST_OUTCOME: 'skipped',
+        UPLOAD_OUTCOME: 'failure'
+      }),
+      'failed'
+    );
+    for (const overrides of [
+      { BUILD_OUTCOME: 'failure', AUDIT_OUTCOME: 'skipped', AUDIT_STATUS: '' },
+      { TOOLS_OUTCOME: 'failure', AUDIT_OUTCOME: 'skipped', AUDIT_STATUS: '' },
+      { TEST_OUTCOME: 'failure' },
+      { UPLOAD_OUTCOME: 'failure' },
+      { TEST_OUTCOME: 'skipped' }
+    ]) {
+      assert.equal(summarize(overrides), 'incomplete');
+    }
+    assert.equal(
+      summarize({ AUDIT_OUTCOME: 'skipped', AUDIT_STATUS: '', TOOLS_OUTCOME: 'success' }),
+      'incomplete'
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test('all eleven current Common, Site, and Paper checks have substantive evidence semantics', async () => {

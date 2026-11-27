@@ -103,18 +103,18 @@ jobs:
             step_outcome "${TOOLS_OUTCOME:-unknown}" "PDF link audit tools"
             step_outcome "${TEST_OUTCOME:-unknown}" "Link auditor tests"
             step_outcome "${UPLOAD_OUTCOME:-unknown}" "Report upload"
-            if [ "$AUDIT_STATUS" = failure ] || [ "$BUILD_OUTCOME" = failure ] || [ "$TOOLS_OUTCOME" = failure ] || [ "$TEST_OUTCOME" = failure ] || [ "$UPLOAD_OUTCOME" = failure ]; then
+            if [ "$AUDIT_STATUS" = failure ]; then
               echo "- Overall verification: **failed**; confirmed defects take precedence over incomplete evidence."
             elif [ "$AUDIT_STATUS" = incomplete ] || [ "$AUDIT_OUTCOME" != success ]; then
               echo "- Overall verification: **incomplete**; the audit did not establish a pass or advisory."
-            elif [ "$BUILD_OUTCOME" = success ] && [ "$TOOLS_OUTCOME" = success ] && [ "$TEST_OUTCOME" = success ] && [ "$UPLOAD_OUTCOME" = success ] && [ "$AUDIT_OUTCOME" = success ]; then
+            elif [ "$BUILD_OUTCOME" != success ] || [ "$TOOLS_OUTCOME" != success ] || [ "$TEST_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; then
+              echo "- Overall verification: **incomplete**; supporting checks or report evidence are unavailable."
+            else
               case "$AUDIT_STATUS" in
-                passed) echo "- Overall verification: **passed**." ;;
+                success) echo "- Overall verification: **passed**." ;;
                 advisory) echo "- Overall verification: **advisory**; uncertain external responses remain non-blocking." ;;
                 *) echo "- Overall verification: **incomplete or unknown**; inspect audit status and logs." ;;
               esac
-            else
-              echo "- Overall verification: **incomplete**; supporting outcomes or evidence are missing."
             fi
             echo
             if [ -f "$RUNNER_TEMP/paper-link-report.md" ]; then
