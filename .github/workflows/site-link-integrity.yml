@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
   workflow_call:
+    outputs:
+      status:
+        description: Site Link audit outcome
+        value: ${{ jobs.links.outputs.status }}
 
 permissions:
   contents: read
@@ -12,6 +16,8 @@ permissions:
 jobs:
   links:
     name: "Site: Link Integrity"
+    outputs:
+      status: ${{ steps.link_audit.outputs.status }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -35,17 +41,33 @@ jobs:
       - name: Audit generated site links
         id: link_audit
         run: |
+          set +e
           python3 scripts/check_site_links.py \
             --site-dir _site \
             --config _config.yml \
             --report "$RUNNER_TEMP/link-audit-report.md" \
+            --status-file "$RUNNER_TEMP/link-audit-status" \
             --fail-on-likely-external
+          result=$?
+          set -e
+          status="$(cat "$RUNNER_TEMP/link-audit-status" 2>/dev/null || true)"
+          if [ "$result" -ne 0 ] && [ "$status" != failure ]; then
+            status=incomplete
+          fi
+          if [ "$status" != success ] && [ "$status" != advisory ] && [ "$status" != failure ]; then
+            status=incomplete
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" = failure ] || [ "$status" = incomplete ]; then
+            exit 1
+          fi
       - name: Add link audit report to job summary
         if: always()
         env:
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           TEST_OUTCOME: ${{ steps.link_tests.outcome }}
           AUDIT_OUTCOME: ${{ steps.link_audit.outcome }}
+          AUDIT_STATUS: ${{ steps.link_audit.outputs.status }}
         run: |
           echo "# Site: Link Integrity" >> "$GITHUB_STEP_SUMMARY"
           echo >> "$GITHUB_STEP_SUMMARY"
@@ -60,6 +82,12 @@ jobs:
             summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
             summary_outcome "$TEST_OUTCOME" "Link-auditor unit tests"
             summary_outcome "$AUDIT_OUTCOME" "Generated-site link audit"
+            case "$AUDIT_STATUS" in
+              success) echo "- Link evidence: **healthy**." ;;
+              advisory) echo "- Link evidence: **advisory**; uncertain external responses were reported below." ;;
+              failure) echo "- Link evidence: **failed**; confirmed link defects were reported below." ;;
+              *) echo "- Link evidence: **incomplete**; evidence was not established." ;;
+            esac
           } >> "$GITHUB_STEP_SUMMARY"
           if [ -f "$RUNNER_TEMP/link-audit-report.md" ]; then
             cat "$RUNNER_TEMP/link-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
