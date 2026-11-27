@@ -554,7 +554,7 @@ class PaperPublishTests(unittest.TestCase):
         self.assertIn("pull-requests: write", workflow)
         self.assertIn("checks: read", workflow)
         self.assertIn("group: paper-publication", workflow)
-        self.assertIn("approve the requested GitHub Actions checks", workflow)
+        self.assertIn("approve requested GitHub Actions runs if", workflow)
         self.assertNotIn("git push --atomic", workflow)
         self.assertNotIn("HEAD:refs/heads/main", workflow)
         job_headers = re.findall(r"^  [a-z][a-z0-9-]*:$", workflow.split("\njobs:\n", 1)[1], re.M)
