@@ -76,7 +76,3 @@ A [daily workflow](workflows/quality-pulse.yml) coordinates the Common, Site, an
 Passed checks, nonblocking advisories, confirmed failures, incomplete checks, pending paper publication, and unavailable evidence remain distinguishable. Findings bring actionable evidence to human judgment. A cycle with advisories may succeed, but is not reported as an unconditional pass.
 
 Performance measurements are compared against a reviewed reference and recent compatible measurements.
-
-## Evolution
-
-The Quality Gate is operational. The quality practice continues to evolve through evidence and human judgment. See [North Star — Circle Quality](https://github.com/basil-one/circle/issues/20).
