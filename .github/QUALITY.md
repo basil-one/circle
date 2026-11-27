@@ -67,16 +67,12 @@ Sustain conceptual integrity across workflows, code, tests, and documentation. E
 
 Website and paper publication use their respective verified build mechanisms.
 
-The website is published automatically following an approved merge. The paper is published through an explicit human decision.
+The website is published automatically following an approved merge. Paper publication is initiated by a human, prepares a changelog pull request, and continues from the verified revision after human approval and merge through the Quality Gate.
 
 ## Quality Pulse
 
 A [daily workflow](workflows/quality-pulse.yml) coordinates the Common, Site, and Paper safeguards in a single verification cycle and provides a coherent view of quality. It can also be run on demand.
 
-Passed checks, nonblocking advisories, confirmed failures, incomplete checks, and unavailable evidence remain distinguishable. Findings bring actionable evidence to human judgment. A cycle with advisories may succeed, but is not reported as an unconditional pass.
+Passed checks, nonblocking advisories, confirmed failures, incomplete checks, pending paper publication, and unavailable evidence remain distinguishable. Findings bring actionable evidence to human judgment. A cycle with advisories may succeed, but is not reported as an unconditional pass.
 
 Performance measurements are compared against a reviewed reference and recent compatible measurements.
-
-## Evolution
-
-Quality Gate activation remains in progress. See [North Star — Circle Quality](https://github.com/basil-one/circle/issues/20).
