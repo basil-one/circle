@@ -28,30 +28,29 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
           REVIEW_OUTCOME: ${{ steps.dependency_review.outcome }}
         run: |
-          echo "# Common: Dependency Security" >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
-          echo "Checked revision: \`${SOURCE_SHA:-unavailable}\`." >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
-          case "$REVIEW_OUTCOME" in
-            success)
-              printf '%s\n' \
-                "- Dependency review: **passed**." \
-                "  Threshold: moderate+; scopes: runtime/development/unknown." \
-                >> "$GITHUB_STEP_SUMMARY"
-              ;;
-            failure)
-              printf '%s\n' \
-                "- Dependency review: **failed**; see action findings/logs." \
-                "  Threshold: moderate+; scopes: runtime/development/unknown." \
-                >> "$GITHUB_STEP_SUMMARY"
-              ;;
-            *)
-              printf '%s\n' \
-                "- Dependency review: **not completed**; see earlier logs." \
-                "  Threshold: moderate+; scopes: runtime/development/unknown." \
-                >> "$GITHUB_STEP_SUMMARY"
-              ;;
-          esac
+          {
+            echo "# Common: Dependency Security"
+            echo
+            echo "Checked revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo
+            case "$REVIEW_OUTCOME" in
+              success)
+                printf '%s\n' \
+                  "- Dependency review: **passed**." \
+                  "  Threshold: moderate+; scopes: runtime/development/unknown."
+                ;;
+              failure)
+                printf '%s\n' \
+                  "- Dependency review: **failed**; see action findings/logs." \
+                  "  Threshold: moderate+; scopes: runtime/development/unknown."
+                ;;
+              *)
+                printf '%s\n' \
+                  "- Dependency review: **not completed**; see earlier logs." \
+                  "  Threshold: moderate+; scopes: runtime/development/unknown."
+                ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
 
   common-dependency-security-posture:
     name: Dependabot posture
@@ -101,12 +100,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           case "$POSTURE_OUTCOME" in
             success)
-                echo "Daily Dependabot alert posture completed; see the report above." >> "$GITHUB_STEP_SUMMARY"
+                echo "Daily Dependabot alert posture completed; see the report above."
                 ;;
             failure)
-                echo "Daily dependency posture needs review or could not be measured; see the report and step logs." >> "$GITHUB_STEP_SUMMARY"
+                echo "Daily dependency posture needs review or could not be measured; see the report and step logs."
                 ;;
             *)
-                echo "Daily dependency posture was not completed; see step logs." >> "$GITHUB_STEP_SUMMARY"
+                echo "Daily dependency posture was not completed; see step logs."
                 ;;
-          esac
+          esac >> "$GITHUB_STEP_SUMMARY"

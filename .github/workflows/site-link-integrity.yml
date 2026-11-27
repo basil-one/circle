@@ -75,10 +75,6 @@ jobs:
           AUDIT_OUTCOME: ${{ steps.link_audit.outcome }}
           AUDIT_STATUS: ${{ steps.link_audit.outputs.status }}
         run: |
-          echo "# Site: Link Integrity" >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
-          echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`." >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
           summary_outcome() {
             case "$1" in
               success) printf -- "- %s: **passed**.\n" "$2" ;;
@@ -87,6 +83,10 @@ jobs:
             esac
           }
           {
+            echo "# Site: Link Integrity"
+            echo
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo
             summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
             summary_outcome "$TEST_OUTCOME" "Link-auditor unit tests"
             summary_outcome "$AUDIT_OUTCOME" "Generated-site link audit"
@@ -96,10 +96,10 @@ jobs:
               failure) echo "- Link evidence: **failed**; confirmed link defects were reported below." ;;
               *) echo "- Link evidence: **incomplete**; evidence was not established." ;;
             esac
+            if [ -f "$RUNNER_TEMP/link-audit-report.md" ]; then
+              cat "$RUNNER_TEMP/link-audit-report.md"
+            else
+              echo "- Link report unavailable."
+              echo "  See audit step logs."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "$RUNNER_TEMP/link-audit-report.md" ]; then
-            cat "$RUNNER_TEMP/link-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "- Link report unavailable." >> "$GITHUB_STEP_SUMMARY"
-            echo "  See audit step logs." >> "$GITHUB_STEP_SUMMARY"
-          fi

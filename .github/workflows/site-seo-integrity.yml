@@ -67,10 +67,10 @@ jobs:
             summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
             summary_outcome "$TEST_OUTCOME" "SEO-auditor unit tests"
             summary_outcome "$AUDIT_OUTCOME" "Generated-site SEO audit"
+            if [ -f "$RUNNER_TEMP/seo-audit-report.md" ]; then
+              cat "$RUNNER_TEMP/seo-audit-report.md"
+            else
+              echo "- SEO results unavailable."
+              echo "  See audit step logs."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "$RUNNER_TEMP/seo-audit-report.md" ]; then
-            cat "$RUNNER_TEMP/seo-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "- SEO results unavailable." >> "$GITHUB_STEP_SUMMARY"
-            echo "  See audit step logs." >> "$GITHUB_STEP_SUMMARY"
-          fi

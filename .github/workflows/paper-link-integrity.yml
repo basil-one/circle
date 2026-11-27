@@ -85,17 +85,19 @@ jobs:
           UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
-          echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`." >> "$GITHUB_STEP_SUMMARY"
-          echo "Link tests: **${TEST_OUTCOME:-unavailable}**; report upload: **${UPLOAD_OUTCOME:-unavailable}**." >> "$GITHUB_STEP_SUMMARY"
-          if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$TEST_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
-            printf '%s\n' '**Verification incomplete:** inspect audit, test and evidence-upload steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-          if [ -f "$RUNNER_TEMP/paper-link-report.md" ]; then
-            cat "$RUNNER_TEMP/paper-link-report.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            printf '%s\n' '# Paper: Link Integrity' '' '**Outcome: incomplete**' \
-              'Audit evidence unavailable. Inspect earlier steps and rerun.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-          if [ "$UPLOAD_OUTCOME" = success ]; then
-            echo "[Download the JSON findings]($ARTIFACT_URL)" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo "Link tests: **${TEST_OUTCOME:-unavailable}**; report upload: **${UPLOAD_OUTCOME:-unavailable}**."
+            if [ "$AUDIT_STATUS" != failure ] && { [ "$AUDIT_OUTCOME" != success ] || [ "$TEST_OUTCOME" != success ] || [ "$UPLOAD_OUTCOME" != success ]; }; then
+              printf '%s\n' '**Verification incomplete:** inspect audit, test and evidence-upload steps and rerun.'
+            fi
+            if [ -f "$RUNNER_TEMP/paper-link-report.md" ]; then
+              cat "$RUNNER_TEMP/paper-link-report.md"
+            else
+              printf '%s\n' '# Paper: Link Integrity' '' '**Outcome: incomplete**' \
+                'Audit evidence unavailable. Inspect earlier steps and rerun.'
+            fi
+            if [ "$UPLOAD_OUTCOME" = success ]; then
+              echo "[Download the JSON findings]($ARTIFACT_URL)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
