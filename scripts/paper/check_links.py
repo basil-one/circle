@@ -26,7 +26,7 @@ from pypdf.generic import (
     NumberObject,
 )
 
-from scripts.site.check_links import check_external, same_site
+from scripts.common.link_safety import check_external, same_site
 
 ROOT = Path(__file__).resolve().parents[2]
 

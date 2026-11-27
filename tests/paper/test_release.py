@@ -73,14 +73,14 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertNotIn("ref:", integrity)
         self.assertIn("git rev-parse HEAD", integrity)
         self.assertIn(
-            "python3 -m unittest discover -s tests/paper -p 'test_paper_config.py' -v", integrity
+            "python3 -m unittest discover -s tests/paper -p 'test_config.py' -v", integrity
         )
         self.assertIn(
-            "python3 -m unittest discover -s tests/paper -p 'test_paper_release.py' -v",
+            "python3 -m unittest discover -s tests/paper -p 'test_release.py' -v",
             code_quality,
         )
         self.assertIn(
-            "python3 -m unittest discover -s tests/paper -p 'test_paper_publication_integrity.py' -v",
+            "python3 -m unittest discover -s tests/paper -p 'test_publication_integrity.py' -v",
             code_quality,
         )
         self.assertIn("run: bash scripts/build-paper-pdf.sh", integrity)
@@ -115,7 +115,7 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertFalse((ROOT / ".github/workflows/release-pdf.yml").exists())
         self.assertFalse((ROOT / ".github/workflows/publish-paper.yml").exists())
 
-    def test_current_copied_paper_tools_run_against_v022_paths_without_publishing(self):
+    def test_historical_build_and_release_interfaces_without_publishing(self):
         with tempfile.TemporaryDirectory() as directory:
             fixture = Path(directory)
             checkout = fixture / "historical-checkout"
@@ -144,7 +144,39 @@ class PaperReleaseTests(unittest.TestCase):
             )
             subprocess.run(["git", "add", "-A"], cwd=checkout, check=True)
             subprocess.run(["git", "commit", "-qm", "Historical fixture"], cwd=checkout, check=True)
-            subprocess.run(["git", "tag", "v0.2.2"], cwd=checkout, check=True)
+            actual_tags = subprocess.run(
+                ["git", "tag", "--list", "v*"],
+                cwd=ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.splitlines()
+            stable_versions = {
+                tag: tuple(int(part) for part in tag[1:].split("."))
+                for tag in actual_tags
+                if tag.startswith("v")
+                and len(tag[1:].split(".")) == 3
+                and all(part.isdigit() for part in tag[1:].split("."))
+            }
+            stable_tags_at_v022 = [
+                tag for tag, version in stable_versions.items() if version <= (0, 2, 2)
+            ]
+            self.assertIn("v0.2.1", stable_tags_at_v022)
+            self.assertIn("v0.2.2", stable_tags_at_v022)
+            self.assertEqual(
+                max(tuple(int(part) for part in tag[1:].split(".")) for tag in stable_tags_at_v022),
+                (0, 2, 2),
+            )
+            for tag in stable_tags_at_v022:
+                subprocess.run(["git", "tag", tag], cwd=checkout, check=True)
+            fixture_tags = subprocess.run(
+                ["git", "tag", "--list", "v*"],
+                cwd=checkout,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.splitlines()
+            self.assertEqual(set(fixture_tags), set(stable_tags_at_v022))
             (checkout / "assets/pdfs").mkdir(parents=True, exist_ok=True)
 
             tools = runner_temp / "bin"
@@ -177,14 +209,106 @@ class PaperReleaseTests(unittest.TestCase):
             )
             self.assertTrue((checkout / "assets/pdfs/circle3-paper.pdf").is_file())
 
+            historical_release_tool = checkout / "scripts/paper_release.py"
+            for tool in (historical_release_tool, release_tool):
+                result = subprocess.run(
+                    [sys.executable, str(tool), "validate-resume", "--version", "0.2.2"],
+                    cwd=checkout,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+            notes_path = runner_temp / "historical-release-notes.md"
             result = subprocess.run(
-                [sys.executable, str(release_tool), "validate-resume", "--version", "0.2.2"],
+                [
+                    sys.executable,
+                    str(historical_release_tool),
+                    "notes",
+                    "--version",
+                    "0.2.2",
+                    "--output",
+                    str(notes_path),
+                ],
                 cwd=checkout,
                 check=False,
                 capture_output=True,
                 text=True,
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("Clarified intellectual property boundaries", notes_path.read_text())
+            self.assertIn("## License", notes_path.read_text())
+
+            for tool in (historical_release_tool, release_tool):
+                result = subprocess.run(
+                    [sys.executable, str(tool), "validate-resume", "--version", "0.2.1"],
+                    cwd=checkout,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("newer stable tag exists", result.stderr)
+
+            gh_log = runner_temp / "gh-operations.jsonl"
+            gh_stub = tools / "gh"
+            gh_stub.write_text(
+                "#!/usr/bin/env python3\n"
+                "import hashlib, json, os, pathlib, sys\n"
+                "args = sys.argv[1:]\n"
+                "log = pathlib.Path(os.environ['GH_LOG'])\n"
+                "with log.open('a', encoding='utf-8') as stream:\n"
+                "    stream.write(json.dumps(args) + '\\n')\n"
+                "payload = b'fixture PDF'\n"
+                "if args[:2] == ['release', 'view']:\n"
+                "    count_path = pathlib.Path(os.environ['GH_VIEW_COUNT'])\n"
+                "    count = int(count_path.read_text()) + 1 if count_path.exists() else 1\n"
+                "    count_path.write_text(str(count))\n"
+                "    names = ['circle3-paper-v0.2.2.pdf']\n"
+                "    if count > 1:\n"
+                "        names.append('circle3-paper.pdf')\n"
+                "    assets = [{'name': name, 'size': len(payload), 'state': 'uploaded', "
+                "'digest': 'sha256:' + hashlib.sha256(payload).hexdigest()} for name in names]\n"
+                "    print(json.dumps({'tagName': 'v0.2.2', 'isDraft': False, 'assets': assets}))\n"
+                "elif args[:2] == ['release', 'download']:\n"
+                "    name = args[args.index('--pattern') + 1]\n"
+                "    directory = pathlib.Path(args[args.index('--dir') + 1])\n"
+                "    directory.mkdir(parents=True, exist_ok=True)\n"
+                "    (directory / name).write_bytes(payload)\n"
+                "elif args[:2] not in (['release', 'upload'], ['release', 'edit']):\n"
+                "    raise SystemExit('unexpected release fixture operation: ' + json.dumps(args))\n"
+            )
+            gh_stub.chmod(0o755)
+            recovery_environment = environment.copy()
+            recovery_environment["GH_LOG"] = str(gh_log)
+            recovery_environment["GH_VIEW_COUNT"] = str(runner_temp / "gh-view-count")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(release_tool),
+                    "release",
+                    "--version",
+                    "0.2.2",
+                    "--pdf",
+                    str(checkout / "assets/pdfs/circle3-paper.pdf"),
+                ],
+                cwd=checkout,
+                env=recovery_environment,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            operations = [json.loads(line) for line in gh_log.read_text().splitlines()]
+            uploads = [operation for operation in operations if operation[:2] == ["release", "upload"]]
+            self.assertEqual(len(uploads), 1)
+            self.assertEqual(uploads[0][2], "v0.2.2")
+            self.assertEqual(Path(uploads[0][3]).name, "circle3-paper.pdf")
+            self.assertIn(
+                ["release", "edit", "v0.2.2", "--latest"],
+                operations,
+            )
 
     def test_accepts_canonical_semver(self):
         self.assertEqual(parse_version("0.2.1"), (0, 2, 1))

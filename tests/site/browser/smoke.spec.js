@@ -6,7 +6,7 @@ import {
   discoverHtmlRoutes,
   generatedFileForRoute,
   selectSmokeRoutes,
-} from "./site-routes.js";
+} from "../../../scripts/site/routes.js";
 
 const siteDirectory = resolve(process.cwd(), "_site");
 const localOrigin = new URL("http://127.0.0.1:4173").origin;

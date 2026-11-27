@@ -26,7 +26,7 @@ jobs:
 
       - name: Test paper configuration
         id: tests
-        run: python3 -m unittest discover -s tests/paper -p 'test_paper_config.py' -v
+        run: python3 -m unittest discover -s tests/paper -p 'test_config.py' -v
 
       - name: Build and verify fresh author-edition PDF
         id: build

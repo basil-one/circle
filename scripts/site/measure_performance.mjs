@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import {
   performanceRunCount,
   selectPerformanceRoutes
-} from '../../tests/site/browser/site-routes.js';
+} from './routes.js';
 import { median } from './performance_policy.mjs';
 
 const root = process.cwd();

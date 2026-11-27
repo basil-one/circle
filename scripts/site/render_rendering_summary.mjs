@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import {
   discoverHtmlRoutes,
   responsiveViewports,
-} from "../../tests/site/browser/site-routes.js";
+} from "./routes.js";
 
 const routeSmokeSuffix = " is present in generated output and loads";
 const axeSuffix = " has no detectable accessibility violations";

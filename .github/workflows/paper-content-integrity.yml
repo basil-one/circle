@@ -49,7 +49,7 @@ jobs:
         if: ${{ always() && steps.build.outcome == 'success' }}
         env:
           PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
-        run: python3 -m unittest discover -s tests/paper -p 'test_paper_content.py' -v
+        run: python3 -m unittest discover -s tests/paper -p 'test_content.py' -v
       - name: Upload content findings
         id: upload
         if: ${{ always() && (steps.content.outcome == 'success' || steps.content.outcome == 'failure') }}

@@ -5,7 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.site.check_links import check_external, main, public_destination, report_for_site
+from scripts.common.link_safety import check_external, public_destination
+from scripts.site.check_links import main, report_for_site
 
 
 class LinkAuditHandler(http.server.BaseHTTPRequestHandler):
@@ -73,12 +74,12 @@ class CheckLinksTests(unittest.TestCase):
         self.assertNotIn("assets/photo.jpg", report)
 
     def test_external_results_distinguish_reachable_blocked_and_missing(self):
-        with patch("scripts.site.check_links.public_destination", return_value=(True, "")):
+        with patch("scripts.common.link_safety.public_destination", return_value=(True, "")):
             self.assertEqual(check_external(f"{self.external_origin}/ok")[0], "healthy")
             self.assertEqual(check_external(f"{self.external_origin}/blocked")[0], "uncertain")
             self.assertEqual(check_external(f"{self.external_origin}/missing")[0], "likely broken")
         with patch(
-            "scripts.site.check_links.public_destination",
+            "scripts.common.link_safety.public_destination",
             side_effect=[(True, ""), (False, "non-public")],
         ):
             category, detail = check_external(f"{self.external_origin}/redirect")
@@ -306,7 +307,7 @@ class CheckLinksTests(unittest.TestCase):
         config.write_text('url: "https://circle.example"\nbaseurl: ""\n')
         report_path = self.root / "report.md"
 
-        with patch("scripts.site.check_links.public_destination", return_value=(True, "")):
+        with patch("scripts.common.link_safety.public_destination", return_value=(True, "")):
             for path, expected_status in (("/missing", 1), ("/ok", 0)):
                 self.write("index.html", f'<a href="{self.external_origin}{path}">External</a>')
                 with patch(

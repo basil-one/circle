@@ -10,7 +10,7 @@ import {
   selectSmokeRoutes,
   performanceRunCount,
   responsiveViewports
-} from './browser/site-routes.js';
+} from '../../scripts/site/routes.js';
 
 function writePage(root, route) {
   const file = route === '/'

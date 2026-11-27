@@ -13,7 +13,9 @@ Circle's shared quality practice covers the website and paper. The domains are o
 
 Use workflow filenames as capability IDs. A workflow with one substantive job uses its filename stem as that job ID; multi-job workflows qualify each role (`common-dependency-security-review` / `-posture`, `site-publish-build` / `-deploy`). Keep human-facing check names exactly `Domain: Capability`. Quality Pulse is the unqualified Common → Site → Paper coordinator.
 
-Paper source content, configuration, template, PDF builder, release helper, and `build-paper-pdf.sh` remain at their established `scripts/` paths. The shell entry point invokes the historical `scripts/build-pdf.py` and `scripts/plop.paper.config.yaml` paths in the checked-out tree, including when current release tooling resumes a release from an older tag such as v0.2.2. Keep these compatibility paths unless every tagged checkout they serve is deliberately migrated. Paper link dependency pins remain under `scripts/paper-link/`.
+Production helpers live under `scripts/{common,site,paper,orchestration}/`; automated tests live under matching `tests/` domains. Browser test support stays under `tests/site/browser/`, while production route discovery and matrices live in `scripts/site/`. Shared link safety rules live in `scripts/common/`.
+
+Paper source content, configuration, template, PDF builder, release helper, and `build-paper-pdf.sh` remain at their established `scripts/` paths. These three root production entry points are bounded compatibility exceptions: `build-paper-pdf.sh`, `build-pdf.py`, and `paper_release.py`. The shell entry point invokes the historical `scripts/build-pdf.py` and `scripts/plop.paper.config.yaml` paths in the checked-out tree, including when current release tooling resumes a release from an older tag such as v0.2.2. Keep these compatibility paths unless every tagged checkout they serve is deliberately migrated. Paper link dependency pins live at `scripts/paper/requirements-links.txt`.
 
 ## Workflow anatomy and intentional differences
 
@@ -25,11 +27,9 @@ The order is purposeful, not a template: Site Publish validates and deploys a sa
 
 - `npm run test:quality-pulse` — Pulse outcomes, orchestration, and dependency posture.
 - `npm run test:required-checks` — capability names/order, workflow IDs and triggers, script/test path traceability, publication contracts, and repository conventions.
-- `python3 -m unittest discover -s tests/paper -p 'test_*.py' -v` — Paper contracts and validator tests. The PDF link tests need the hash-locked dependency in `scripts/paper-link/requirements.txt` and Poppler's `pdftotext`, as in Paper Link Integrity.
+- `python3 -m unittest discover -s tests/paper -p 'test_*.py' -v` — Paper contracts and validator tests. The PDF link tests need the hash-locked dependency in `scripts/paper/requirements-links.txt` and Poppler's `pdftotext`, as in Paper Link Integrity.
 - `npm run test:performance-history`, `npm run test:performance-policy`, `npm run test:performance-skip`, and `npm run test:performance-summary` — focused Site Performance checks.
 - `npm run test:site-routes` and `npm run test:rendering-summary` — generated-route and browser-summary contracts. The browser suite needs a built `_site` and the installed Playwright browser.
 - `bundle exec jekyll build --trace` — production site build.
 
-Common Code Quality runs the workflow contracts and focused tests on pull requests. The executable conventions cover workflow IDs, canonical capability order, checked-in script and package test paths, test placement, and documented navigation. Reviewers still judge conceptual simplicity, teaching clarity, and whether a boundary or exception earns its maintenance cost; these are not reducible to a score.
-
-**Recommendation:** do not add a separate Common: Coherence Integrity capability in this change. Its objective checks are repository-wide source and workflow maintainability contracts already owned by Common Code Quality; another Gate check or Pulse dimension would repeat that responsibility without distinct evidence or an independent operating decision. Reconsider only if evidence shows the conventions need a separate owner, cadence, or response.
+Common Code Quality runs the workflow contracts and focused tests on pull requests. The executable conventions check the exact capability inventory/order and job IDs; resolve direct script, Python module, unittest discovery, package-script, and documented local path references; enforce domain script/test naming and placement; and reject production imports from tests or across Site/Paper ownership. Site Build verifies that the generated `_site` excludes repository scripts and tests. Reviewers still judge conceptual simplicity, teaching clarity, and whether a boundary or exception earns its maintenance cost; these are not reducible to a score.

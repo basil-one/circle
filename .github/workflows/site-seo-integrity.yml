@@ -36,7 +36,7 @@ jobs:
           JEKYLL_ENV: production
       - name: Test SEO auditor
         id: seo_tests
-        run: python3 -m unittest discover -s tests/site -p 'test_site_seo.py' -v
+        run: python3 -m unittest discover -s tests/site -p 'test_seo.py' -v
       - name: Audit generated site SEO
         id: seo_audit
         run: |

@@ -171,6 +171,7 @@ jobs:
         if: always()
         env:
           PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           JOB_STATUS: ${{ job.status }}
           TRIGGER_NAME: ${{ inputs.caller_event_name || github.event_name }}
           TRIGGER_REF: ${{ github.head_ref || github.ref_name }}

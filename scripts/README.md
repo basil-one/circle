@@ -93,6 +93,8 @@ python3 scripts/build-pdf.py scripts/plop.paper.config.yaml
 
 ## Paper Workflows
 
+The complete Paper capability inventory and canonical ordering are in [Quality Stance → Capabilities in Operation](../.github/QUALITY.md#capabilities-in-operation); this section details the build, review, and publication entry points.
+
 - **[Paper: Build Integrity](../.github/workflows/paper-build-integrity.yml)** — Runs on every pull request to `main` and in Quality Pulse; verifies a fresh, nonempty, readable author-edition PDF and provides a downloadable preview.
 - **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Runs the same build on demand.
 - **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from `main` with the intended version (e.g. `0.2.1`). Promotes the `Unreleased` changelog entries, creates the tag, and publishes the PDF.
@@ -104,7 +106,7 @@ Each release includes:
 
 Release notes combine version-specific entries from `CHANGELOG.md` with shared content maintained in `scripts/paper_release.py`.
 
-Paper validators live in `scripts/paper/`; their tests live in `tests/paper/`. The build configuration, template, source content, PDF builder, release helper, and `build-paper-pdf.sh` intentionally retain their established `scripts/` paths so current release tooling can run against historical checkouts such as v0.2.2.
+Paper validators and link-audit pins live in `scripts/paper/`; their tests live in `tests/paper/`. The build configuration, template, source content, PDF builder, release helper, and `build-paper-pdf.sh` intentionally retain their established `scripts/` paths so current release tooling can run against historical checkouts such as v0.2.2.
 
 If publication fails, rerun the same version to resume. Completed releases are protected from replacement. If one asset survives, recovery copies that published asset to the missing name rather than pairing it with a newly rebuilt PDF. If both assets differ, or a published release has no surviving PDF, publication stops for a human repair decision; it does not overwrite either asset. If branch protection blocks publication, resolve the permission issue before retrying.
 

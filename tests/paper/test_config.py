@@ -19,7 +19,7 @@ class CopyrightNoticeConfigTests(unittest.TestCase):
             str(ROOT / "scripts/plop.paper.config.yaml"), str(ROOT)
         )
 
-    def test_paper_config_supplies_notice_values(self):
+    def test_config_supplies_notice_values(self):
         self.assertEqual(
             self.builder._get_copyright_notice(),
             {

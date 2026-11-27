@@ -104,6 +104,7 @@ function makeInputs(overrides = {}) {
     summary: makeSummary(),
     comparison: makeComparison(),
     jobStatus: 'success',
+    sourceSha: 'abc123',
     eventName: 'pull_request',
     ref: 'copilot/change',
     runUrl: 'https://github.com/basil-one/circle/actions/runs/99',
@@ -127,7 +128,7 @@ function makeInputs(overrides = {}) {
 test('puts completed outcome first and summarizes representative LCP/TBT by page', () => {
   const report = renderPerformanceSummary(makeInputs());
 
-  assert.match(report, /^# Site: Performance Integrity\n\n\*\*Measurement completed — 24\/24 Lighthouse samples\*\*/);
+  assert.match(report, /^# Site: Performance Integrity\n\n- Checked-out revision: `abc123`\.\n\n\*\*Measurement completed — 24\/24 Lighthouse samples\*\*/);
   assert.match(
     report,
     /Measurements were collected using controlled Lighthouse tests, not actual visitors\. Absolute budgets and substantial deterioration against a compatible reviewed reference are enforced after confirmation; rolling comparisons are informational\./
@@ -234,7 +235,7 @@ test('uses the same hierarchy for intentional collection-text skips without meas
     steps: { tests: 'success', classify: 'success', measure: 'skipped' }
   }));
 
-  assert.match(report, /^# Site: Performance Integrity\n\n\*\*Intentionally skipped — existing collection text only\*\*/);
+  assert.match(report, /^# Site: Performance Integrity\n\n- Checked-out revision: `abc123`\.\n\n\*\*Intentionally skipped — existing collection text only\*\*/);
   assert.match(report, /Changed paths \(1\): `_moves\/new\.md`/);
   assert.match(report, /Classification evidence: pull-request prose-only classifier \*\*passed\*\*/);
   assert.match(report, /Lighthouse samples collected: \*\*0\*\*/);

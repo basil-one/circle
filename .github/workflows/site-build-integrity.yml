@@ -34,15 +34,18 @@ jobs:
         run: bundle exec jekyll build --trace
         env:
           JEKYLL_ENV: production
-      - name: Verify repository changelog is not a generated page
-        id: changelog
-        run: test ! -e _site/CHANGELOG.html
+      - name: Verify repository tooling is excluded from generated site
+        id: internal_exclusions
+        run: |
+          test ! -e _site/CHANGELOG.html
+          test ! -e _site/scripts
+          test ! -e _site/tests
       - name: Summarize production build
         if: always()
         env:
           SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
-          CHANGELOG_OUTCOME: ${{ steps.changelog.outcome }}
+          EXCLUSIONS_OUTCOME: ${{ steps.internal_exclusions.outcome }}
         run: |
           summary_outcome() {
             case "$1" in
@@ -57,5 +60,5 @@ jobs:
             echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
             echo
             summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
-            summary_outcome "$CHANGELOG_OUTCOME" "Repository changelog exclusion"
+            summary_outcome "$EXCLUSIONS_OUTCOME" "Repository changelog, scripts, and tests excluded from generated site"
           } >> "$GITHUB_STEP_SUMMARY"

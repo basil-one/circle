@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import {
   performanceRoutes,
   performanceRunCount
-} from '../../tests/site/browser/site-routes.js';
+} from './routes.js';
 import { formatPerformanceValue } from './performance_policy.mjs';
 
 const metrics = [
@@ -285,6 +285,8 @@ function renderPerformanceSummary(inputs) {
   const failures = failedStepNames(inputs);
   const lines = [
     '# Site: Performance Integrity',
+    '',
+    `- Checked-out revision: \`${inputs.sourceSha ?? 'unavailable'}\`.`,
     ''
   ];
   if (skipped) {
@@ -442,6 +444,7 @@ function main() {
     summary,
     comparison,
     jobStatus: process.env.JOB_STATUS,
+    sourceSha: process.env.SOURCE_SHA,
     eventName: process.env.TRIGGER_NAME,
     ref: process.env.TRIGGER_REF,
     runUrl: process.env.RUN_URL,

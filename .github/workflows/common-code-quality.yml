@@ -37,6 +37,7 @@ jobs:
           online: false
           color: false
       - name: Verify invalid permissions are rejected
+        id: invalid_permissions
         env:
           JACTIONLINT_EXECUTABLE: ${{ steps.jactionlint.outputs.executable }}
         run: |
@@ -70,10 +71,10 @@ jobs:
         run: npm run test:required-checks
       - name: Test paper release logic
         id: paper_release_tests
-        run: python3 -m unittest discover -s tests/paper -p 'test_paper_release.py' -v
+        run: python3 -m unittest discover -s tests/paper -p 'test_release.py' -v
       - name: Test paper publication integrity
         id: publication_tests
-        run: python3 -m unittest discover -s tests/paper -p 'test_paper_publication_integrity.py' -v
+        run: python3 -m unittest discover -s tests/paper -p 'test_publication_integrity.py' -v
       - name: Test generated-site route discovery
         id: route_tests
         run: npm run test:site-routes
@@ -89,6 +90,7 @@ jobs:
           SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           RUBY_OUTCOME: ${{ steps.ruby_syntax.outcome }}
           ACTIONS_OUTCOME: ${{ steps.jactionlint.outcome }}
+          INVALID_PERMISSIONS_OUTCOME: ${{ steps.invalid_permissions.outcome }}
           PULSE_TESTS_OUTCOME: ${{ steps.pulse_tests.outcome }}
           CONTRACTS_OUTCOME: ${{ steps.repository_contracts.outcome }}
           PAPER_RELEASE_OUTCOME: ${{ steps.paper_release_tests.outcome }}
@@ -111,8 +113,9 @@ jobs:
             echo
             summary_outcome "$RUBY_OUTCOME" "Ruby Gemfile syntax"
             summary_outcome "$ACTIONS_OUTCOME" "GitHub Actions validation (jactionlint)"
+            summary_outcome "$INVALID_PERMISSIONS_OUTCOME" "Invalid permission fixture rejected with the expected diagnostic"
             summary_outcome "$PULSE_TESTS_OUTCOME" "Quality Pulse and daily orchestration tests"
-            summary_outcome "$CONTRACTS_OUTCOME" "Workflow and repository contracts"
+            summary_outcome "$CONTRACTS_OUTCOME" "Coherence, workflow, and repository contracts"
             summary_outcome "$PAPER_RELEASE_OUTCOME" "Paper release tests"
             summary_outcome "$PUBLICATION_OUTCOME" "Paper publication integrity tests"
             summary_outcome "$ROUTE_TESTS_OUTCOME" "Generated-site route tests"
