@@ -20,6 +20,8 @@ For licensing, see `LICENSE.md`.
 - Organized supporting scripts, tests, and workflows around consistent architectural boundaries.
 - Strengthened paper publication verification and recovery safeguards.
 - Improved website accessibility, performance safeguards, and dependency security.
+- Reconciled Paper Publish with the Quality Gate through a human-reviewed release PR and explicit pending-publication evidence.
+- Kept completed publication verification independent of expiring check-run history while retaining required checks for pending releases.
 
 ## [0.2.2] - 2026-11-25
 

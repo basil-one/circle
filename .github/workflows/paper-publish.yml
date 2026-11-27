@@ -9,7 +9,9 @@ on:
         type: string
 
 permissions:
+  checks: read
   contents: write
+  pull-requests: write
 
 concurrency:
   group: paper-publication
@@ -20,79 +22,119 @@ jobs:
     name: "Paper: Publish"
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      PYTHONPATH: ${{ github.workspace }}
+      PUBLISH_WAIT_SECONDS: 1800
+      PUBLISH_POLL_SECONDS: 60
     steps:
       - name: Checkout main revision
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: Verify main is current and prepare changelog
-        id: state
+      - name: Preserve current release helpers
+        env:
+          PAPER_RELEASE_DIR: ${{ runner.temp }}/paper-release
+        run: |
+          mkdir -p "$PAPER_RELEASE_DIR"
+          cp scripts/build-paper-pdf.sh "$PAPER_RELEASE_DIR/build-paper-pdf.sh"
+          cp scripts/paper_release.py "$PAPER_RELEASE_DIR/paper_release.py"
+          cp scripts/paper/publish.py "$PAPER_RELEASE_DIR/publish.py"
+          chmod +x "$PAPER_RELEASE_DIR/build-paper-pdf.sh"
+
+      - name: Prepare or resume the release PR
+        id: prepare
         env:
           VERSION: ${{ inputs.version }}
-          GH_TOKEN: ${{ github.token }}
+          PAPER_RELEASE_DIR: ${{ runner.temp }}/paper-release
+          PAPER_RELEASE_HELPER: >-
+            ${{ runner.temp }}/paper-release/paper_release.py
         run: |
           set -euo pipefail
-          cp scripts/build-paper-pdf.sh "$RUNNER_TEMP/build-paper-pdf.sh"
-          cp scripts/paper_release.py "$RUNNER_TEMP/paper_release.py"
           test "$GITHUB_REF" = "refs/heads/main" || {
             echo "::error::Paper: Publish can only run from main."
             exit 1
           }
-          git fetch --force --tags origin
-          git fetch origin main
-          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
-            printf '%s\n' \
-              "::error::main changed before publication began;" \
-              "rerun from current main."
+          python3 "$PAPER_RELEASE_DIR/publish.py" prepare \
+            --version "$VERSION"
+
+      - name: Present the human review and approval actions
+        if: steps.prepare.outputs.mode == 'pr'
+        env:
+          PR_URL: ${{ steps.prepare.outputs.url }}
+          PR_NUMBER: ${{ steps.prepare.outputs.pr_number }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+          ## Paper: Publish — human action required
+
+          Release: **v$VERSION**; release PR: **[#$PR_NUMBER]($PR_URL)**.
+
+          Review the changelog-only PR, approve requested GitHub Actions runs if
+          prompted, and merge through the Quality Gate. This workflow waits up to
+          30 minutes for the exact PR and all twelve checks; it does not approve,
+          merge, or bypass.
+
+          If the wait times out or is interrupted, rerun Paper: Publish with the
+          same version to resume.
+          EOF
+
+      - name: Wait for the approved PR and verify its checks
+        id: wait
+        if: steps.prepare.outputs.mode == 'pr'
+        env:
+          VERSION: ${{ inputs.version }}
+          PR_NUMBER: ${{ steps.prepare.outputs.pr_number }}
+          PAPER_RELEASE_DIR: ${{ runner.temp }}/paper-release
+        run: |
+          python3 "$PAPER_RELEASE_DIR/publish.py" wait \
+            --version "$VERSION" \
+            --pr "$PR_NUMBER"
+
+      - name: Checkout the verified immutable source revision
+        env:
+          SOURCE_SHA: >-
+            ${{ steps.prepare.outputs.mode == 'tag' &&
+                steps.prepare.outputs.source_sha ||
+                steps.wait.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          test -n "$SOURCE_SHA" || {
+            echo "::error::No verified release source revision was returned."
             exit 1
           }
-          if git show-ref --verify --quiet "refs/tags/v$VERSION"; then
-            git merge-base --is-ancestor "refs/tags/v$VERSION" origin/main || {
-              echo "::error::Existing tag is not an ancestor of main."
-              exit 1
-            }
-            git checkout --detach "refs/tags/v$VERSION"
-            python3 scripts/paper_release.py validate-resume \
-              --version "$VERSION"
-            echo "mode=resume" >> "$GITHUB_OUTPUT"
-          else
-            python3 scripts/paper_release.py validate-latest
-            python3 scripts/paper_release.py prepare \
-              --version "$VERSION" \
-              --date "$(date -u +%F)"
-            echo "mode=new" >> "$GITHUB_OUTPUT"
-          fi
+          git checkout --detach "$SOURCE_SHA"
 
       - name: Build and validate paper PDF
         env:
-          VERSION: ${{ inputs.version }}
+          PAPER_RELEASE_DIR: ${{ runner.temp }}/paper-release
         run: |
-          set -euo pipefail
-          bash "$RUNNER_TEMP/build-paper-pdf.sh"
-          python3 scripts/paper_release.py notes \
-            --version "$VERSION" \
-            --output /tmp/release-notes.md
+          bash "$PAPER_RELEASE_DIR/build-paper-pdf.sh"
 
-      - name: Commit changelog and create version tag
-        if: steps.state.outputs.mode == 'new'
+      - name: Create or resume the release tag and publication
         env:
           VERSION: ${{ inputs.version }}
+          SOURCE_SHA: >-
+            ${{ steps.prepare.outputs.mode == 'tag' &&
+                steps.prepare.outputs.source_sha ||
+                steps.wait.outputs.source_sha }}
+          PR_NUMBER: ${{ steps.prepare.outputs.pr_number }}
+          PAPER_RELEASE_DIR: ${{ runner.temp }}/paper-release
+          PAPER_RELEASE_HELPER: >-
+            ${{ runner.temp }}/paper-release/paper_release.py
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md
-          git commit -m "Release v$VERSION"
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push --atomic origin HEAD:refs/heads/main "refs/tags/v$VERSION"
-
-      - name: Create or repair GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version }}
-        run: |
-          python3 "$RUNNER_TEMP/paper_release.py" release \
-            --version "$VERSION" \
-            --pdf assets/pdfs/circle3-paper.pdf
+          if [ -n "$PR_NUMBER" ]; then
+            python3 "$PAPER_RELEASE_DIR/publish.py" finalize \
+              --version "$VERSION" \
+              --source "$SOURCE_SHA" \
+              --pr "$PR_NUMBER"
+          else
+            python3 "$PAPER_RELEASE_DIR/publish.py" finalize \
+              --version "$VERSION" \
+              --source "$SOURCE_SHA"
+          fi

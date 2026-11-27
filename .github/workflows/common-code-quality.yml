@@ -72,6 +72,9 @@ jobs:
       - name: Test paper release logic
         id: paper_release_tests
         run: python3 -m unittest discover -s tests/paper -p 'test_release.py' -v
+      - name: Test paper publication orchestration
+        id: paper_publish_tests
+        run: python3 -m unittest discover -s tests/paper -p 'test_publish.py' -v
       - name: Test paper publication integrity
         id: publication_tests
         run: python3 -m unittest discover -s tests/paper -p 'test_publication_integrity.py' -v
@@ -94,6 +97,7 @@ jobs:
           PULSE_TESTS_OUTCOME: ${{ steps.pulse_tests.outcome }}
           WORKFLOW_CONTRACTS_OUTCOME: ${{ steps.workflow_contracts.outcome }}
           PAPER_RELEASE_OUTCOME: ${{ steps.paper_release_tests.outcome }}
+          PAPER_PUBLISH_OUTCOME: ${{ steps.paper_publish_tests.outcome }}
           PUBLICATION_OUTCOME: ${{ steps.publication_tests.outcome }}
           ROUTE_TESTS_OUTCOME: ${{ steps.route_tests.outcome }}
           RENDERING_TESTS_OUTCOME: ${{ steps.rendering_tests.outcome }}
@@ -117,6 +121,7 @@ jobs:
             summary_outcome "$PULSE_TESTS_OUTCOME" "Quality Pulse and daily orchestration tests"
             summary_outcome "$WORKFLOW_CONTRACTS_OUTCOME" "Workflow, publication, and operational regression contracts"
             summary_outcome "$PAPER_RELEASE_OUTCOME" "Paper release tests"
+            summary_outcome "$PAPER_PUBLISH_OUTCOME" "Paper publication orchestration tests"
             summary_outcome "$PUBLICATION_OUTCOME" "Paper publication integrity tests"
             summary_outcome "$ROUTE_TESTS_OUTCOME" "Generated-site route tests"
             summary_outcome "$RENDERING_TESTS_OUTCOME" "Rendering summary and coverage tests"

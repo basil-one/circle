@@ -1224,6 +1224,56 @@ test('publication mismatch, inaccessible evidence and contradictory outputs rema
   }
 });
 
+test('verified in-flight publication remains pending and requires human attention', async () => {
+  const mainSha = 'a'.repeat(40);
+  const validatorSha = 'b'.repeat(40);
+  const pulse = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    needs: {
+      'paper-publication-integrity': {
+        result: 'failure',
+        outputs: {
+          status: 'pending',
+          detail: 'Release PR #42 is merged; tag v0.2.3 is not present yet.',
+          main_sha: mainSha,
+          validator_sha: validatorSha
+        }
+      }
+    },
+    validatorRevision: validatorSha,
+    runId: '907',
+    runUrl: 'https://github.com/basil-one/circle/actions/runs/907',
+    date
+  });
+  assert.equal(pulse.successful, false);
+  assert.match(pulse.markdown, /\| Paper: Publication Integrity \| In progress \/ publication pending \|/);
+  assert.match(pulse.markdown, /not present yet/);
+  assert.match(pulse.markdown, /same version/);
+  assert.match(pulse.markdown, new RegExp(`Published main: ${mainSha}; validator revision: ${validatorSha}`));
+
+  const contradictory = await buildOrchestratedPulse({
+    apiUrl: 'https://api.github.com',
+    repository: 'basil-one/circle',
+    needs: {
+      'paper-publication-integrity': {
+        result: 'success',
+        outputs: {
+          status: 'pending',
+          detail: 'Pending release.',
+          main_sha: mainSha,
+          validator_sha: validatorSha
+        }
+      }
+    },
+    validatorRevision: validatorSha,
+    runId: '908',
+    runUrl: 'https://github.com/basil-one/circle/actions/runs/908',
+    date
+  });
+  assert.match(contradictory.markdown, /\| Paper: Publication Integrity \| Unknown \/ publication evidence unavailable \|/);
+});
+
 test('publication can pass independently when the paper build fails', async () => {
   const pulse = await buildOrchestratedPulse({
     apiUrl: 'https://api.github.com',

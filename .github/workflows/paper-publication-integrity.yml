@@ -14,7 +14,9 @@ on:
         value: ${{ jobs.paper-publication-integrity.outputs.validator_sha }}
 
 permissions:
+  checks: read
   contents: read
+  pull-requests: read
 
 jobs:
   paper-publication-integrity:
@@ -48,7 +50,8 @@ jobs:
           set +e
           python3 -m scripts.paper.publication_integrity
           result=$?
-          if [ "$result" != 0 ] && [ "$result" != 2 ] && [ "$result" != 3 ]; then
+          if [ "$result" != 0 ] && [ "$result" != 2 ] \
+            && [ "$result" != 3 ] && [ "$result" != 4 ]; then
             echo "status=unknown" >> "$GITHUB_OUTPUT"
             echo "detail=The publication validator did not complete; inspect the job logs and rerun." >> "$GITHUB_OUTPUT"
           fi

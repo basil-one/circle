@@ -95,20 +95,22 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn('name: "Paper: Publish"', publish.split("jobs:", 1)[1])
         self.assertIn("contents: read", preview)
         self.assertLess(
-            publish.index('cp scripts/build-paper-pdf.sh "$RUNNER_TEMP/build-paper-pdf.sh"'),
-            publish.index('git checkout --detach "refs/tags/v$VERSION"'),
+            publish.index('cp scripts/build-paper-pdf.sh "$PAPER_RELEASE_DIR/build-paper-pdf.sh"'),
+            publish.index("Checkout the verified immutable source revision"),
         )
-        self.assertIn('bash "$RUNNER_TEMP/build-paper-pdf.sh"', publish)
+        self.assertIn('bash "$PAPER_RELEASE_DIR/build-paper-pdf.sh"', publish)
         self.assertIn("workflow_dispatch:", publish)
         self.assertIn("contents: write", publish)
         self.assertIn("if: github.ref == 'refs/heads/main'", publish)
         self.assertIn("group: paper-publication", publish)
         self.assertIn("GH_TOKEN: ${{ github.token }}", publish)
-        self.assertLess(
-            publish.index('cp scripts/paper_release.py "$RUNNER_TEMP/paper_release.py"'),
-            publish.index('git checkout --detach "refs/tags/v$VERSION"'),
-        )
-        self.assertIn('python3 "$RUNNER_TEMP/paper_release.py" release', publish)
+        self.assertIn("pull-requests: write", publish)
+        self.assertIn("checks: read", publish)
+        self.assertIn("PUBLISH_WAIT_SECONDS: 1800", publish)
+        self.assertIn('python3 "$PAPER_RELEASE_DIR/publish.py" finalize', publish)
+        self.assertIn("approve requested GitHub Actions runs if", publish)
+        self.assertNotIn("git push --atomic", publish)
+        self.assertNotIn("HEAD:refs/heads/main", publish)
         self.assertNotIn("tags:", publish)
         self.assertNotIn("release-pdf.yml", changelog)
         self.assertIn("At the time, pushing a `v*.*.*` tag", changelog)
