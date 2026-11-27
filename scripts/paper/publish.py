@@ -19,6 +19,8 @@ from scripts.paper_release import (
     latest_stable_tag,
     parse_version,
     promote_changelog,
+    release_section,
+    stable_tag_versions,
     validate_latest_release,
     validate_resume,
 )
@@ -40,6 +42,7 @@ CHECKS = (
     "Paper: Link Integrity",
     "Paper: Rendering Integrity",
 )
+EXPECTED_CHECK_APP_ID = 15368
 
 
 class PublishError(RuntimeError):
@@ -128,22 +131,41 @@ def validate_pull_request(pr: dict, number: int, version: str, branch: str) -> N
         raise PublishError("GitHub returned malformed pull request evidence.")
     head = pr.get("head") or {}
     base = pr.get("base") or {}
+    head_repo = head.get("repo") if isinstance(head, dict) else None
+    base_repo = base.get("repo") if isinstance(base, dict) else None
     if (
         not isinstance(head, dict)
         or not isinstance(base, dict)
+        or not isinstance(head_repo, dict)
+        or not isinstance(base_repo, dict)
         or not isinstance(number, int)
+        or isinstance(number, bool)
         or number < 1
         or pr.get("number") != number
         or pr.get("state") not in {"open", "closed"}
         or head.get("ref") != branch
-        or (head.get("repo") or {}).get("full_name") != REPOSITORY
+        or head_repo.get("full_name") != REPOSITORY
         or base.get("ref") != "main"
-        or (base.get("repo") or {}).get("full_name") != REPOSITORY
+        or base_repo.get("full_name") != REPOSITORY
         or pr.get("title") != RELEASE_TITLE.format(version=version)
     ):
         raise PublishError(
             f"PR #{number} does not match the expected repository, base, head, and version."
         )
+
+
+def pull_request_merged(pr: dict) -> bool:
+    merged_at = pr.get("merged_at")
+    merged = pr.get("merged")
+    if pr.get("state") == "open" and merged_at is None and merged in (False, None):
+        return False
+    if merged is True and isinstance(merged_at, str) and merged_at:
+        return True
+    if merged is False and merged_at is None:
+        return False
+    if merged is None and pr.get("state") == "closed" and isinstance(merged_at, str) and merged_at:
+        return True
+    raise PublishError("GitHub returned contradictory or incomplete merged pull request evidence.")
 
 
 def validate_changed_files(files: list[dict]) -> None:
@@ -157,31 +179,87 @@ def validate_changed_files(files: list[dict]) -> None:
         )
 
 
-def validate_check_runs(check_runs: list[dict], head_sha: str) -> tuple[bool, str]:
+def validate_check_run(run: dict, head_sha: str) -> str | None:
+    if not isinstance(run, dict):
+        raise PublishError(f"Required check evidence for {head_sha} is malformed.")
+    name = run.get("name")
+    if name not in CHECKS:
+        return None
+    if run.get("head_sha") != head_sha:
+        raise PublishError(f"Required check {name} has evidence for a different revision.")
+    app = run.get("app")
+    if not isinstance(app, dict) or app.get("id") != EXPECTED_CHECK_APP_ID:
+        raise PublishError(f"Required check {name} is not from the expected GitHub Actions app.")
+    status = run.get("status")
+    conclusion = run.get("conclusion")
+    if status not in {"queued", "in_progress", "completed"}:
+        raise PublishError(f"Required check {name} has malformed status evidence.")
+    if (status == "completed") != isinstance(conclusion, str):
+        raise PublishError(f"Required check {name} has contradictory status evidence.")
+    return name
+
+
+def select_latest_check(latest: dict, name: str, run: dict) -> None:
+    previous = latest.get(name)
+    timestamp = run.get("started_at") or run.get("created_at") or ""
+    previous_timestamp = (
+        (previous.get("started_at") or previous.get("created_at") or "")
+        if previous is not None
+        else None
+    )
+    if not isinstance(timestamp, str) or (
+        previous is not None and not isinstance(previous_timestamp, str)
+    ):
+        raise PublishError(f"Required check {name} has malformed timestamp evidence.")
+    if (
+        previous is not None
+        and timestamp == previous_timestamp
+        and (
+            run.get("status"),
+            run.get("conclusion"),
+        )
+        != (previous.get("status"), previous.get("conclusion"))
+    ):
+        raise PublishError(f"Required check {name} has contradictory duplicate evidence.")
+    if previous is None or timestamp >= previous_timestamp:
+        latest[name] = run
+
+
+def latest_check_runs(check_runs: list[dict], head_sha: str) -> dict:
+    if not isinstance(check_runs, list):
+        raise PublishError(f"Required check evidence for {head_sha} is malformed.")
     latest = {}
     for run in check_runs:
-        if not isinstance(run, dict):
-            raise PublishError(f"Required check evidence for {head_sha} is malformed.")
-        name = run.get("name")
-        if name in CHECKS:
-            if run.get("head_sha") != head_sha:
-                raise PublishError(f"Required check {name} has evidence for a different revision.")
-            previous = latest.get(name)
-            if previous is None or (run.get("started_at") or "") >= (
-                previous.get("started_at") or ""
-            ):
-                latest[name] = run
+        name = validate_check_run(run, head_sha)
+        if name:
+            select_latest_check(latest, name, run)
+    return latest
+
+
+def check_run_outcome(name: str, run: dict | None, head_sha: str) -> tuple[bool, str]:
+    if run is None:
+        return False, f"{name} has not reported for {head_sha}."
+    if run.get("status") == "completed" and run.get("conclusion") != "success":
+        raise PublishError(
+            f"Required check {name} concluded {run.get('conclusion') or 'without a result'} "
+            f"for {head_sha}; refusing publication."
+        )
+    if run.get("status") != "completed":
+        return False, f"{name} is still running for {head_sha}."
+    if run.get("conclusion") != "success":
+        raise PublishError(f"Required check {name} has no successful conclusion for {head_sha}.")
+    return True, ""
+
+
+def validate_check_runs(check_runs: list[dict], head_sha: str) -> tuple[bool, str]:
+    latest = latest_check_runs(check_runs, head_sha)
+    incomplete = []
     for name in CHECKS:
-        run = latest.get(name)
-        if run is None:
-            return False, f"{name} has not reported for {head_sha}."
-        if run.get("status") == "completed" and run.get("conclusion") != "success":
-            raise PublishError(
-                f"Required check {name} concluded {run.get('conclusion') or 'without a result'} "
-                f"for {head_sha}; refusing publication."
-            )
-        if run.get("status") != "completed" or run.get("conclusion") != "success":
-            return False, f"{name} is still running for {head_sha}."
+        passed, detail = check_run_outcome(name, latest.get(name), head_sha)
+        if not passed:
+            incomplete.append(detail)
+    if incomplete:
+        return False, incomplete[0]
     return True, f"All {len(CHECKS)} required checks passed for {head_sha}."
 
 
@@ -221,7 +299,7 @@ class Publisher:
         if pulls:
             pr = pulls[0]
             validate_pull_request(pr, pr.get("number"), version, branch_name(version))
-            if not pr.get("merged") or pr.get("merge_commit_sha") != source:
+            if not pull_request_merged(pr) or pr.get("merge_commit_sha") != source:
                 raise PublishError(
                     f"Existing tag {tag} does not match its release PR merge revision."
                 )
@@ -230,7 +308,7 @@ class Publisher:
             if merged_sha != source:
                 raise PublishError(f"Existing tag {tag} does not match its verified PR revision.")
             pr_number = str(pr["number"])
-        elif git(["show", "-s", "--format=%s", source]) != f"Release {tag}":
+        elif version != "0.2.2" or git(["show", "-s", "--format=%s", source]) != "Release v0.2.2":
             raise PublishError(
                 f"Existing tag {tag} has no matching verified release PR and is not a recognized "
                 "historical release commit."
@@ -239,7 +317,8 @@ class Publisher:
 
     def pull_requests(self, branch: str) -> list[dict]:
         pulls = gh_api(
-            f"repos/{self.repo}/pulls?state=all&per_page=100&head={self.repo.split('/')[0]}:{branch}"
+            f"repos/{self.repo}/pulls?state=all&per_page=100&head="
+            f"{self.repo.split('/')[0]}:{branch}&base=main"
         )
         if (
             not isinstance(pulls, list)
@@ -247,7 +326,44 @@ class Publisher:
             or not all(isinstance(pr, dict) for pr in pulls)
         ):
             raise PublishError(f"Pull request evidence for {branch} is incomplete or malformed.")
-        return pulls
+        details = []
+        for item in pulls:
+            number = item.get("number")
+            if not isinstance(number, int) or isinstance(number, bool) or number < 1:
+                raise PublishError(f"Pull request evidence for {branch} has no valid number.")
+            details.append(gh_api(f"repos/{self.repo}/pulls/{number}"))
+        return details
+
+    def check_runs(self, head_sha: str) -> list[dict]:
+        path = f"repos/{self.repo}/commits/{head_sha}/check-runs?per_page=100&page=1"
+        first = gh_api(path)
+        if not isinstance(first, dict):
+            raise PublishError(f"Required check evidence for {head_sha} is malformed.")
+        total = first.get("total_count")
+        runs = first.get("check_runs")
+        if not isinstance(total, int) or isinstance(total, bool) or total < 0 or total > 10_000:
+            raise PublishError(f"Required check count for {head_sha} is unavailable.")
+        if not isinstance(runs, list) or len(runs) > 100 or len(runs) > total:
+            raise PublishError(f"Required check evidence for {head_sha} is malformed.")
+        collected = list(runs)
+        page = 2
+        while len(collected) < total:
+            data = gh_api(
+                f"repos/{self.repo}/commits/{head_sha}/check-runs?per_page=100&page={page}"
+            )
+            if (
+                not isinstance(data, dict)
+                or data.get("total_count") != total
+                or not isinstance(data.get("check_runs"), list)
+                or len(data["check_runs"]) > 100
+                or not data["check_runs"]
+            ):
+                raise PublishError(f"Required check evidence for {head_sha} is incomplete.")
+            collected.extend(data["check_runs"])
+            if len(collected) > total:
+                raise PublishError(f"Required check evidence for {head_sha} is contradictory.")
+            page += 1
+        return collected
 
     def files_for_pr(self, number: int) -> list[dict]:
         files = gh_api(f"repos/{self.repo}/pulls/{number}/files?per_page=100")
@@ -331,7 +447,8 @@ class Publisher:
         if pull_requests:
             pr = pull_requests[0]
             validate_pull_request(pr, pr.get("number"), version, branch)
-            if pr.get("state") == "closed" and not pr.get("merged"):
+            merged = pull_request_merged(pr) if pr.get("state") == "closed" else False
+            if pr.get("state") == "closed" and not merged:
                 raise PublishError(
                     f"PR #{pr['number']} was closed without merging. Reopen or reconcile it, "
                     f"then rerun v{version}."
@@ -364,21 +481,17 @@ class Publisher:
         validate_pull_request(pr, pr.get("number"), version, branch)
         return pr
 
-    def prepare(self, version: str) -> tuple[str, str, str]:
-        parse_version(version)
-        main_sha = self.fetch_main()
-        if git(["rev-parse", "HEAD"]) != main_sha:
-            raise PublishError("main changed before publication began; rerun from current main.")
-        existing_tag = self.tag_source(version, main_sha)
-        if existing_tag:
-            source, pr_number = existing_tag
-            return "tag", pr_number, source
-        branch = branch_name(version)
+    def reject_competing_releases(self, branch: str) -> None:
         pending = gh_api(f"repos/{self.repo}/pulls?state=open&base=main&per_page=100")
         if (
             not isinstance(pending, list)
             or len(pending) >= 100
-            or not all(isinstance(pr, dict) for pr in pending)
+            or not all(
+                isinstance(pr, dict)
+                and isinstance(pr.get("head"), dict)
+                and isinstance(pr.get("base"), dict)
+                for pr in pending
+            )
         ):
             raise PublishError("Open pull request evidence is incomplete or malformed.")
         competing = [
@@ -390,6 +503,33 @@ class Publisher:
         if competing:
             names = ", ".join(f"#{pr['number']} ({pr['head']['ref']})" for pr in competing)
             raise PublishError(f"Another paper release PR is already pending: {names}.")
+        orphaned = git_result(["ls-remote", "--heads", "origin", "refs/heads/paper-release/*"])
+        if orphaned.returncode:
+            raise PublishError(orphaned.stderr.strip() or "Unable to inspect release branches.")
+        other_branches = [
+            line.split("\t", 1)[1].removeprefix("refs/heads/")
+            for line in orphaned.stdout.splitlines()
+            if "\t" in line
+            and line.split("\t", 1)[1].startswith("refs/heads/paper-release/")
+            and line.split("\t", 1)[1] != f"refs/heads/{branch}"
+        ]
+        if other_branches:
+            raise PublishError(
+                "Another paper release branch exists without a matching pending PR: "
+                f"{', '.join(other_branches)}. Reconcile it before publishing."
+            )
+
+    def prepare(self, version: str) -> tuple[str, str, str]:
+        parse_version(version)
+        main_sha = self.fetch_main()
+        if git(["rev-parse", "HEAD"]) != main_sha:
+            raise PublishError("main changed before publication began; rerun from current main.")
+        existing_tag = self.tag_source(version, main_sha)
+        if existing_tag:
+            source, pr_number = existing_tag
+            return "tag", pr_number, source
+        branch = branch_name(version)
+        self.reject_competing_releases(branch)
         existing_prs = self.pull_requests(branch)
         if len(existing_prs) > 1:
             raise PublishError(
@@ -399,12 +539,13 @@ class Publisher:
             pr = existing_prs[0]
             validate_pull_request(pr, pr.get("number"), version, branch)
             self.files_for_pr(pr["number"])
-            if pr.get("state") == "closed" and not pr.get("merged"):
+            merged = pull_request_merged(pr) if pr.get("state") == "closed" else False
+            if pr.get("state") == "closed" and not merged:
                 raise PublishError(
                     f"PR #{pr['number']} was closed without merging. Reopen or reconcile it, "
                     f"then rerun v{version}."
                 )
-            if pr.get("merged"):
+            if merged:
                 return "pr", str(pr["number"]), pr["html_url"]
             git(["fetch", "origin", f"refs/heads/{branch}:refs/remotes/origin/{branch}"])
             git(["branch", branch, f"refs/remotes/origin/{branch}"])
@@ -425,9 +566,10 @@ class Publisher:
         pr = gh_api(f"repos/{self.repo}/pulls/{number}")
         validate_pull_request(pr, number, version, branch)
         self.files_for_pr(number)
-        if pr.get("state") == "closed" and not pr.get("merged"):
+        merged = pull_request_merged(pr) if pr.get("state") == "closed" else False
+        if pr.get("state") == "closed" and not merged:
             raise PublishError(f"PR #{number} closed without merging; no release was published.")
-        if not pr.get("merged"):
+        if not merged:
             return None, "awaiting human merge", pr
         head_sha = (pr.get("head") or {}).get("sha")
         merge_sha = pr.get("merge_commit_sha")
@@ -435,10 +577,7 @@ class Publisher:
             r"[0-9a-f]{40,64}", str(merge_sha)
         ):
             raise PublishError(f"PR #{number} is merged but its source/merge SHA is invalid.")
-        check_data = gh_api(f"repos/{self.repo}/commits/{head_sha}/check-runs?per_page=100")
-        checks = check_data.get("check_runs") if isinstance(check_data, dict) else None
-        if not isinstance(checks, list):
-            raise PublishError(f"Required check evidence for PR #{number} is unavailable.")
+        checks = self.check_runs(head_sha)
         all_passed, detail = validate_check_runs(checks, head_sha)
         if not all_passed:
             return None, detail, pr
@@ -453,19 +592,28 @@ class Publisher:
                 "fetch",
                 "origin",
                 f"refs/pull/{number}/head:refs/remotes/paper-pr/{number}",
-            ],
-            check=False,
+            ]
         )
         pr_head = f"refs/remotes/paper-pr/{number}"
         if not git(["rev-parse", "--verify", pr_head], check=False):
             raise PublishError(f"PR #{number} source revision is unavailable.")
+        fetched_head = git(["rev-parse", pr_head])
+        if fetched_head != head_sha:
+            raise PublishError(
+                f"PR #{number} fetched source {fetched_head} differs from checked revision "
+                f"{head_sha}."
+            )
         self.verify_promoted_revision(pr_head, version)
         main_sha = self.fetch_main()
         if not is_ancestor(merge_sha, main_sha):
             raise PublishError(f"PR #{number} merge SHA {merge_sha} is not on current main.")
+        candidate_tree = git(["rev-parse", f"{pr_head}^{{tree}}"])
+        merged_tree = git(["rev-parse", f"{merge_sha}^{{tree}}"])
+        if merged_tree != candidate_tree:
+            raise PublishError(
+                f"PR #{number} merged tree differs from its exact checked candidate tree."
+            )
         merged_changelog = changelog_at(merge_sha)
-        if merged_changelog != changelog_at(pr_head):
-            raise PublishError(f"PR #{number} merged changelog differs from its reviewed head.")
         if changelog_versions(merged_changelog)[:1] != [version]:
             raise PublishError(
                 f"PR #{number} merge revision does not promote v{version} as latest."
@@ -494,7 +642,8 @@ class Publisher:
                 )
             print(
                 f"WAITING: PR #{number} {pr.get('html_url')} — {detail}; review, approve "
-                "required workflow runs if prompted, and merge through the Quality Gate."
+                "required workflow runs if prompted, and merge through the Quality Gate.",
+                flush=True,
             )
             time.sleep(self.interval)
 
@@ -522,7 +671,11 @@ class Publisher:
             return
         raise PublishError(f"Could not establish the original changelog promotion for v{version}.")
 
-    def finalize(self, version: str, source_sha: str, pr_number: int | None) -> None:
+    def verify_finalize_source(
+        self, version: str, source_sha: str, pr_number: int | None
+    ) -> tuple[str, str]:
+        if git(["rev-parse", "HEAD"]) != source_sha:
+            raise PublishError("Checked-out revision does not equal the verified release source.")
         main_sha = self.fetch_main()
         if not is_ancestor(source_sha, main_sha):
             raise PublishError(f"Approved source {source_sha} is not an ancestor of main.")
@@ -533,7 +686,45 @@ class Publisher:
             verified_sha, _ = self.verify_merged_pr(version, pr_number, wait=False)
             if verified_sha != source_sha:
                 raise PublishError("The PR merge revision changed before release finalization.")
-        prior = latest_stable_tag(git_tags())
+        else:
+            existing_tag_source = git(
+                ["rev-parse", "--verify", f"refs/tags/v{version}^{{commit}}"], check=False
+            )
+            if existing_tag_source != source_sha:
+                raise PublishError(
+                    "A new release tag requires an exact verified release PR; historical "
+                    "recovery is allowed only from its existing tag."
+                )
+            if (
+                version != "0.2.2"
+                or git(["show", "-s", "--format=%s", source_sha]) != "Release v0.2.2"
+            ):
+                raise PublishError("Existing tag is not a recognized historical release.")
+        return main_sha, changelog
+
+    def verify_current_release_state(
+        self, version: str, main_sha: str, changelog: str, tags: list[str]
+    ) -> None:
+        prior_tags = [
+            f"v{tag_version}"
+            for tag_version in stable_tag_versions(tags)
+            if parse_version(tag_version) < parse_version(version)
+        ]
+        try:
+            validate_latest_release(prior_tags)
+        except ReleaseError as error:
+            raise PublishError(str(error)) from error
+        current_main_changelog = changelog_at(main_sha)
+        if changelog_versions(current_main_changelog)[:1] != [version]:
+            raise PublishError("Current main has a conflicting promoted release version.")
+        try:
+            if release_section(version, current_main_changelog) != release_section(
+                version, changelog
+            ):
+                raise PublishError("Current main changed the approved release changelog entry.")
+        except ReleaseError as error:
+            raise PublishError(f"Current main release entry is invalid: {error}") from error
+        prior = latest_stable_tag(tags)
         if (
             prior is not None
             and prior != version
@@ -542,6 +733,11 @@ class Publisher:
             raise PublishError(
                 f"v{version} is no longer newer than the latest stable tag v{prior}."
             )
+
+    def finalize(self, version: str, source_sha: str, pr_number: int | None) -> None:
+        main_sha, changelog = self.verify_finalize_source(version, source_sha, pr_number)
+        tags = git_tags()
+        self.verify_current_release_state(version, main_sha, changelog, tags)
         tag = f"v{version}"
         existing = git(["rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}"], check=False)
         if existing and existing != source_sha:
@@ -549,7 +745,22 @@ class Publisher:
                 f"Existing tag {tag} points to {existing}, not approved source {source_sha}."
             )
         if not existing:
-            git(["tag", "-a", tag, source_sha, "-m", f"Release {tag}"])
+            if pr_number is None:
+                raise PublishError("Refusing to create a tag without a verified release PR.")
+            git(
+                [
+                    "-c",
+                    "user.name=github-actions[bot]",
+                    "-c",
+                    "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+                    "tag",
+                    "-a",
+                    tag,
+                    source_sha,
+                    "-m",
+                    f"Release {tag}",
+                ]
+            )
             git(["push", "origin", f"refs/tags/{tag}"])
         validate_resume(version, changelog, git_tags())
         helper = os.environ.get("PAPER_RELEASE_HELPER", "scripts/paper_release.py")
