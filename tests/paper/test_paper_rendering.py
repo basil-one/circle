@@ -10,10 +10,10 @@ import zlib
 from pathlib import Path
 from unittest.mock import patch
 
-import check_paper_rendering as rendering
+from scripts.paper import check_rendering as rendering
 
-ROOT = Path(__file__).resolve().parents[1]
-CHECK = ROOT / "scripts/check_paper_rendering.py"
+ROOT = Path(__file__).resolve().parents[2]
+CHECK = ROOT / "scripts/paper/check_rendering.py"
 
 
 def fixture_pdf(path, page_streams, *, broken_image=False):

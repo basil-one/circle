@@ -8,13 +8,13 @@ on:
     outputs:
       status:
         description: Paper Link audit outcome
-        value: ${{ jobs.paper-link.outputs.status }}
+        value: ${{ jobs.paper-link-integrity.outputs.status }}
 
 permissions:
   contents: read
 
 jobs:
-  paper-link:
+  paper-link-integrity:
     name: "Paper: Link Integrity"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -38,7 +38,7 @@ jobs:
         id: audit
         run: |
           set +e
-          "$RUNNER_TEMP/paper-links-venv/bin/python" scripts/check_paper_links.py \
+          "$RUNNER_TEMP/paper-links-venv/bin/python" -m scripts.paper.check_links \
             assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-link-report.md" \
             --json-report "$RUNNER_TEMP/paper-link-report.json" \
             --status-file "$RUNNER_TEMP/paper-link-status"
@@ -63,7 +63,7 @@ jobs:
       - name: Test PDF link auditor
         id: tests
         if: ${{ always() && steps.build.outcome == 'success' && steps.tools.outcome == 'success' }}
-        run: '"$RUNNER_TEMP/paper-links-venv/bin/python" -m unittest discover -s tests -p test_paper_links.py -v'
+        run: '"$RUNNER_TEMP/paper-links-venv/bin/python" -m unittest discover -s tests/paper -p test_paper_links.py -v'
       - name: Upload link audit evidence
         id: upload
         if: always()

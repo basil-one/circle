@@ -7,7 +7,7 @@ import test from 'node:test';
 import {
   performanceMeasurementExitCode,
   renderPerformanceSummary
-} from '../scripts/render_site_performance_summary.mjs';
+} from '../../scripts/site/render_performance_summary.mjs';
 
 const routes = ['/', '/moves/', '/lenses/', '/method/'];
 const metrics = [
@@ -17,7 +17,7 @@ const metrics = [
   'total-blocking-time',
   'cumulative-layout-shift'
 ];
-const summaryScript = resolve('scripts/render_site_performance_summary.mjs');
+const summaryScript = resolve('scripts/site/render_performance_summary.mjs');
 
 function makeSummary() {
   return {

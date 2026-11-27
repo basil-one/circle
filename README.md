@@ -18,6 +18,8 @@ Our [quality stance and practice](.github/QUALITY.md) describes the quality doma
 
 The site will be available at http://localhost:4000.
 
+See the [repository map and checks](.github/REPOSITORY_CONVENTIONS.md) for workflow, script, and test locations and focused validation commands.
+
 ## Site Publication
 
 The website is published automatically to GitHub Pages from `main` using the repository's verified build environment. [Site: Publish](.github/workflows/site-publish.yml) can also be run manually from `main` for recovery.

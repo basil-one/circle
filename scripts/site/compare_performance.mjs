@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url';
 import {
   assessPerformance,
   finalizePerformanceAssessment
-} from './site_performance_policy.mjs';
+} from './performance_policy.mjs';
 
 const apiVersion = '2022-11-28';
 const historyLimit = 28;

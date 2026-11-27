@@ -19,9 +19,8 @@ from pypdf.generic import (
     TextStringObject,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
-links = importlib.import_module("check_paper_links")
+ROOT = Path(__file__).resolve().parents[2]
+links = importlib.import_module("scripts.paper.check_links")
 
 
 class PaperLinkTests(unittest.TestCase):
@@ -437,7 +436,7 @@ class PaperLinkTests(unittest.TestCase):
                 links.audit(self.path, Path("unused"))
 
     def test_cli_distinguishes_network_uncertainty_from_unavailable_audit(self):
-        argv = ["check_paper_links.py", str(self.path)]
+        argv = ["check_links.py", str(self.path)]
         with (
             patch.object(sys, "argv", argv),
             patch.object(
@@ -453,7 +452,7 @@ class PaperLinkTests(unittest.TestCase):
 
     def test_cli_writes_structured_advisory_and_incomplete_evidence(self):
         report_path = Path(self.directory.name) / "report.json"
-        argv = ["check_paper_links.py", str(self.path), "--json-report", str(report_path)]
+        argv = ["check_links.py", str(self.path), "--json-report", str(report_path)]
         for result, expected in (
             (("summary\n", "advisory", ["Page 1: HTTP 403"]), 3),
             (OSError("PDF unavailable"), 2),
@@ -473,7 +472,7 @@ class PaperLinkTests(unittest.TestCase):
         status_path = Path(self.directory.name) / "status"
         report_path = Path(self.directory.name) / "missing" / "report.md"
         argv = [
-            "check_paper_links.py",
+            "check_links.py",
             str(self.path),
             "--status-file",
             str(status_path),
@@ -490,7 +489,7 @@ class PaperLinkTests(unittest.TestCase):
 
     def test_status_file_records_each_audit_outcome(self):
         status_path = Path(self.directory.name) / "status"
-        argv = ["check_paper_links.py", str(self.path), "--status-file", str(status_path)]
+        argv = ["check_links.py", str(self.path), "--status-file", str(status_path)]
         for state, exit_code, findings in (
             ("passed", 0, []),
             ("advisory", 3, ["HTTP 403"]),
@@ -530,7 +529,7 @@ class PaperLinkTests(unittest.TestCase):
             patch.object(
                 sys,
                 "argv",
-                ["check_paper_links.py", str(self.path), "--json-report", str(report_path)],
+                ["check_links.py", str(self.path), "--json-report", str(report_path)],
             ),
             patch.object(links, "audit", return_value=("report\n", "failed", ["x" * 3000] * 101)),
         ):

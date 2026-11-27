@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  preview:
+  paper-preview:
     name: "Paper: Preview"
     runs-on: ubuntu-latest
     timeout-minutes: 30

@@ -11,7 +11,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from paper_release import (
+from scripts.paper_release import (
     ReleaseError,
     changelog_versions,
     git_tags,
@@ -20,6 +20,7 @@ from paper_release import (
     required_asset_names,
 )
 
+ROOT = Path(__file__).resolve().parents[2]
 API = "https://api.github.com/repos/basil-one/circle"
 DOWNLOAD = "https://github.com/basil-one/circle/releases"
 MAX_BYTES = 50_000_000

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const workflow = await readFile(
-  new URL('../.github/workflows/site-publish.yml', import.meta.url),
+  new URL('../../.github/workflows/site-publish.yml', import.meta.url),
   'utf8'
 );
 
@@ -14,7 +14,7 @@ test('Site: Publish only builds and deploys the main branch', () => {
   assert.match(workflow, /^    if: github\.ref == 'refs\/heads\/main'$/m);
   assert.match(
     workflow,
-    /^    if: github\.ref == 'refs\/heads\/main' && needs\.build\.outputs\.source_sha == github\.sha$/m
+    /^    if: github\.ref == 'refs\/heads\/main' && needs\.site-publish-build\.outputs\.source_sha == github\.sha$/m
   );
 });
 
@@ -35,7 +35,7 @@ test('Site: Publish deploys only its generated Pages artifact with scoped permis
     workflow,
     /uses: actions\/upload-pages-artifact@v5\n        with:\n          name: github-pages\n          path: _site/
   );
-  assert.match(workflow, /needs: build\n    permissions:\n      contents: read\n      pages: write\n      id-token: write/);
+  assert.match(workflow, /needs: site-publish-build\n    permissions:\n      contents: read\n      pages: write\n      id-token: write/);
   assert.match(workflow, /environment:\n      name: github-pages/);
   assert.match(workflow, /uses: actions\/deploy-pages@v5\n        with:\n          artifact_name: github-pages/);
   assert.match(workflow, /group: github-pages\n  cancel-in-progress: false/);

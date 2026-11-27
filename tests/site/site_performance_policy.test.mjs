@@ -6,7 +6,7 @@ import {
   lcpDeteriorationPolicy,
   median,
   performanceBudgets
-} from '../scripts/site_performance_policy.mjs';
+} from '../../scripts/site/performance_policy.mjs';
 
 const route = '/';
 

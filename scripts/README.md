@@ -104,13 +104,17 @@ Each release includes:
 
 Release notes combine version-specific entries from `CHANGELOG.md` with shared content maintained in `scripts/paper_release.py`.
 
+Paper validators live in `scripts/paper/`; their tests live in `tests/paper/`. The build configuration, template, source content, PDF builder, release helper, and `build-paper-pdf.sh` intentionally retain their established `scripts/` paths so current release tooling can run against historical checkouts such as v0.2.2.
+
 If publication fails, rerun the same version to resume. Completed releases are protected from replacement. If one asset survives, recovery copies that published asset to the missing name rather than pairing it with a newly rebuilt PDF. If both assets differ, or a published release has no surviving PDF, publication stops for a human repair decision; it does not overwrite either asset. If branch protection blocks publication, resolve the permission issue before retrying.
 
 ## Inputs
 
 - `scripts/plop.paper.config.yaml` — build config (strict)
 - `scripts/template.tex` — LaTeX template
-- `scripts/paper_release.py` — version validation, changelog promotion, and shared release logic
+- `scripts/paper_release.py` — version validation, changelog promotion, and shared release logic (historical compatibility path)
+- `scripts/paper/` — content, link, rendering, and publication integrity validators
+- `tests/paper/` — paper build, release, and validator tests
 - `scripts/content/*.md` — longform markdown blocks referenced by the config
 - `_moves/*.md`, `_lenses/*.md` — pattern sources (web + PDF share these)
 

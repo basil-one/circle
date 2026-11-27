@@ -10,14 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  site-build-integrity:
     name: "Site: Build Integrity"
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout intended revision
+        id: checkout
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -30,22 +35,27 @@ jobs:
         env:
           JEKYLL_ENV: production
       - name: Verify repository changelog is not a generated page
+        id: changelog
         run: test ! -e _site/CHANGELOG.html
       - name: Summarize production build
         if: always()
         env:
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
+          CHANGELOG_OUTCOME: ${{ steps.changelog.outcome }}
         run: |
-          echo "# Site: Build Integrity" >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
-          case "$BUILD_OUTCOME" in
-            success)
-              echo "- Production Jekyll: **passed**." >> "$GITHUB_STEP_SUMMARY"
-              ;;
-            failure)
-              echo "- Jekyll: **failed**; see logs." >> "$GITHUB_STEP_SUMMARY"
-              ;;
-            *)
-              echo "- Jekyll not completed; see logs." >> "$GITHUB_STEP_SUMMARY"
-              ;;
-          esac
+          summary_outcome() {
+            case "$1" in
+              success) printf -- "- %s: **passed**.\n" "$2" ;;
+              failure) printf -- "- %s: **failed**; see logs.\n" "$2" ;;
+              *) printf -- "- %s: **not completed**; see prior logs.\n" "$2" ;;
+            esac
+          }
+          {
+            echo "# Site: Build Integrity"
+            echo
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo
+            summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
+            summary_outcome "$CHANGELOG_OUTCOME" "Repository changelog exclusion"
+          } >> "$GITHUB_STEP_SUMMARY"

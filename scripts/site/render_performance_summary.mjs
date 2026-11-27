@@ -4,8 +4,8 @@ import { pathToFileURL } from 'node:url';
 import {
   performanceRoutes,
   performanceRunCount
-} from '../tests/browser/site-routes.js';
-import { formatPerformanceValue } from './site_performance_policy.mjs';
+} from '../../tests/site/browser/site-routes.js';
+import { formatPerformanceValue } from './performance_policy.mjs';
 
 const metrics = [
   ['first-contentful-paint', 'FCP'],

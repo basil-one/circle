@@ -5,7 +5,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.check_site_seo import audit_site, format_summary, main
+from scripts.site.check_seo import audit_site, format_summary, main
 
 
 class CheckSeoTests(unittest.TestCase):
@@ -105,7 +105,7 @@ class CheckSeoTests(unittest.TestCase):
         )
         report = self.root / "seo-summary.md"
         arguments = [
-            "check_site_seo.py",
+            "check_seo.py",
             "--site-dir",
             str(self.site),
             "--config",

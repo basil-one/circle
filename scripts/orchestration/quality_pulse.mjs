@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import {
   formatPerformanceValue,
   performanceBudgets
-} from './site_performance_policy.mjs';
+} from '../site/performance_policy.mjs';
 
 const dimensions = [
   { name: 'Common: Code Quality', file: 'common-code-quality.yml', job: 'common-code-quality' },
@@ -590,6 +590,7 @@ function renderPulse({
   date,
   generatedAt,
   results,
+  validatorRevision,
   cutoff = cutoffTime,
   orchestrated = false
 }) {
@@ -609,6 +610,9 @@ function renderPulse({
     '# Quality Pulse',
     '',
     `**Reporting date:** ${date} UTC  ·  **Generated:** ${timestamp(generatedAt)}${orchestrated ? '' : `  ·  **Cutoff:** ${date} ${cutoff}`}`,
+    ...(orchestrated
+      ? ['', `**Validator revision:** \`${validatorRevision ?? 'unavailable'}\``]
+      : []),
     '',
     `**Outcome:** ${aggregate} ${orchestrated
       ? 'This summary reflects the same-cycle substantive job results and does not replace their check outcomes.'
@@ -1057,6 +1061,7 @@ async function buildOrchestratedPulse({
     date,
     generatedAt,
     results,
+    validatorRevision,
     orchestrated: true
   });
   return {
@@ -1235,7 +1240,7 @@ async function main() {
     runUrl: process.env.PULSE_RUN_URL,
     eventName: process.env.PULSE_EVENT_NAME ?? 'schedule',
     branch: process.env.PULSE_RUN_BRANCH ?? 'main',
-    validatorRevision: process.env.GITHUB_SHA,
+    validatorRevision: process.env.PULSE_VALIDATOR_REVISION ?? process.env.GITHUB_SHA,
     date,
     generatedAt: process.env.PULSE_GENERATED_AT ?? new Date().toISOString()
   });

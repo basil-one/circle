@@ -1,12 +1,15 @@
 import hashlib
 import json
+import os
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from paper_release import (
+from scripts.paper_release import (
     ReleaseError,
     parse_version,
     promote_changelog,
@@ -18,7 +21,7 @@ from paper_release import (
     verify_downloaded_assets,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 CHANGELOG = """# Changelog
@@ -70,13 +73,13 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertNotIn("ref:", integrity)
         self.assertIn("git rev-parse HEAD", integrity)
         self.assertIn(
-            "python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v", integrity
+            "python3 -m unittest discover -s tests/paper -p 'test_paper_config.py' -v", integrity
         )
         self.assertIn(
-            "python3 -m unittest discover -s scripts -p 'test_paper_release.py' -v", code_quality
+            "python3 -m unittest discover -s tests/paper -p 'test_paper_release.py' -v", code_quality
         )
         self.assertIn(
-            "python3 -m unittest discover -s scripts -p 'test_paper_publication_integrity.py' -v",
+            "python3 -m unittest discover -s tests/paper -p 'test_paper_publication_integrity.py' -v",
             code_quality,
         )
         self.assertIn("run: bash scripts/build-paper-pdf.sh", integrity)
@@ -110,6 +113,72 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn("At the time, pushing a `v*.*.*` tag", changelog)
         self.assertFalse((ROOT / ".github/workflows/release-pdf.yml").exists())
         self.assertFalse((ROOT / ".github/workflows/publish-paper.yml").exists())
+
+    def test_current_copied_paper_tools_run_against_v022_paths_without_publishing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = Path(directory)
+            checkout = fixture / "historical-checkout"
+            checkout.mkdir()
+            archive = subprocess.run(
+                ["git", "archive", "v0.2.2"],
+                check=True,
+                capture_output=True,
+            ).stdout
+            subprocess.run(
+                ["tar", "-xf", "-", "-C", str(checkout)],
+                input=archive,
+                check=True,
+            )
+            runner_temp = fixture / "runner-temp"
+            runner_temp.mkdir()
+            builder = runner_temp / "build-paper-pdf.sh"
+            release_tool = runner_temp / "paper_release.py"
+            shutil.copyfile(ROOT / "scripts/build-paper-pdf.sh", builder)
+            shutil.copyfile(ROOT / "scripts/paper_release.py", release_tool)
+
+            subprocess.run(["git", "init", "-q"], cwd=checkout, check=True)
+            subprocess.run(["git", "config", "user.name", "Fixture"], cwd=checkout, check=True)
+            subprocess.run(["git", "config", "user.email", "fixture@example.invalid"], cwd=checkout, check=True)
+            subprocess.run(["git", "add", "-A"], cwd=checkout, check=True)
+            subprocess.run(["git", "commit", "-qm", "Historical fixture"], cwd=checkout, check=True)
+            subprocess.run(["git", "tag", "v0.2.2"], cwd=checkout, check=True)
+            (checkout / "assets/pdfs").mkdir(parents=True, exist_ok=True)
+
+            tools = runner_temp / "bin"
+            tools.mkdir()
+            for name in ("sudo", "fc-cache", "pdfinfo"):
+                command = tools / name
+                command.write_text("#!/bin/sh\nexit 0\n")
+                command.chmod(0o755)
+            python_stub = tools / "python3"
+            python_stub.write_text(
+                "#!/bin/sh\n"
+                "test \"$#\" -eq 2\n"
+                "test \"$1\" = scripts/build-pdf.py\n"
+                "test \"$2\" = scripts/plop.paper.config.yaml\n"
+                "printf 'fixture PDF\\n' > assets/pdfs/circle3-paper.pdf\n"
+            )
+            python_stub.chmod(0o755)
+            environment = os.environ.copy()
+            environment["PATH"] = f"{tools}{os.pathsep}{environment['PATH']}"
+            subprocess.run(
+                ["bash", str(builder)],
+                cwd=checkout,
+                env=environment,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertTrue((checkout / "assets/pdfs/circle3-paper.pdf").is_file())
+
+            result = subprocess.run(
+                [sys.executable, str(release_tool), "validate-resume", "--version", "0.2.2"],
+                cwd=checkout,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_accepts_canonical_semver(self):
         self.assertEqual(parse_version("0.2.1"), (0, 2, 1))
@@ -194,8 +263,8 @@ class PaperReleaseTests(unittest.TestCase):
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
             with (
-                patch("paper_release.run_gh", side_effect=states) as run,
-                patch("paper_release.verify_asset_parity"),
+                patch("scripts.paper_release.run_gh", side_effect=states) as run,
+                patch("scripts.paper_release.verify_asset_parity"),
             ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
 
@@ -221,7 +290,7 @@ class PaperReleaseTests(unittest.TestCase):
             success = subprocess.CompletedProcess(["gh"], 0, "", "")
             failure = subprocess.CompletedProcess(["gh"], 1, "", "upload failed")
             states = [missing, success, self.gh_result(True), success, failure]
-            with patch("paper_release.run_gh", side_effect=states) as run:
+            with patch("scripts.paper_release.run_gh", side_effect=states) as run:
                 with self.assertRaisesRegex(ReleaseError, "missing asset"):
                     publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertFalse(any(call.args[0][1] == "edit" for call in run.call_args_list))
@@ -241,11 +310,11 @@ class PaperReleaseTests(unittest.TestCase):
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
             with (
-                patch("paper_release.run_gh", side_effect=states) as run,
+                patch("scripts.paper_release.run_gh", side_effect=states) as run,
                 patch(
-                    "paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                    "scripts.paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
                 ),
-                patch("paper_release.verify_asset_parity"),
+                patch("scripts.paper_release.verify_asset_parity"),
             ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(len(run.call_args_list), 5)
@@ -266,7 +335,7 @@ class PaperReleaseTests(unittest.TestCase):
             versioned = Path(directory) / "circle3-paper-v0.2.1.pdf"
             promoted = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
             with patch(
-                "paper_release.run_gh",
+                "scripts.paper_release.run_gh",
                 return_value=self.gh_result(
                     False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")
                 ),
@@ -280,7 +349,7 @@ class PaperReleaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             pdf = Path(directory) / "circle3-paper.pdf"
             pdf.write_bytes(b"new build")
-            with patch("paper_release.run_gh", return_value=self.gh_result(False)) as run:
+            with patch("scripts.paper_release.run_gh", return_value=self.gh_result(False)) as run:
                 with self.assertRaisesRegex(ReleaseError, "no surviving PDF"):
                     publish_release("0.2.1", pdf, CHANGELOG, ["v0.2.1"])
             run.assert_called_once()
@@ -299,11 +368,11 @@ class PaperReleaseTests(unittest.TestCase):
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
             with (
-                patch("paper_release.run_gh", side_effect=states) as run,
+                patch("scripts.paper_release.run_gh", side_effect=states) as run,
                 patch(
-                    "paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
+                    "scripts.paper_release.download_release_assets", return_value={"circle3-paper.pdf": pdf}
                 ),
-                patch("paper_release.verify_asset_parity"),
+                patch("scripts.paper_release.verify_asset_parity"),
             ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(run.call_args_list[1].args[0][2], "v0.2.1")
@@ -330,12 +399,12 @@ class PaperReleaseTests(unittest.TestCase):
                 self.gh_result(False, ("circle3-paper.pdf", "circle3-paper-v0.2.1.pdf")),
             ]
             with (
-                patch("paper_release.run_gh", side_effect=states) as run,
+                patch("scripts.paper_release.run_gh", side_effect=states) as run,
                 patch(
-                    "paper_release.download_release_assets",
+                    "scripts.paper_release.download_release_assets",
                     return_value={"circle3-paper-v0.2.1.pdf": pdf},
                 ),
-                patch("paper_release.verify_asset_parity"),
+                patch("scripts.paper_release.verify_asset_parity"),
             ):
                 publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
             self.assertEqual(run.call_args_list[1].args[0][2], "v0.2.1")
@@ -351,7 +420,7 @@ class PaperReleaseTests(unittest.TestCase):
             first.write_bytes(b"released")
             second.write_bytes(b"other")
             with patch(
-                "paper_release.download_release_assets", return_value={"a": first, "b": second}
+                "scripts.paper_release.download_release_assets", return_value={"a": first, "b": second}
             ):
                 with self.assertRaisesRegex(ReleaseError, "differ"):
                     verify_asset_parity(
@@ -401,13 +470,13 @@ class PaperReleaseTests(unittest.TestCase):
                             uploads[name] = path.read_bytes()
 
                 with (
-                    patch("paper_release.get_release", side_effect=[initial, complete, published]),
+                    patch("scripts.paper_release.get_release", side_effect=[initial, complete, published]),
                     patch(
-                        "paper_release.download_release_assets", return_value={existing: surviving}
+                        "scripts.paper_release.download_release_assets", return_value={existing: surviving}
                     ),
-                    patch("paper_release.upload_missing_release_assets", side_effect=capture),
-                    patch("paper_release.verify_asset_parity"),
-                    patch("paper_release.mark_release_published"),
+                    patch("scripts.paper_release.upload_missing_release_assets", side_effect=capture),
+                    patch("scripts.paper_release.verify_asset_parity"),
+                    patch("scripts.paper_release.mark_release_published"),
                 ):
                     changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
                     publish_release("0.2.1", pdf, changelog, ["v0.2.1"])
@@ -429,16 +498,16 @@ class PaperReleaseTests(unittest.TestCase):
             for failure in ("download", "parity"):
                 with (
                     self.subTest(failure=failure),
-                    patch("paper_release.get_release", return_value=state),
+                    patch("scripts.paper_release.get_release", return_value=state),
                     patch(
-                        "paper_release.download_release_assets",
+                        "scripts.paper_release.download_release_assets",
                         side_effect=ReleaseError("unavailable") if failure == "download" else None,
                     ),
                     patch(
-                        "paper_release.verify_asset_parity",
+                        "scripts.paper_release.verify_asset_parity",
                         side_effect=ReleaseError("differ") if failure == "parity" else None,
                     ),
-                    patch("paper_release.mark_release_published") as publish,
+                    patch("scripts.paper_release.mark_release_published") as publish,
                 ):
                     with self.assertRaises(ReleaseError):
                         changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
@@ -478,10 +547,10 @@ class PaperReleaseTests(unittest.TestCase):
             path = Path(directory) / name
             path.write_bytes(b"released")
             with (
-                patch("paper_release.get_release", return_value=state),
-                patch("paper_release.download_release_assets", return_value={name: path}),
-                patch("paper_release.upload_missing_release_assets") as upload,
-                patch("paper_release.mark_release_published") as publish,
+                patch("scripts.paper_release.get_release", return_value=state),
+                patch("scripts.paper_release.download_release_assets", return_value={name: path}),
+                patch("scripts.paper_release.upload_missing_release_assets") as upload,
+                patch("scripts.paper_release.mark_release_published") as publish,
             ):
                 with self.assertRaisesRegex(ReleaseError, "digest"):
                     changelog = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])

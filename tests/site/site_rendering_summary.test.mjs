@@ -10,10 +10,10 @@ import test from "node:test";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { responsiveViewports } from "../tests/browser/site-routes.js";
-import { renderSiteRenderingSummary } from "../scripts/render_site_rendering_summary.mjs";
+import { responsiveViewports } from "./browser/site-routes.js";
+import { renderSiteRenderingSummary } from "../../scripts/site/render_rendering_summary.mjs";
 
-const scriptPath = resolve("scripts/render_site_rendering_summary.mjs");
+const scriptPath = resolve("scripts/site/render_rendering_summary.mjs");
 const diagnosticOutcomes = {
   BUILD_OUTCOME: "success",
   SMOKE_OUTCOME: "success",

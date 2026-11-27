@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import {
   discoverHtmlRoutes,
   responsiveViewports,
-} from "../tests/browser/site-routes.js";
+} from "../../tests/site/browser/site-routes.js";
 
 const routeSmokeSuffix = " is present in generated output and loads";
 const axeSuffix = " has no detectable accessibility violations";
@@ -400,6 +400,7 @@ export function renderSiteRenderingSummary({
   const lines = [
     "# Site: Rendering Integrity",
     "",
+    `- Checked-out revision: \`${env.SOURCE_SHA ?? "unavailable"}\`.`,
     `- Production build (GitHub step \`Build site\`): **${summarizeStepOutcome(env.BUILD_OUTCOME)}**.`,
     `- Browser suite (GitHub step \`Run rendered-site smoke tests\`): **${summarizeStepOutcome(env.SMOKE_OUTCOME)}**.`,
   ];

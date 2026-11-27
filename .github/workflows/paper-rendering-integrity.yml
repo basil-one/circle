@@ -8,13 +8,13 @@ on:
     outputs:
       status:
         description: Paper Rendering validator status
-        value: ${{ jobs.paper-rendering.outputs.status }}
+        value: ${{ jobs.paper-rendering-integrity.outputs.status }}
 
 permissions:
   contents: read
 
 jobs:
-  paper-rendering:
+  paper-rendering-integrity:
     name: "Paper: Rendering Integrity"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -36,12 +36,12 @@ jobs:
         run: |
           command -v pdfinfo
           command -v pdftoppm
-          python3 -m unittest discover -s scripts -p 'test_paper_rendering.py' -v
+          python3 -m unittest discover -s tests/paper -p 'test_paper_rendering.py' -v
       - name: Check rendered paper pages
         id: rendering
         run: |
           set +e
-          python3 scripts/check_paper_rendering.py assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json" > "$RUNNER_TEMP/paper-rendering.log" 2>&1
+          python3 -m scripts.paper.check_rendering assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json" > "$RUNNER_TEMP/paper-rendering.log" 2>&1
           result=$?
           set -e
           cat "$RUNNER_TEMP/paper-rendering.log"

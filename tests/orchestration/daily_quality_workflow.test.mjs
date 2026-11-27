@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const workflowDirectory = new URL('../.github/workflows/', import.meta.url);
+const workflowDirectory = new URL('../../.github/workflows/', import.meta.url);
 const children = [
   ['common-code-quality.yml', 'common-code-quality'],
   ['common-dependency-security.yml', 'common-dependency-security'],
@@ -78,9 +78,9 @@ test('publication audit is read-only, independently callable, and preserves its 
   assert.match(yaml, /validator_sha: \$\{\{ steps\.checkout\.outputs\.commit \}\}/);
   assert.match(yaml, /fetch-depth: 0\n          persist-credentials: false/);
   assert.match(yaml, /refs\/heads\/main:refs\/remotes\/origin\/main/);
-  assert.match(yaml, /python3 scripts\/paper_publication_integrity\.py/);
+  assert.match(yaml, /python3 -m scripts\.paper\.publication_integrity/);
   for (const output of ['status', 'detail', 'main_sha', 'validator_sha']) {
-    assert.match(yaml, new RegExp(`value: \\$\\{\\{ jobs\\.publication\\.outputs\\.${output} \\}\\}`));
+    assert.match(yaml, new RegExp(`value: \\$\\{\\{ jobs\\.paper-publication-integrity\\.outputs\\.${output} \\}\\}`));
   }
   assert.match(yaml, /test "\$STATUS" = passed/);
   assert.doesNotMatch(yaml, /build-paper-pdf|upload-artifact|contents: write|ref: main\n/);
@@ -96,7 +96,7 @@ test('Performance Integrity confirms only affected profiles and enforces the fin
   assert.match(performance, /name: Confirm initially violating route profiles/);
   assert.match(performance, /PERFORMANCE_PROFILES_JSON: \$\{\{ steps\.comparison\.outputs\.confirmation_profiles \}\}/);
   assert.match(performance, /PERFORMANCE_REPORT_DIR: \$\{\{ runner\.temp \}\}\/performance-confirmation-reports/);
-  assert.match(performance, /node scripts\/compare_site_performance\.mjs --finalize/);
+  assert.match(performance, /node scripts\/site\/compare_performance\.mjs --finalize/);
   assert.match(performance, /name: performance-confirmation-reports/);
   assert.match(performance, /performance-reports\/performance-summary\.json[\s\S]*performance-reports\/performance-comparison\.json/);
   assert.doesNotMatch(performance, /performance-confirmation-reports\/performance-summary\.json[\s\S]*name: performance-summary/);

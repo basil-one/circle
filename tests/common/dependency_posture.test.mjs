@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { checkDependencyPosture } from '../scripts/check_common_dependency_posture.mjs';
+import { checkDependencyPosture } from '../../scripts/common/dependency_posture.mjs';
 
 const options = {
   apiUrl: 'https://api.github.com',

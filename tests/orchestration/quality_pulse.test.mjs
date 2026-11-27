@@ -15,7 +15,7 @@ import {
   renderPerformanceTrends,
   renderPulse,
   validPaperReport
-} from '../scripts/quality_pulse.mjs';
+} from '../../scripts/orchestration/quality_pulse.mjs';
 
 const date = '2026-11-16';
 const passingRun = {
@@ -790,6 +790,7 @@ test('orchestrated Pulse reports same-cycle job results and requires valid evide
 
   assert.equal(pulse.successful, true);
   assert.match(pulse.markdown, /All 12 dimensions passed in this cycle/);
+  assert.ok(pulse.markdown.includes(`Validator revision:** \`${'b'.repeat(40)}\``));
   assert.match(pulse.markdown, /\| Site: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Build Integrity \| Passed \| Same-cycle job result \|/);
   assert.match(pulse.markdown, /\| Paper: Publication Integrity \| Passed \| Same-cycle job result \|/);

@@ -6,7 +6,7 @@ import {
   isDailyPerformanceEvidence,
   loadDailyHistory,
   referenceIsReady
-} from '../scripts/compare_site_performance.mjs';
+} from '../../scripts/site/compare_performance.mjs';
 
 const metricKeys = [
   'first-contentful-paint',

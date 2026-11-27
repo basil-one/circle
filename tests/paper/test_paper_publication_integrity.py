@@ -4,7 +4,7 @@ import unittest
 import urllib.error
 from unittest.mock import patch
 
-import paper_publication_integrity as publication
+from scripts.paper import publication_integrity as publication
 
 CHANGELOG = """# Changelog
 

@@ -5,19 +5,19 @@ on:
   workflow_call:
     outputs:
       status:
-        value: ${{ jobs.publication.outputs.status }}
+        value: ${{ jobs.paper-publication-integrity.outputs.status }}
       detail:
-        value: ${{ jobs.publication.outputs.detail }}
+        value: ${{ jobs.paper-publication-integrity.outputs.detail }}
       main_sha:
-        value: ${{ jobs.publication.outputs.main_sha }}
+        value: ${{ jobs.paper-publication-integrity.outputs.main_sha }}
       validator_sha:
-        value: ${{ jobs.publication.outputs.validator_sha }}
+        value: ${{ jobs.paper-publication-integrity.outputs.validator_sha }}
 
 permissions:
   contents: read
 
 jobs:
-  publication:
+  paper-publication-integrity:
     name: "Paper: Publication Integrity"
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -46,7 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set +e
-          python3 scripts/paper_publication_integrity.py
+          python3 -m scripts.paper.publication_integrity
           result=$?
           if [ "$result" != 0 ] && [ "$result" != 2 ] && [ "$result" != 3 ]; then
             echo "status=unknown" >> "$GITHUB_OUTPUT"

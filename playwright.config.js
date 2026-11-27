@@ -4,7 +4,7 @@ const viewportWidth = Number(process.env.BROWSER_VIEWPORT_WIDTH ?? 1280);
 const viewportHeight = Number(process.env.BROWSER_VIEWPORT_HEIGHT ?? 800);
 
 export default defineConfig({
-  testDir: "./tests/browser",
+  testDir: "./tests/site/browser",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,

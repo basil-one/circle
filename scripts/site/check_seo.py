@@ -9,9 +9,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 if __package__:
-    from .check_site_links import page_url, parse_config
+    from .check_links import page_url, parse_config
 else:
-    from check_site_links import page_url, parse_config
+    from check_links import page_url, parse_config
 
 
 class MetadataParser(HTMLParser):

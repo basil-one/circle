@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.check_site_links import check_external, main, public_destination, report_for_site
+from scripts.site.check_links import check_external, main, public_destination, report_for_site
 
 
 class LinkAuditHandler(http.server.BaseHTTPRequestHandler):
@@ -73,12 +73,12 @@ class CheckLinksTests(unittest.TestCase):
         self.assertNotIn("assets/photo.jpg", report)
 
     def test_external_results_distinguish_reachable_blocked_and_missing(self):
-        with patch("scripts.check_site_links.public_destination", return_value=(True, "")):
+        with patch("scripts.site.check_links.public_destination", return_value=(True, "")):
             self.assertEqual(check_external(f"{self.external_origin}/ok")[0], "healthy")
             self.assertEqual(check_external(f"{self.external_origin}/blocked")[0], "uncertain")
             self.assertEqual(check_external(f"{self.external_origin}/missing")[0], "likely broken")
         with patch(
-            "scripts.check_site_links.public_destination",
+            "scripts.site.check_links.public_destination",
             side_effect=[(True, ""), (False, "non-public")],
         ):
             category, detail = check_external(f"{self.external_origin}/redirect")
@@ -100,13 +100,13 @@ class CheckLinksTests(unittest.TestCase):
         report_path = self.root / "report.md"
 
         with patch(
-            "scripts.check_site_links.check_external",
+            "scripts.site.check_links.check_external",
             return_value=("uncertain", "HTTP 403 Forbidden"),
         ):
             with patch(
                 "sys.argv",
                 [
-                    "check_site_links.py",
+                    "check_links.py",
                     "--site-dir",
                     str(self.site),
                     "--config",
@@ -135,7 +135,7 @@ class CheckLinksTests(unittest.TestCase):
         status_path = self.root / "status"
 
         with patch(
-            "scripts.check_site_links.check_external",
+            "scripts.site.check_links.check_external",
             side_effect=[
                 ("likely broken", "HTTP 404 Not Found"),
                 ("uncertain", "HTTP 403 Forbidden"),
@@ -144,7 +144,7 @@ class CheckLinksTests(unittest.TestCase):
             with patch(
                 "sys.argv",
                 [
-                    "check_site_links.py",
+                    "check_links.py",
                     "--site-dir",
                     str(self.site),
                     "--config",
@@ -180,13 +180,13 @@ class CheckLinksTests(unittest.TestCase):
                 expected
             ]
             with patch(
-                "scripts.check_site_links.check_external",
+                "scripts.site.check_links.check_external",
                 return_value=(category, "HTTP 200" if expected == "success" else "HTTP 403"),
             ):
                 with patch(
                     "sys.argv",
                     [
-                        "check_site_links.py",
+                        "check_links.py",
                         "--site-dir",
                         str(self.site),
                         "--config",
@@ -217,7 +217,7 @@ class CheckLinksTests(unittest.TestCase):
         )
 
         with patch(
-            "scripts.check_site_links.check_external", return_value=("healthy", "HTTP 200")
+            "scripts.site.check_links.check_external", return_value=("healthy", "HTTP 200")
         ) as check_external_mock:
             report, errors, likely_broken, _ = report_for_site(self.site, config)
 
@@ -238,7 +238,7 @@ class CheckLinksTests(unittest.TestCase):
             f'  connect: "{destination}"\n'
         )
 
-        with patch("scripts.check_site_links.check_external", return_value=("healthy", "HTTP 200")):
+        with patch("scripts.site.check_links.check_external", return_value=("healthy", "HTTP 200")):
             report, errors, likely_broken, _ = report_for_site(self.site, config)
 
         self.assertEqual((errors, likely_broken), (0, 0))
@@ -257,9 +257,9 @@ class CheckLinksTests(unittest.TestCase):
 
         with (
             patch(
-                "scripts.check_site_links.check_external", return_value=("healthy", "HTTP 200")
+                "scripts.site.check_links.check_external", return_value=("healthy", "HTTP 200")
             ) as check,
-            patch("scripts.check_site_links.time.sleep") as sleep,
+            patch("scripts.site.check_links.time.sleep") as sleep,
         ):
             report_for_site(self.site, config, external_delay=0.4)
 
@@ -279,13 +279,13 @@ class CheckLinksTests(unittest.TestCase):
         report_path = self.root / "report.md"
 
         with patch(
-            "scripts.check_site_links.check_external",
+            "scripts.site.check_links.check_external",
             return_value=("likely broken", "HTTP 404 Not Found"),
         ):
             with patch(
                 "sys.argv",
                 [
-                    "check_site_links.py",
+                    "check_links.py",
                     "--site-dir",
                     str(self.site),
                     "--config",
@@ -306,13 +306,13 @@ class CheckLinksTests(unittest.TestCase):
         config.write_text('url: "https://circle.example"\nbaseurl: ""\n')
         report_path = self.root / "report.md"
 
-        with patch("scripts.check_site_links.public_destination", return_value=(True, "")):
+        with patch("scripts.site.check_links.public_destination", return_value=(True, "")):
             for path, expected_status in (("/missing", 1), ("/ok", 0)):
                 self.write("index.html", f'<a href="{self.external_origin}{path}">External</a>')
                 with patch(
                     "sys.argv",
                     [
-                        "check_site_links.py",
+                        "check_links.py",
                         "--site-dir",
                         str(self.site),
                         "--config",
@@ -342,11 +342,11 @@ class CheckLinksTests(unittest.TestCase):
         )
         report_path = self.root / "report.md"
 
-        with patch("scripts.check_site_links.check_external") as check_external_mock:
+        with patch("scripts.site.check_links.check_external") as check_external_mock:
             with patch(
                 "sys.argv",
                 [
-                    "check_site_links.py",
+                    "check_links.py",
                     "--site-dir",
                     str(self.site),
                     "--config",
@@ -377,7 +377,7 @@ class CheckLinksTests(unittest.TestCase):
         with patch(
             "sys.argv",
             [
-                "check_site_links.py",
+                "check_links.py",
                 "--site-dir",
                 str(self.site),
                 "--config",

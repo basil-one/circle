@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import urldefrag, urlsplit
 
-from check_site_links import check_external, same_site
+from scripts.site.check_links import check_external, same_site
 from pypdf import PdfReader
 from pypdf.generic import (
     ArrayObject,
@@ -27,7 +27,7 @@ from pypdf.generic import (
     NumberObject,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def paper_expectations(config: Path):
