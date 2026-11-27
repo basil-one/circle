@@ -103,6 +103,26 @@ function coherenceCommandDiagnostics(workflows, packageScripts) {
   return errors;
 }
 
+function externalActionVersionDiagnostics(workflows) {
+  const references = new Map();
+  for (const [file, contents] of workflows) {
+    for (const match of contents.matchAll(/^\s*uses:\s+([^\s#]+)@([^\s#]+)/gm)) {
+      const [, action, version] = match;
+      if (action.startsWith('./') || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_./-]+$/.test(action)) continue;
+      const line = contents.slice(0, match.index).split('\n').length;
+      const found = references.get(action) ?? [];
+      found.push({ file, line, version });
+      references.set(action, found);
+    }
+  }
+  return [...references]
+    .filter(([, found]) => new Set(found.map(({ version }) => version)).size > 1)
+    .map(([action, found]) => {
+      const details = found.map(({ file, line, version }) => `${file}:${line} @${version}`).join(', ');
+      return `${action}: conflicting workflow refs (${details}); align all workflows on one release version.`;
+    });
+}
+
 function expectedJobIds(file) {
   if (file === 'common-dependency-security.yml') {
     return ['common-dependency-security-review', 'common-dependency-security-posture'];
@@ -351,6 +371,18 @@ test('repository architecture, placement, boundaries, and references are enforce
     pathErrors.push(...repositoryPathDiagnostics(file, yaml));
   }
   assert.deepEqual(pathErrors, [], pathErrors.join('\n'));
+  const actionReferences = workflowContents.map(([file, contents]) => [
+    `.github/workflows/${file}`,
+    contents
+  ]);
+  assert.deepEqual(externalActionVersionDiagnostics(actionReferences), []);
+  assert.match(
+    externalActionVersionDiagnostics([
+      ['.github/workflows/common-code-quality.yml', 'uses: actions/upload-artifact@v6\n'],
+      ['.github/workflows/paper-preview.yml', 'uses: actions/upload-artifact@v7\n']
+    ])[0],
+    /actions\/upload-artifact: conflicting workflow refs \(.*common-code-quality\.yml:1 @v6, .*paper-preview\.yml:1 @v7\); align all workflows on one release version/
+  );
   assert.match(jobIdDiagnostics('site-build-integrity.yml', ['build'])[0], /site-build-integrity\.yml: expected substantive job IDs site-build-integrity/);
   assert.deepEqual(
     repositoryPathDiagnostics('fixture.yml', 'run: node scripts/site/missing.mjs'),
@@ -444,6 +476,10 @@ test('repository architecture, placement, boundaries, and references are enforce
   const exclusions = jekyllConfig.match(/^exclude:\n((?:  - .+\n)*)/m)?.[1] ?? '';
   assert.match(readme, /\.github\/CONVENTIONS\.md/);
   assert.match(conventions, /Common → Site → Paper/);
+  assert.match(
+    conventions,
+    /Use release version tags for external actions and one version of each shared dependency across workflows, unless a documented compatibility constraint requires otherwise\./
+  );
   assert.deepEqual([
     ...markdownLinkDiagnostics('README.md', readme),
     ...markdownLinkDiagnostics('.github/QUALITY.md', quality),

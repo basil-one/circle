@@ -53,7 +53,7 @@ jobs:
       - name: Upload content findings
         id: upload
         if: ${{ always() && (steps.content.outcome == 'success' || steps.content.outcome == 'failure') }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: paper-content-report
           path: ${{ runner.temp }}/paper-content-report.json

@@ -21,6 +21,8 @@ Paper source content, configuration, template, PDF builder, release helper, and 
 
 Make the checked-out revision and task context clear; prepare only the needed environment; generate artifacts when required; run the check and focused tests; preserve named evidence; summarize passed, advisory, failed, incomplete, unknown, and skipped outcomes without inferring success from missing evidence.
 
+Use release version tags for external actions and one version of each shared dependency across workflows, unless a documented compatibility constraint requires otherwise.
+
 The order is purposeful, not a template: Site Publish validates and deploys a same-run Pages artifact; Paper Preview builds only for review; Paper Publish is human-initiated and retains its resume/recovery safeguards; Paper Publication Integrity is read-only. Paper validators build independently rather than sharing generated PDFs. Dependency Security separates pull-request review from scheduled/manual alert posture. Performance keeps classification, initial measurement, confirmation, and artifact evidence distinct.
 
 ## Run and maintain checks

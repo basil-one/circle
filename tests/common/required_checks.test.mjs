@@ -225,6 +225,7 @@ test('all twelve current Common, Site, and Paper checks have substantive evidenc
   assert.match(codeQuality, /python3 -m unittest discover -s tests\/paper -p 'test_release\.py' -v/);
   assert.match(codeQuality, /id: invalid_permissions/);
   assert.match(codeQuality, /INVALID_PERMISSIONS_OUTCOME: \$\{\{ steps\.invalid_permissions\.outcome \}\}/);
+  assert.match(codeQuality, /uses: jdx\/jactionlint@v2\.6\.0/);
   assert.match(codeQuality, /Workflow, publication, and operational regression contracts/);
   assert.match(codeQuality, /Invalid permission fixture rejected with the expected diagnostic/);
   assert.match(link, /BUILD_OUTCOME: \$\{\{ steps\.build\.outcome \}\}/);
@@ -245,6 +246,6 @@ test('manual paper preview only builds and uploads the shared PDF', async () => 
   const yaml = await readFile(new URL('../../.github/workflows/paper-preview.yml', import.meta.url), 'utf8');
   assert.match(yaml, /run: bash scripts\/build-paper-pdf\.sh/);
   assert.match(yaml, /name: circle3-paper-preview/);
-  assert.match(yaml, /actions\/upload-artifact@v6/);
+  assert.match(yaml, /actions\/upload-artifact@v7/);
   assert.doesNotMatch(yaml, /paper-build-integrity\.yml|check_paper_content|quality-pulse/);
 });
