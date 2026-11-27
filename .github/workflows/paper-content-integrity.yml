@@ -8,13 +8,13 @@ on:
     outputs:
       status:
         description: Paper Content validator status
-        value: ${{ jobs.paper-content.outputs.status }}
+        value: ${{ jobs.paper-content-integrity.outputs.status }}
 
 permissions:
   contents: read
 
 jobs:
-  paper-content:
+  paper-content-integrity:
     name: "Paper: Content Integrity"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -35,7 +35,7 @@ jobs:
         id: content
         run: |
           set +e
-          python3 scripts/check_paper_content.py scripts/plop.paper.config.yaml assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-content-report.json"
+          python3 -m scripts.paper.check_content scripts/plop.paper.config.yaml assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-content-report.json"
           result=$?
           set -e
           case "$result" in
@@ -49,11 +49,11 @@ jobs:
         if: ${{ always() && steps.build.outcome == 'success' }}
         env:
           PAPER_PDF_PATH: assets/pdfs/circle3-paper.pdf
-        run: python3 -m unittest discover -s scripts -p 'test_paper_content.py' -v
+        run: python3 -m unittest discover -s tests/paper -p 'test_content.py' -v
       - name: Upload content findings
         id: upload
         if: ${{ always() && (steps.content.outcome == 'success' || steps.content.outcome == 'failure') }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: paper-content-report
           path: ${{ runner.temp }}/paper-content-report.json

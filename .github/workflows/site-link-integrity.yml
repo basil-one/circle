@@ -8,22 +8,27 @@ on:
     outputs:
       status:
         description: Site Link audit outcome
-        value: ${{ jobs.links.outputs.status }}
+        value: ${{ jobs.site-link-integrity.outputs.status }}
 
 permissions:
   contents: read
 
 jobs:
-  links:
+  site-link-integrity:
     name: "Site: Link Integrity"
     outputs:
       status: ${{ steps.link_audit.outputs.status }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout intended revision
+        id: checkout
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -37,12 +42,12 @@ jobs:
           JEKYLL_ENV: production
       - name: Test link auditor
         id: link_tests
-        run: python3 -m unittest discover -s tests -p 'test_site_links.py'
+        run: python3 -m unittest discover -s tests/site -p 'test_links.py'
       - name: Audit generated site links
         id: link_audit
         run: |
           set +e
-          python3 scripts/check_site_links.py \
+          python3 -m scripts.site.check_links \
             --site-dir _site \
             --config _config.yml \
             --report "$RUNNER_TEMP/link-audit-report.md" \
@@ -65,12 +70,11 @@ jobs:
         if: always()
         env:
           BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           TEST_OUTCOME: ${{ steps.link_tests.outcome }}
           AUDIT_OUTCOME: ${{ steps.link_audit.outcome }}
           AUDIT_STATUS: ${{ steps.link_audit.outputs.status }}
         run: |
-          echo "# Site: Link Integrity" >> "$GITHUB_STEP_SUMMARY"
-          echo >> "$GITHUB_STEP_SUMMARY"
           summary_outcome() {
             case "$1" in
               success) printf -- "- %s: **passed**.\n" "$2" ;;
@@ -79,6 +83,10 @@ jobs:
             esac
           }
           {
+            echo "# Site: Link Integrity"
+            echo
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo
             summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
             summary_outcome "$TEST_OUTCOME" "Link-auditor unit tests"
             summary_outcome "$AUDIT_OUTCOME" "Generated-site link audit"
@@ -88,10 +96,10 @@ jobs:
               failure) echo "- Link evidence: **failed**; confirmed link defects were reported below." ;;
               *) echo "- Link evidence: **incomplete**; evidence was not established." ;;
             esac
+            if [ -f "$RUNNER_TEMP/link-audit-report.md" ]; then
+              cat "$RUNNER_TEMP/link-audit-report.md"
+            else
+              echo "- Link report unavailable."
+              echo "  See audit step logs."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "$RUNNER_TEMP/link-audit-report.md" ]; then
-            cat "$RUNNER_TEMP/link-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "- Link report unavailable." >> "$GITHUB_STEP_SUMMARY"
-            echo "  See audit step logs." >> "$GITHUB_STEP_SUMMARY"
-          fi

@@ -1,0 +1,46 @@
+name: "Common: Coherence Integrity"
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  common-coherence-integrity:
+    name: "Common: Coherence Integrity"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout intended revision
+        id: checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Verify repository coherence contracts
+        id: coherence
+        run: npm run test:coherence-integrity
+      - name: Summarize coherence integrity
+        if: always()
+        env:
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
+          COHERENCE_OUTCOME: ${{ steps.coherence.outcome }}
+        run: |
+          case "$COHERENCE_OUTCOME" in
+            success) result="**passed**" ;;
+            failure) result="**failed**; see contract diagnostics and step logs" ;;
+            *) result="**incomplete**; contract evidence was not produced" ;;
+          esac
+          {
+            echo "# Common: Coherence Integrity"
+            echo
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo
+            echo "- Repository coherence contracts: $result."
+          } >> "$GITHUB_STEP_SUMMARY"

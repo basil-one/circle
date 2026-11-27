@@ -8,7 +8,8 @@ Circle is a Jekyll website and the source of the Circle3 paper, three guiding mo
 
 ## Understand before changing
 
-- Start with [README.md](README.md), including its intellectual stewardship principles. For paper work, read [scripts/README.md](scripts/README.md) and inspect the paper configuration, sources, and relevant workflows.
+- Start with [README.md](README.md), including its intellectual stewardship principles. Understand our quality commitments in [QUALITY.md](.github/QUALITY.md) and follow the repository conventions in [CONVENTIONS.md](.github/CONVENTIONS.md).
+- For paper work, read [scripts/README.md](scripts/README.md) and inspect the paper configuration, sources, and relevant workflows.
 - Establish the intended outcome, what must stay true, and how to verify it before implementing. Surface unresolved editorial or operating decisions early rather than inventing a policy.
 - Inspect current `main`, the working branch, and affected consumers. Reconcile concurrent changes without undoing merged features, protections, or tests.
 - Treat `_moves/` and `_lenses/` as shared website and paper sources. Inspect both outputs when changing shared content; keep paper-specific citation formatting in the paper configuration.

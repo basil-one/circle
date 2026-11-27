@@ -9,6 +9,7 @@ Technical quality protects people's ability to understand, trust, navigate, and 
 - **Human connection is the purpose.** Reliability, accessibility, clarity, and performance serve the reader's experience. A passing score is evidence, not a substitute for human judgment.
 - **Quality is sustained.** Relevant changes are checked before merging; conditions that can deteriorate without a code change are revisited over time.
 - **Automation brings actionable work to human judgment.** When a problem has a safe, practical remedy, an agent or workflow brings a reviewable pull request. Otherwise it brings a focused finding with evidence, impact, and a recommended next action. Humans decide what matters, approve changes, and merge.
+- **Coherence creates capacity.** Consistent organization and clear relationships make the system easier to understand, maintain, and extend.
 - **Care creates capacity.** Healthy checks stay quiet. Alerts are proportionate, understandable, and worth acting on. The practice reduces maintenance work rather than displacing attention from human connection.
 
 ## How We Operate
@@ -25,7 +26,7 @@ Technical quality protects people's ability to understand, trust, navigate, and 
 
 A single quality practice serves the website and the paper.
 
-- **Common:** Shared code quality and dependency security.
+- **Common:** Shared code quality, coherence integrity, and dependency security.
 - **Site:** Integrity of website development, generation, publication, and the visitor's experience.
 - **Paper:** Integrity of paper development, generation, review, and publication.
 
@@ -36,6 +37,7 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | Capability | Purpose |
 | --- | --- |
 | [Common: Code Quality](workflows/common-code-quality.yml) | Source quality, workflow correctness, and maintainability. Function complexity is capped at 10. |
+| [Common: Coherence Integrity](workflows/common-coherence-integrity.yml) | Conceptual integrity of repository organization, conventions, and architectural relationships. |
 | [Common: Dependency Security](workflows/common-dependency-security.yml) | Dependency changes and open vulnerability alerts at moderate severity or higher. |
 | [Site: Build Integrity](workflows/site-build-integrity.yml) | Successful production website generation. |
 | [Site: Link Integrity](workflows/site-link-integrity.yml) | Internal links, fragments, assets, and external destinations; uncertain external responses are reported as advisories. |
@@ -57,6 +59,10 @@ Required checks protect against known defects before changes are merged. Quality
 
 Performance Integrity protects against confirmed budget violations and substantial loading regressions against a compatible reviewed reference. Rolling comparisons inform human judgment.
 
+## Coherence Integrity
+
+Sustain conceptual integrity across workflows, code, tests, and documentation. Executable [repository conventions](CONVENTIONS.md) protect against architectural drift as humans and agents evolve the system. Human judgment guides simplicity, consistency, and intentional differences.
+
 ## Publication
 
 Website and paper publication use their respective verified build mechanisms.
@@ -73,4 +79,4 @@ Performance measurements are compared against a reviewed reference and recent co
 
 ## Evolution
 
-Quality Gate activation and additional Paper safeguards remain in progress. See [North Star — Circle Quality](https://github.com/basil-one/circle/issues/20).
+Quality Gate activation remains in progress. See [North Star — Circle Quality](https://github.com/basil-one/circle/issues/20).

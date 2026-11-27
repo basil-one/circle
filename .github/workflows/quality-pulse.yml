@@ -19,6 +19,12 @@ jobs:
     permissions:
       contents: read
 
+  common-coherence-integrity:
+    name: "Common: Coherence Integrity"
+    uses: ./.github/workflows/common-coherence-integrity.yml
+    permissions:
+      contents: read
+
   common-dependency-security:
     name: "Common: Dependency Security"
     uses: ./.github/workflows/common-dependency-security.yml
@@ -94,6 +100,7 @@ jobs:
     if: ${{ always() && !cancelled() }}
     needs:
       - common-code-quality
+      - common-coherence-integrity
       - common-dependency-security
       - site-build-integrity
       - site-link-integrity
@@ -112,10 +119,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v5
+        id: checkout
         with:
           persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Summarize this quality cycle
-        run: node scripts/quality_pulse.mjs
+        run: node scripts/orchestration/quality_pulse.mjs
         env:
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -125,3 +136,4 @@ jobs:
           PULSE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           PULSE_EVENT_NAME: ${{ github.event_name }}
           PULSE_RUN_BRANCH: ${{ github.ref_name }}
+          PULSE_VALIDATOR_REVISION: ${{ steps.revision.outputs.sha }}

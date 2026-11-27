@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  paper-build:
+  paper-build-integrity:
     name: "Paper: Build Integrity"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -26,7 +26,7 @@ jobs:
 
       - name: Test paper configuration
         id: tests
-        run: python3 -m unittest discover -s scripts -p 'test_paper_config.py' -v
+        run: python3 -m unittest discover -s tests/paper -p 'test_config.py' -v
 
       - name: Build and verify fresh author-edition PDF
         id: build
@@ -34,7 +34,7 @@ jobs:
 
       - name: Upload PDF preview
         id: upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: circle3-paper-preview
           path: assets/pdfs/circle3-paper.pdf

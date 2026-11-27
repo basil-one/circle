@@ -10,14 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  seo:
+  site-seo-integrity:
     name: "Site: SEO Integrity"
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout intended revision
+        id: checkout
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
@@ -31,11 +36,11 @@ jobs:
           JEKYLL_ENV: production
       - name: Test SEO auditor
         id: seo_tests
-        run: python3 -m unittest discover -s tests -p 'test_site_seo.py' -v
+        run: python3 -m unittest discover -s tests/site -p 'test_seo.py' -v
       - name: Audit generated site SEO
         id: seo_audit
         run: |
-          python3 scripts/check_site_seo.py \
+          python3 -m scripts.site.check_seo \
             --site-dir _site \
             --config _config.yml \
             --report "$RUNNER_TEMP/seo-audit-report.md"
@@ -43,6 +48,7 @@ jobs:
         if: always()
         env:
           BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           TEST_OUTCOME: ${{ steps.seo_tests.outcome }}
           AUDIT_OUTCOME: ${{ steps.seo_audit.outcome }}
         run: |
@@ -56,13 +62,15 @@ jobs:
           {
             echo "# Site: SEO Integrity"
             echo
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            echo
             summary_outcome "$BUILD_OUTCOME" "Production Jekyll build"
             summary_outcome "$TEST_OUTCOME" "SEO-auditor unit tests"
             summary_outcome "$AUDIT_OUTCOME" "Generated-site SEO audit"
+            if [ -f "$RUNNER_TEMP/seo-audit-report.md" ]; then
+              cat "$RUNNER_TEMP/seo-audit-report.md"
+            else
+              echo "- SEO results unavailable."
+              echo "  See audit step logs."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "$RUNNER_TEMP/seo-audit-report.md" ]; then
-            cat "$RUNNER_TEMP/seo-audit-report.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "- SEO results unavailable." >> "$GITHUB_STEP_SUMMARY"
-            echo "  See audit step logs." >> "$GITHUB_STEP_SUMMARY"
-          fi

@@ -20,15 +20,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lighthouse:
+  site-performance-integrity:
     name: "Site: Performance Integrity"
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+        id: checkout
         with:
           persist-credentials: false
           fetch-depth: 0
+      - name: Record checked-out revision
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Run performance classifier and history tests
         id: tests
         run: npm run test:performance-history && npm run test:performance-policy && npm run test:performance-skip && npm run test:performance-summary
@@ -36,7 +40,7 @@ jobs:
         id: classify
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        run: node scripts/classify_site_performance_skip.mjs
+        run: node scripts/site/classify_performance_skip.mjs
         env:
           PERFORMANCE_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PERFORMANCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -72,7 +76,7 @@ jobs:
       - name: Load prior daily-main summaries
         id: history
         if: steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true'
-        run: node scripts/compare_site_performance.mjs --load-history
+        run: node scripts/site/compare_performance.mjs --load-history
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PERFORMANCE_HISTORY_PATH: ${{ runner.temp }}/performance-history.json
@@ -88,11 +92,11 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_SHA: ${{ steps.revision.outputs.sha }}
       - name: Compare with fixed and rolling baselines
         id: comparison
         if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success'
-        run: node scripts/compare_site_performance.mjs
+        run: node scripts/site/compare_performance.mjs
         env:
           PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
           PERFORMANCE_HISTORY_PATH: ${{ runner.temp }}/performance-history.json
@@ -112,11 +116,11 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_SHA: ${{ steps.revision.outputs.sha }}
       - name: Enforce confirmed performance safeguards
         id: evaluation
         if: always() && (steps.classify.outcome == 'failure' || steps.classify.outputs.skip_measurement != 'true') && steps.measure.outcome == 'success'
-        run: node scripts/compare_site_performance.mjs --finalize
+        run: node scripts/site/compare_performance.mjs --finalize
         env:
           PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
           PERFORMANCE_CONFIRMATION_REPORT_DIR: ${{ runner.temp }}/performance-confirmation-reports
@@ -167,6 +171,7 @@ jobs:
         if: always()
         env:
           PERFORMANCE_REPORT_DIR: ${{ runner.temp }}/performance-reports
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           JOB_STATUS: ${{ job.status }}
           TRIGGER_NAME: ${{ inputs.caller_event_name || github.event_name }}
           TRIGGER_REF: ${{ github.head_ref || github.ref_name }}
@@ -196,8 +201,8 @@ jobs:
           STEP_CONFIRMATION_REPORTS: ${{ steps.confirmation_upload.outcome }}
           CONFIRMATION_REPORTS_URL: ${{ steps.confirmation_upload.outputs.artifact-url }}
         run: |
-          if [ -f scripts/render_site_performance_summary.mjs ]; then
-            node scripts/render_site_performance_summary.mjs
+          if [ -f scripts/site/render_performance_summary.mjs ]; then
+            node scripts/site/render_performance_summary.mjs
           else
             printf '# Site: Performance Integrity\n\n**Measurement failed or incomplete**\n\nThe repository checkout or Summary renderer was unavailable; inspect this workflow run for the failing step. No measurement is reported as successful.\n' > "$GITHUB_STEP_SUMMARY"
           fi

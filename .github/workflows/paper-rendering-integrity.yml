@@ -8,13 +8,13 @@ on:
     outputs:
       status:
         description: Paper Rendering validator status
-        value: ${{ jobs.paper-rendering.outputs.status }}
+        value: ${{ jobs.paper-rendering-integrity.outputs.status }}
 
 permissions:
   contents: read
 
 jobs:
-  paper-rendering:
+  paper-rendering-integrity:
     name: "Paper: Rendering Integrity"
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -36,12 +36,12 @@ jobs:
         run: |
           command -v pdfinfo
           command -v pdftoppm
-          python3 -m unittest discover -s scripts -p 'test_paper_rendering.py' -v
+          python3 -m unittest discover -s tests/paper -p 'test_rendering.py' -v
       - name: Check rendered paper pages
         id: rendering
         run: |
           set +e
-          python3 scripts/check_paper_rendering.py assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json" > "$RUNNER_TEMP/paper-rendering.log" 2>&1
+          python3 -m scripts.paper.check_rendering assets/pdfs/circle3-paper.pdf --report "$RUNNER_TEMP/paper-rendering-report.json" > "$RUNNER_TEMP/paper-rendering.log" 2>&1
           result=$?
           set -e
           cat "$RUNNER_TEMP/paper-rendering.log"
@@ -54,7 +54,7 @@ jobs:
       - name: Upload rendering report
         id: report
         if: ${{ always() && steps.rendering.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: paper-rendering-report
           path: ${{ runner.temp }}/paper-rendering-report.json
@@ -66,13 +66,42 @@ jobs:
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           FIXTURES_OUTCOME: ${{ steps.fixtures.outcome }}
           AUDIT_OUTCOME: ${{ steps.rendering.outcome }}
+          AUDIT_STATUS: ${{ steps.rendering.outputs.status }}
+          REPORT_OUTCOME: ${{ steps.report.outcome }}
           REPORT_URL: ${{ steps.report.outputs.artifact-url }}
           SOURCE_SHA: ${{ steps.revision.outputs.sha }}
         run: |
           {
-            echo "## Paper: Rendering Integrity"
-            echo "Checked-out revision: ${SOURCE_SHA:-unavailable}."
-            echo "PDF build: $BUILD_OUTCOME; fixtures: $FIXTURES_OUTCOME; rendering audit: $AUDIT_OUTCOME."
+            echo "# Paper: Rendering Integrity"
+            echo
+            echo "Checked-out revision: \`${SOURCE_SHA:-unavailable}\`."
+            case "$BUILD_OUTCOME" in
+              success) echo "- PDF build: **passed**." ;;
+              failure) echo "- PDF build: **failed**; see logs." ;;
+              *) echo "- PDF build: **not completed**; inspect prior steps." ;;
+            esac
+            case "$FIXTURES_OUTCOME" in
+              success) echo "- Rendering fixtures: **passed**." ;;
+              failure) echo "- Rendering fixtures: **failed**; see logs." ;;
+              *) echo "- Rendering fixtures: **not completed**; inspect prior steps." ;;
+            esac
+            case "$AUDIT_STATUS" in
+              success) echo "- Rendering audit: **passed**." ;;
+              failure) echo "- Rendering audit: **failed**; see its report and logs." ;;
+              incomplete) echo "- Rendering audit: **incomplete**; see its report and logs." ;;
+              *)
+                if [ "$AUDIT_OUTCOME" = skipped ]; then
+                  echo "- Rendering audit: **skipped**."
+                else
+                  echo "- Rendering audit: **unknown or unavailable**; inspect prior steps."
+                fi
+                ;;
+            esac
+            if [ "$REPORT_OUTCOME" = success ] && [ -n "$REPORT_URL" ]; then
+              echo "- Rendering report upload: **passed**."
+            else
+              echo "- Rendering report upload: **unavailable** (${REPORT_OUTCOME:-unknown}); inspect the upload step."
+            fi
             if [ -f "$RUNNER_TEMP/paper-rendering.log" ]; then
               echo '```'
               head -n 8 "$RUNNER_TEMP/paper-rendering.log"
