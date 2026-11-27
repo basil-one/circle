@@ -174,9 +174,7 @@ class PaperPublishTests(unittest.TestCase):
                 publisher.tag_source("0.2.2", MAIN_SHA),
                 (MERGE_SHA, ""),
             )
-        validate_resume.assert_called_once_with(
-            "0.2.2", historical_changelog, ["v0.2.2"]
-        )
+        validate_resume.assert_called_once_with("0.2.2", historical_changelog, ["v0.2.2"])
 
     def test_existing_tag_resumes_release_without_retagging_or_retargeting(self):
         publisher = publish.Publisher()
@@ -261,9 +259,7 @@ class PaperPublishTests(unittest.TestCase):
         publisher = publish.Publisher()
 
         def create_failure(path, method="GET", data=None):
-            if path.endswith(
-                "/pulls?state=all&per_page=100&head=basil-one:paper-release/v0.2.3"
-            ):
+            if path.endswith("/pulls?state=all&per_page=100&head=basil-one:paper-release/v0.2.3"):
                 return []
             raise publish.PublishError("Resource not accessible")
 
@@ -290,9 +286,7 @@ class PaperPublishTests(unittest.TestCase):
         ):
             publisher.verify_merged_pr(VERSION, 42, wait=True)
         with (
-            patch.object(
-                publish, "gh_api", side_effect=publish.PublishError("API denied")
-            ),
+            patch.object(publish, "gh_api", side_effect=publish.PublishError("API denied")),
             self.assertRaisesRegex(publish.PublishError, "API denied"),
         ):
             publisher.verify_merged_pr(VERSION, 42, wait=True)
@@ -453,9 +447,7 @@ class PaperPublishTests(unittest.TestCase):
                 Path("unexpected.txt").write_text("extra", encoding="utf-8")
                 subprocess.run(["git", "add", "unexpected.txt"], check=True)
                 subprocess.run(["git", "commit", "-qm", "unexpected"], check=True)
-                with self.assertRaisesRegex(
-                    publish.PublishError, "beyond the expected"
-                ):
+                with self.assertRaisesRegex(publish.PublishError, "beyond the expected"):
                     publisher.verify_branch(VERSION, BRANCH, main_sha)
             finally:
                 os.chdir(original_directory)
@@ -498,9 +490,7 @@ class PaperPublishTests(unittest.TestCase):
                 ).stdout.strip()
                 remote = Path(temporary) / "remote.git"
                 subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
-                subprocess.run(
-                    ["git", "remote", "add", "origin", str(remote)], check=True
-                )
+                subprocess.run(["git", "remote", "add", "origin", str(remote)], check=True)
                 subprocess.run(["git", "push", "-q", "origin", "main"], check=True)
                 publisher = publish.Publisher()
                 with patch.object(publish, "validate_latest_release"):
@@ -512,9 +502,7 @@ class PaperPublishTests(unittest.TestCase):
                         text=True,
                     ).stdout.strip()
                     subprocess.run(["git", "switch", "-q", "main"], check=True)
-                    subprocess.run(
-                        ["git", "branch", "-D", BRANCH], check=True, capture_output=True
-                    )
+                    subprocess.run(["git", "branch", "-D", BRANCH], check=True, capture_output=True)
                     publisher.create_release_branch(VERSION, BRANCH, main_sha)
                 resumed_tip = subprocess.run(
                     ["git", "rev-parse", BRANCH],
@@ -536,9 +524,7 @@ class PaperPublishTests(unittest.TestCase):
                 os.chdir(temporary)
                 try:
                     subprocess.run(["git", "init", "-q", "-b", "main"], check=True)
-                    subprocess.run(
-                        ["git", "config", "user.name", "Fixture"], check=True
-                    )
+                    subprocess.run(["git", "config", "user.name", "Fixture"], check=True)
                     subprocess.run(
                         ["git", "config", "user.email", "fixture@example.invalid"],
                         check=True,
@@ -559,9 +545,7 @@ class PaperPublishTests(unittest.TestCase):
                     if strategy == "rebase":
                         Path("main.txt").write_text("base moved\n", encoding="utf-8")
                         subprocess.run(["git", "add", "main.txt"], check=True)
-                        subprocess.run(
-                            ["git", "commit", "-qm", "base moved"], check=True
-                        )
+                        subprocess.run(["git", "commit", "-qm", "base moved"], check=True)
                     if strategy == "merge":
                         subprocess.run(
                             ["git", "merge", "--no-ff", "-m", "merge", "candidate"],

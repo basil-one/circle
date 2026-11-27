@@ -118,23 +118,17 @@ class PublicationIntegrityTests(unittest.TestCase):
                     if kind == "empty":
                         values[defective] = b""
 
-                    def validate(
-                        data, name, _directory, kind=kind, defective=defective
-                    ):
+                    def validate(data, name, _directory, kind=kind, defective=defective):
                         if kind == "empty" and not data:
                             raise publication.Mismatch(f"Downloaded {name} is empty.")
                         if kind == "unreadable" and name == defective:
-                            raise publication.Mismatch(
-                                f"Downloaded {name} is not a readable PDF."
-                            )
+                            raise publication.Mismatch(f"Downloaded {name} is not a readable PDF.")
 
                     data = release()
                     if kind == "metadata":
-                        next(
-                            asset
-                            for asset in data["assets"]
-                            if asset["name"] == defective
-                        )["digest"] = "sha256:" + "0" * 64
+                        next(asset for asset in data["assets"] if asset["name"] == defective)[
+                            "digest"
+                        ] = "sha256:" + "0" * 64
                     with self.assertRaises(publication.Mismatch) as caught:
                         self.check(data, values[STABLE], values[VERSIONED], validate)
                     self.assertIn(defective, str(caught.exception))
@@ -163,9 +157,7 @@ class PublicationIntegrityTests(unittest.TestCase):
         data["assets"][0]["digest"] = "sha256:" + "0" * 64
         with self.assertRaises(publication.Mismatch) as caught:
             self.check(data, pdf_error=publication.Unavailable("pdfinfo unavailable"))
-        self.assertIn(
-            f"{STABLE} differs from its release asset metadata", str(caught.exception)
-        )
+        self.assertIn(f"{STABLE} differs from its release asset metadata", str(caught.exception))
         self.assertIn("pdfinfo unavailable", str(caught.exception))
 
     def test_confirmed_missing_download_survives_other_unavailable_download(self):
@@ -195,9 +187,7 @@ class PublicationIntegrityTests(unittest.TestCase):
 
     def test_inaccessible_and_malformed_api_are_unknown(self):
         with (
-            patch.object(
-                publication, "fetch", side_effect=publication.Unavailable("network")
-            ),
+            patch.object(publication, "fetch", side_effect=publication.Unavailable("network")),
             self.assertRaises(publication.Unavailable),
         ):
             publication.api_release("latest")
@@ -221,9 +211,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             patch.object(publication, "git_tags", return_value=[TAG]),
             patch.object(publication.Path, "read_text", return_value=CHANGELOG),
             patch.object(publication.subprocess, "run", return_value=completed),
-            patch.object(
-                publication, "api_release", return_value={"tag_name": "v0.2.1"}
-            ) as api,
+            patch.object(publication, "api_release", return_value={"tag_name": "v0.2.1"}) as api,
         ):
             with self.assertRaisesRegex(publication.Mismatch, "incomplete"):
                 publication.check_publication()
@@ -263,9 +251,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             + "\n[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.2...HEAD\n"
             + "[0.2.2]: https://github.com/basil-one/circle/compare/v0.2.1...v0.2.2\n"
         )
-        promoted = publication.promote_changelog(
-            "0.2.3", "2026-11-27", baseline, ["v0.2.2"]
-        )
+        promoted = publication.promote_changelog("0.2.3", "2026-11-27", baseline, ["v0.2.2"])
         snapshot = (MAIN_SHA, "0.2.2", promoted, CHANGELOG)
         with (
             patch.object(publication, "publication_snapshot", return_value=snapshot),
@@ -301,9 +287,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             + "\n[Unreleased]: https://github.com/basil-one/circle/compare/v0.2.2...HEAD\n"
             + "[0.2.2]: https://github.com/basil-one/circle/compare/v0.2.1...v0.2.2\n"
         )
-        promoted = publication.promote_changelog(
-            "0.2.3", "2026-11-27", baseline, ["v0.2.2"]
-        )
+        promoted = publication.promote_changelog("0.2.3", "2026-11-27", baseline, ["v0.2.2"])
         pr = {
             "number": 42,
             "title": "Prepare Circle3 paper v0.2.3",
@@ -392,9 +376,7 @@ class PublicationIntegrityTests(unittest.TestCase):
             ):
                 publication.public_pdf(url, STABLE)
         with (
-            patch.object(
-                publication, "fetch", side_effect=publication.Unavailable("403")
-            ),
+            patch.object(publication, "fetch", side_effect=publication.Unavailable("403")),
             self.assertRaises(publication.Unavailable),
         ):
             publication.public_pdf(url, STABLE)
@@ -412,9 +394,7 @@ class PublicationIntegrityTests(unittest.TestCase):
                 self.subTest(repository=repository),
                 patch.object(publication, "git_tags", return_value=[TAG]),
                 patch.object(publication.subprocess, "run", return_value=completed),
-                patch.object(
-                    publication, "api_release", side_effect=publication.NotFound("404")
-                ),
+                patch.object(publication, "api_release", side_effect=publication.NotFound("404")),
                 patch.object(
                     publication,
                     "fetch",

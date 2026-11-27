@@ -47,9 +47,7 @@ class PublishError(RuntimeError):
 
 
 def git_result(args: list[str]) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(
-        ["git", *args], check=False, capture_output=True, text=True, timeout=60
-    )
+    result = subprocess.run(["git", *args], check=False, capture_output=True, text=True, timeout=60)
     return result
 
 
@@ -82,11 +80,7 @@ def gh_api(path: str, method: str = "GET", data: dict | None = None):
         timeout=60,
     )
     if result.returncode:
-        message = (
-            result.stderr.strip()
-            or result.stdout.strip()
-            or "GitHub API request failed."
-        )
+        message = result.stderr.strip() or result.stdout.strip() or "GitHub API request failed."
         raise PublishError(f"GitHub API {method} {path}: {message}")
     try:
         return json.loads(result.stdout)
@@ -112,11 +106,7 @@ def unreleased_entries(changelog: str) -> str:
     if len(headings) != 1:
         raise PublishError("CHANGELOG.md must contain exactly one Unreleased section.")
     end = next(
-        (
-            index
-            for index in range(headings[0] + 1, len(lines))
-            if lines[index].startswith("## [")
-        ),
+        (index for index in range(headings[0] + 1, len(lines)) if lines[index].startswith("## [")),
         len(lines),
     )
     return "\n".join(lines[headings[0] + 1 : end]).strip()
@@ -129,9 +119,7 @@ def release_date(changelog: str, version: str) -> str:
         re.MULTILINE,
     )
     if not match:
-        raise PublishError(
-            f"Release changelog heading for v{version} is missing or malformed."
-        )
+        raise PublishError(f"Release changelog heading for v{version} is missing or malformed.")
     return match.group(1)
 
 
@@ -177,9 +165,7 @@ def validate_check_runs(check_runs: list[dict], head_sha: str) -> tuple[bool, st
         name = run.get("name")
         if name in CHECKS:
             if run.get("head_sha") != head_sha:
-                raise PublishError(
-                    f"Required check {name} has evidence for a different revision."
-                )
+                raise PublishError(f"Required check {name} has evidence for a different revision.")
             previous = latest.get(name)
             if previous is None or (run.get("started_at") or "") >= (
                 previous.get("started_at") or ""
@@ -203,18 +189,14 @@ class Publisher:
     def __init__(self, wait_seconds: int | None = None, interval: int | None = None):
         self.repo = os.environ.get("GITHUB_REPOSITORY", REPOSITORY)
         if self.repo != REPOSITORY:
-            raise PublishError(
-                f"Refusing publication from unexpected repository {self.repo}."
-            )
+            raise PublishError(f"Refusing publication from unexpected repository {self.repo}.")
         self.wait_seconds = (
             int(os.environ.get("PUBLISH_WAIT_SECONDS", "1800"))
             if wait_seconds is None
             else wait_seconds
         )
         self.interval = (
-            int(os.environ.get("PUBLISH_POLL_SECONDS", "60"))
-            if interval is None
-            else interval
+            int(os.environ.get("PUBLISH_POLL_SECONDS", "60")) if interval is None else interval
         )
 
     def fetch_main(self) -> str:
@@ -228,9 +210,7 @@ class Publisher:
         if not source:
             return None
         if not is_ancestor(source, main_sha):
-            raise PublishError(
-                f"Existing tag {tag} is not an ancestor of current main."
-            )
+            raise PublishError(f"Existing tag {tag} is not an ancestor of current main.")
         validate_resume(version, changelog_at(source), git_tags())
         pulls = self.pull_requests(branch_name(version))
         pr_number = ""
@@ -248,9 +228,7 @@ class Publisher:
             self.files_for_pr(pr["number"])
             merged_sha, _ = self.verify_merged_pr(version, pr["number"], wait=False)
             if merged_sha != source:
-                raise PublishError(
-                    f"Existing tag {tag} does not match its verified PR revision."
-                )
+                raise PublishError(f"Existing tag {tag} does not match its verified PR revision.")
             pr_number = str(pr["number"])
         elif git(["show", "-s", "--format=%s", source]) != f"Release {tag}":
             raise PublishError(
@@ -268,9 +246,7 @@ class Publisher:
             or len(pulls) >= 100
             or not all(isinstance(pr, dict) for pr in pulls)
         ):
-            raise PublishError(
-                f"Pull request evidence for {branch} is incomplete or malformed."
-            )
+            raise PublishError(f"Pull request evidence for {branch} is incomplete or malformed.")
         return pulls
 
     def files_for_pr(self, number: int) -> list[dict]:
@@ -297,18 +273,14 @@ class Publisher:
         actual = changelog_at(branch)
         release_day = release_date(actual, version)
         try:
-            expected = promote_changelog(
-                version, release_day, base_changelog, git_tags()
-            )
+            expected = promote_changelog(version, release_day, base_changelog, git_tags())
         except ReleaseError as error:
             raise PublishError(str(error)) from error
         if expected != actual:
             raise PublishError(
                 "Release branch changelog does not exactly match the expected promotion."
             )
-        if git(["diff", "--name-only", f"{main_sha}...{branch}"]).splitlines() != [
-            "CHANGELOG.md"
-        ]:
+        if git(["diff", "--name-only", f"{main_sha}...{branch}"]).splitlines() != ["CHANGELOG.md"]:
             raise PublishError(
                 "Release branch contains changes beyond the expected CHANGELOG.md promotion."
             )
@@ -317,9 +289,7 @@ class Publisher:
     def create_release_branch(self, version: str, branch: str, main_sha: str) -> None:
         remote = git_result(["ls-remote", "--exit-code", "--heads", "origin", branch])
         if remote.returncode == 0:
-            git(
-                ["fetch", "origin", f"refs/heads/{branch}:refs/remotes/origin/{branch}"]
-            )
+            git(["fetch", "origin", f"refs/heads/{branch}:refs/remotes/origin/{branch}"])
             git(["branch", branch, f"refs/remotes/origin/{branch}"])
             self.verify_branch(version, branch, main_sha)
             return
@@ -398,9 +368,7 @@ class Publisher:
         parse_version(version)
         main_sha = self.fetch_main()
         if git(["rev-parse", "HEAD"]) != main_sha:
-            raise PublishError(
-                "main changed before publication began; rerun from current main."
-            )
+            raise PublishError("main changed before publication began; rerun from current main.")
         existing_tag = self.tag_source(version, main_sha)
         if existing_tag:
             source, pr_number = existing_tag
@@ -420,9 +388,7 @@ class Publisher:
             and (pr.get("head") or {}).get("ref") != branch
         ]
         if competing:
-            names = ", ".join(
-                f"#{pr['number']} ({pr['head']['ref']})" for pr in competing
-            )
+            names = ", ".join(f"#{pr['number']} ({pr['head']['ref']})" for pr in competing)
             raise PublishError(f"Another paper release PR is already pending: {names}.")
         existing_prs = self.pull_requests(branch)
         if len(existing_prs) > 1:
@@ -440,9 +406,7 @@ class Publisher:
                 )
             if pr.get("merged"):
                 return "pr", str(pr["number"]), pr["html_url"]
-            git(
-                ["fetch", "origin", f"refs/heads/{branch}:refs/remotes/origin/{branch}"]
-            )
+            git(["fetch", "origin", f"refs/heads/{branch}:refs/remotes/origin/{branch}"])
             git(["branch", branch, f"refs/remotes/origin/{branch}"])
             self.verify_branch(version, branch, main_sha)
         else:
@@ -456,9 +420,7 @@ class Publisher:
             raise PublishError("GitHub returned an unexpected release PR URL.")
         return "pr", str(pr["number"]), url
 
-    def verify_merged_pr(
-        self, version: str, number: int, wait: bool
-    ) -> tuple[str, str]:
+    def verify_merged_pr(self, version: str, number: int, wait: bool) -> tuple[str, str]:
         branch = branch_name(version)
         deadline = time.monotonic() + self.wait_seconds
         while True:
@@ -472,9 +434,9 @@ class Publisher:
             if pr.get("merged"):
                 head_sha = (pr.get("head") or {}).get("sha")
                 merge_sha = pr.get("merge_commit_sha")
-                if not re.fullmatch(
-                    r"[0-9a-f]{40,64}", str(head_sha)
-                ) or not re.fullmatch(r"[0-9a-f]{40,64}", str(merge_sha)):
+                if not re.fullmatch(r"[0-9a-f]{40,64}", str(head_sha)) or not re.fullmatch(
+                    r"[0-9a-f]{40,64}", str(merge_sha)
+                ):
                     raise PublishError(
                         f"PR #{number} is merged but its source/merge SHA is invalid."
                     )
@@ -482,9 +444,7 @@ class Publisher:
                     f"repos/{self.repo}/commits/{head_sha}/check-runs?per_page=100"
                 ).get("check_runs")
                 if not isinstance(checks, list):
-                    raise PublishError(
-                        f"Required check evidence for PR #{number} is unavailable."
-                    )
+                    raise PublishError(f"Required check evidence for PR #{number} is unavailable.")
                 all_passed, detail = validate_check_runs(checks, head_sha)
                 if all_passed:
                     git(
@@ -497,9 +457,7 @@ class Publisher:
                     )
                     pr_head = f"refs/remotes/paper-pr/{number}"
                     if not git(["rev-parse", "--verify", pr_head], check=False):
-                        raise PublishError(
-                            f"PR #{number} source revision is unavailable."
-                        )
+                        raise PublishError(f"PR #{number} source revision is unavailable.")
                     self.verify_promoted_revision(pr_head, version)
                     main_sha = self.fetch_main()
                     if not is_ancestor(merge_sha, main_sha):
@@ -519,9 +477,7 @@ class Publisher:
                         raise PublishError(
                             f"PR #{number} merge revision changed Unreleased beyond the promotion."
                         )
-                    print(
-                        f"RESUMED: PR #{number} merged; {detail} Source: {merge_sha}."
-                    )
+                    print(f"RESUMED: PR #{number} merged; {detail} Source: {merge_sha}.")
                     return merge_sha, pr["html_url"]
             if not wait:
                 raise PublishError(
@@ -539,17 +495,13 @@ class Publisher:
             time.sleep(self.interval)
 
     def verify_promoted_revision(self, revision: str, version: str) -> None:
-        commits = git(
-            ["log", "--reverse", "--format=%H", revision, "--", "CHANGELOG.md"]
-        )
+        commits = git(["log", "--reverse", "--format=%H", revision, "--", "CHANGELOG.md"])
         for commit in commits.splitlines():
             current = changelog_at(commit)
             if version not in changelog_versions(current):
                 continue
             parents = git(["rev-list", "--parents", "-n", "1", commit]).split()[1:]
-            if len(parents) != 1 or version in changelog_versions(
-                changelog_at(parents[0])
-            ):
+            if len(parents) != 1 or version in changelog_versions(changelog_at(parents[0])):
                 continue
             baseline = changelog_at(parents[0])
             tags = git(["tag", "--list", "v*", "--merged", parents[0]]).splitlines()
@@ -558,41 +510,25 @@ class Publisher:
                     version, release_date(current, version), baseline, tags
                 )
             except ReleaseError as error:
-                raise PublishError(
-                    f"Release PR promotion is no longer valid: {error}"
-                ) from error
+                raise PublishError(f"Release PR promotion is no longer valid: {error}") from error
             if expected != current:
-                raise PublishError(
-                    "Release PR changelog is not the exact expected promotion."
-                )
+                raise PublishError("Release PR changelog is not the exact expected promotion.")
             if changelog_at(revision) != current:
-                raise PublishError(
-                    "Release PR source changed CHANGELOG.md after its promotion."
-                )
+                raise PublishError("Release PR source changed CHANGELOG.md after its promotion.")
             return
-        raise PublishError(
-            f"Could not establish the original changelog promotion for v{version}."
-        )
+        raise PublishError(f"Could not establish the original changelog promotion for v{version}.")
 
     def finalize(self, version: str, source_sha: str, pr_number: int | None) -> None:
         main_sha = self.fetch_main()
         if not is_ancestor(source_sha, main_sha):
-            raise PublishError(
-                f"Approved source {source_sha} is not an ancestor of main."
-            )
+            raise PublishError(f"Approved source {source_sha} is not an ancestor of main.")
         changelog = changelog_at(source_sha)
-        if changelog_versions(changelog)[:1] != [version] or unreleased_entries(
-            changelog
-        ):
-            raise PublishError(
-                f"Approved source does not contain the exact v{version} promotion."
-            )
+        if changelog_versions(changelog)[:1] != [version] or unreleased_entries(changelog):
+            raise PublishError(f"Approved source does not contain the exact v{version} promotion.")
         if pr_number is not None:
             verified_sha, _ = self.verify_merged_pr(version, pr_number, wait=False)
             if verified_sha != source_sha:
-                raise PublishError(
-                    "The PR merge revision changed before release finalization."
-                )
+                raise PublishError("The PR merge revision changed before release finalization.")
         prior = latest_stable_tag(git_tags())
         if (
             prior is not None
@@ -603,9 +539,7 @@ class Publisher:
                 f"v{version} is no longer newer than the latest stable tag v{prior}."
             )
         tag = f"v{version}"
-        existing = git(
-            ["rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}"], check=False
-        )
+        existing = git(["rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}"], check=False)
         if existing and existing != source_sha:
             raise PublishError(
                 f"Existing tag {tag} points to {existing}, not approved source {source_sha}."
