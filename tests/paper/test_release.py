@@ -41,13 +41,21 @@ CHANGELOG = """# Changelog
 """
 
 
+APPROVED_NOTES = render_release_notes(
+    "0.2.1", promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
+)
+
+
 class PaperReleaseTests(unittest.TestCase):
     @staticmethod
-    def gh_result(draft, assets=(), returncode=0, stderr=""):
+    def gh_result(draft, assets=(), returncode=0, stderr="", body=APPROVED_NOTES):
         stdout = json.dumps(
             {
                 "tagName": "v0.2.1",
                 "isDraft": draft,
+                "isPrerelease": False,
+                "name": "v0.2.1",
+                "body": body,
                 "assets": [{"name": name, "size": 11, "state": "uploaded"} for name in assets],
             }
         )
@@ -57,7 +65,6 @@ class PaperReleaseTests(unittest.TestCase):
         preview = (ROOT / ".github/workflows/paper-preview.yml").read_text()
         integrity = (ROOT / ".github/workflows/paper-build-integrity.yml").read_text()
         code_quality = (ROOT / ".github/workflows/common-code-quality.yml").read_text()
-        publish = (ROOT / ".github/workflows/paper-publish.yml").read_text()
         changelog = (ROOT / "CHANGELOG.md").read_text()
         build_script = (ROOT / "scripts/build-paper-pdf.sh").read_text()
         self.assertIn('name: "Paper: Preview"', preview)
@@ -91,27 +98,7 @@ class PaperReleaseTests(unittest.TestCase):
         self.assertIn("poppler-utils", build_script)
         self.assertIn("name: circle3-paper-preview", integrity)
         self.assertIn("SOURCE_SHA:", integrity)
-        self.assertIn('name: "Paper: Publish"', publish)
-        self.assertIn('name: "Paper: Publish"', publish.split("jobs:", 1)[1])
         self.assertIn("contents: read", preview)
-        self.assertLess(
-            publish.index('cp scripts/build-paper-pdf.sh "$PAPER_RELEASE_DIR/build-paper-pdf.sh"'),
-            publish.index("Checkout the verified immutable source revision"),
-        )
-        self.assertIn('bash "$PAPER_RELEASE_DIR/build-paper-pdf.sh"', publish)
-        self.assertIn("workflow_dispatch:", publish)
-        self.assertIn("contents: write", publish)
-        self.assertIn("if: github.ref == 'refs/heads/main'", publish)
-        self.assertIn("group: paper-publication", publish)
-        self.assertIn("GH_TOKEN: ${{ github.token }}", publish)
-        self.assertIn("pull-requests: write", publish)
-        self.assertIn("checks: read", publish)
-        self.assertIn("PUBLISH_WAIT_SECONDS: 1800", publish)
-        self.assertIn('python3 "$PAPER_RELEASE_DIR/publish.py" finalize', publish)
-        self.assertIn("approve requested GitHub Actions runs if", publish)
-        self.assertNotIn("git push --atomic", publish)
-        self.assertNotIn("HEAD:refs/heads/main", publish)
-        self.assertNotIn("tags:", publish)
         self.assertNotIn("release-pdf.yml", changelog)
         self.assertIn("At the time, pushing a `v*.*.*` tag", changelog)
         self.assertFalse((ROOT / ".github/workflows/release-pdf.yml").exists())
@@ -272,7 +259,8 @@ class PaperReleaseTests(unittest.TestCase):
                 "        names.append('circle3-paper.pdf')\n"
                 "    assets = [{'name': name, 'size': len(payload), 'state': 'uploaded', "
                 "'digest': 'sha256:' + hashlib.sha256(payload).hexdigest()} for name in names]\n"
-                "    print(json.dumps({'tagName': 'v0.2.2', 'isDraft': False, 'assets': assets}))\n"
+                "    print(json.dumps({'tagName': 'v0.2.2', 'isDraft': False, 'assets': assets, "
+                "'isPrerelease': False, 'name': 'v0.2.2', 'body': 'historical notes'}))\n"
                 "elif args[:2] == ['release', 'download']:\n"
                 "    name = args[args.index('--pattern') + 1]\n"
                 "    directory = pathlib.Path(args[args.index('--dir') + 1])\n"
@@ -463,6 +451,20 @@ class PaperReleaseTests(unittest.TestCase):
             )
             self.assertNotIn("--clobber", run.call_args_list[1].args[0])
 
+    def test_conflicting_draft_notes_stop_before_upload_or_publish(self):
+        with tempfile.TemporaryDirectory() as directory:
+            pdf = Path(directory) / "paper.pdf"
+            pdf.write_bytes(b"preview PDF")
+            promoted = promote_changelog("0.2.1", "2026-11-24", CHANGELOG, ["v0.2.0"])
+            with (
+                patch(
+                    "scripts.paper_release.run_gh", return_value=self.gh_result(True, body="Other")
+                ) as run,
+                self.assertRaisesRegex(ReleaseError, "approved title and notes"),
+            ):
+                publish_release("0.2.1", pdf, promoted, ["v0.2.1"])
+            run.assert_called_once()
+
     def test_complete_published_release_is_rejected_without_modification(self):
         with tempfile.TemporaryDirectory() as directory:
             pdf = Path(directory) / "circle3-paper.pdf"
@@ -588,12 +590,16 @@ class PaperReleaseTests(unittest.TestCase):
                 surviving.write_bytes(b"original release")
                 initial = {
                     "isDraft": True,
+                    "name": "v0.2.1",
+                    "body": APPROVED_NOTES,
                     "assetNames": {existing},
                     "assetSizes": {existing: 16},
                     "assetMetadata": {existing: {"size": 16, "state": "uploaded"}},
                 }
                 complete = {
                     "isDraft": True,
+                    "name": "v0.2.1",
+                    "body": APPROVED_NOTES,
                     "assetNames": set(names),
                     "assetSizes": dict.fromkeys(names, 16),
                     "assetMetadata": dict.fromkeys(names, {"size": 16, "state": "uploaded"}),
@@ -632,6 +638,8 @@ class PaperReleaseTests(unittest.TestCase):
         names = {"circle3-paper.pdf", "circle3-paper-v0.2.1.pdf"}
         state = {
             "isDraft": True,
+            "name": "v0.2.1",
+            "body": APPROVED_NOTES,
             "assetNames": names,
             "assetSizes": dict.fromkeys(names, 11),
             "assetMetadata": dict.fromkeys(names, {"size": 11, "state": "uploaded"}),

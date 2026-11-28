@@ -1,0 +1,37 @@
+name: Release Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable version to publish (X.Y.Z, without a v prefix)
+        required: true
+        type: string
+
+permissions:
+  checks: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  # Keep the queue shared with runs started before the workflow rename.
+  group: paper-publication
+  cancel-in-progress: false
+
+jobs:
+  release-publish:
+    name: Release Publish
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Record checked-out revision
+        run: printf 'Checked-out revision — %s\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Prepare or resume human-reviewed release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: python3 -m scripts.orchestration.release_publish --version "$VERSION"

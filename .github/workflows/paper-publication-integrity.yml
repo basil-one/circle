@@ -14,7 +14,6 @@ on:
         value: ${{ jobs.paper-publication-integrity.outputs.validator_sha }}
 
 permissions:
-  checks: read
   contents: read
   pull-requests: read
 
@@ -38,7 +37,7 @@ jobs:
       - name: Pin published main and tags
         id: snapshot
         run: |
-          timeout 120 git fetch --force --tags origin +refs/heads/main:refs/remotes/origin/main
+          timeout 120 git fetch --force --prune --prune-tags origin +refs/heads/main:refs/remotes/origin/main
           echo "main_sha=$(git rev-parse refs/remotes/origin/main)" >> "$GITHUB_OUTPUT"
       - name: Install PDF inspection tool
         run: sudo apt-get update && sudo apt-get install -y poppler-utils

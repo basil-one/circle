@@ -13,7 +13,7 @@
     "test:performance-summary": "node --test tests/site/performance_summary.test.mjs",
     "test:quality-pulse": "node --test tests/orchestration/daily_workflow.test.mjs tests/orchestration/quality_pulse.test.mjs tests/common/dependency_posture.test.mjs",
     "test:coherence-integrity": "node --test tests/common/coherence_integrity.test.mjs",
-    "test:required-checks": "node --test tests/common/required_checks.test.mjs tests/site/publication_workflow.test.mjs",
+    "test:required-checks": "node --test tests/common/required_checks.test.mjs tests/site/publication_workflow.test.mjs tests/orchestration/release_publish_workflow.test.mjs",
     "test:rendering-summary": "node --test tests/site/rendering_summary.test.mjs",
     "test:site-routes": "node --test tests/site/routes.test.mjs",
     "measure:performance": "node scripts/site/measure_performance.mjs"

@@ -14,11 +14,13 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-VERSION_PATTERN = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\Z")
+VERSION_PATTERN = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\Z", re.ASCII)
 RELEASE_HEADING = re.compile(r"^## \[(\d+\.\d+\.\d+)\](?: - .*)?$", re.MULTILINE)
-TAG_PATTERN = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+TAG_PATTERN = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$", re.ASCII)
 UNRELEASED_HEADING = "## [Unreleased]"
 REPOSITORY_URL = "https://github.com/basil-one/circle"
+# v0.2.2 predates release PRs. Its annotated tag resolves to this commit.
+LEGACY_SOURCE = "a5e28c0b5ac838ac5d8251c6e37b18cb3ebe0c15"
 
 
 class ReleaseError(ValueError):
@@ -107,23 +109,13 @@ def validate_latest_release(tags: list[str]) -> None:
     if latest is None:
         return
     tag = f"v{latest}"
-    result = run_gh(["release", "view", tag, "--json", "assets,isDraft"])
-    if result.returncode:
-        raise ReleaseError(
-            f"Latest tag {tag} has no accessible release; resume or repair it before publishing."
-        )
-    try:
-        release = json.loads(result.stdout)
-        names = {asset["name"] for asset in release["assets"]}
-    except (KeyError, json.JSONDecodeError, TypeError) as error:
-        raise ReleaseError(f"Unable to verify assets for latest release {tag}.") from error
-    required = required_asset_names(tag)
-    if not required.issubset(names):
-        raise ReleaseError(
-            f"Latest release {tag} is missing required PDF assets; repair it before publishing."
-        )
-    if release.get("isDraft", True):
+    release = get_release(tag)
+    if release is None:
+        raise ReleaseError(f"Latest tag {tag} has no release; resume or repair it first.")
+    if release["isDraft"]:
         raise ReleaseError(f"Latest release {tag} is still a draft; publish it before continuing.")
+    if not required_asset_names(tag).issubset(release["assetNames"]):
+        raise ReleaseError(f"Latest release {tag} is missing PDF assets; repair it first.")
 
 
 def promote_changelog(version: str, release_date: str, changelog: str, tags: list[str]) -> str:
@@ -353,23 +345,16 @@ def verify_release_assets(
     return release
 
 
-def mark_release_published(tag: str, notes_path: str, release: dict[str, object]) -> None:
+def verify_draft_notes(tag: str, release: dict[str, object], notes: str) -> None:
+    if release["isDraft"] and (release["name"] != tag or release["body"].strip() != notes.strip()):
+        raise ReleaseError(f"Draft release {tag} does not match the approved title and notes.")
+
+
+def mark_release_published(tag: str, release: dict[str, object]) -> None:
+    args = ["release", "edit", tag, "--latest"]
     if release["isDraft"]:
-        action = run_gh(
-            [
-                "release",
-                "edit",
-                tag,
-                "--title",
-                tag,
-                "--notes-file",
-                notes_path,
-                "--draft=false",
-                "--latest",
-            ]
-        )
-    else:
-        action = run_gh(["release", "edit", tag, "--latest"])
+        args.append("--draft=false")
+    action = run_gh(args)
     if action.returncode:
         raise ReleaseError(
             f"Both assets are present, but release {tag} could not be published/marked "
@@ -389,6 +374,7 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
         notes_file.write(notes)
         notes_file.flush()
         release = ensure_draft_release(tag, release, notes_file.name)
+        verify_draft_notes(tag, release, notes)
         existing = required_asset_names(tag) & set(release["assetNames"])
         verify_asset_sizes(tag, release, existing)
         with tempfile.TemporaryDirectory(dir=temporary) as download_dir:
@@ -413,10 +399,11 @@ def publish_release(version: str, pdf_path: Path, changelog: str, tags: list[str
                 assets[name] = target
             upload_missing_release_assets(tag, release, assets)
         verified = verify_release_assets(tag, get_release(tag))
+        verify_draft_notes(tag, verified, notes)
         verify_asset_sizes(tag, verified, required_asset_names(tag))
         with tempfile.TemporaryDirectory(dir=temporary) as download_dir:
             verify_asset_parity(tag, verified, Path(download_dir))
-        mark_release_published(tag, notes_file.name, verified)
+        mark_release_published(tag, verified)
         verify_release_assets(tag, get_release(tag), published=True)
 
 
@@ -425,22 +412,31 @@ def required_asset_names(tag: str) -> set[str]:
 
 
 def get_release(tag: str) -> dict[str, object] | None:
-    result = run_gh(["release", "view", tag, "--json", "tagName,isDraft,assets"])
+    result = run_gh(
+        ["release", "view", tag, "--json", "tagName,isDraft,isPrerelease,name,body,assets"]
+    )
     if result.returncode:
-        error = (result.stderr + result.stdout).lower()
-        if "release not found" in error or "not found" in error or "404" in error:
+        if result.stderr.strip() == "release not found":
             return None
         raise ReleaseError(f"Unable to check release {tag}: {result.stderr.strip()}")
     try:
         data = json.loads(result.stdout)
-        if data["tagName"] != tag or not isinstance(data["isDraft"], bool):
-            raise ValueError("invalid tag or draft state")
+        if (
+            data["tagName"] != tag
+            or not isinstance(data["isDraft"], bool)
+            or data["isPrerelease"] is not False
+            or not isinstance(data["name"], str)
+            or not isinstance(data["body"], str)
+        ):
+            raise ValueError("invalid release identity or state")
         metadata = {asset["name"]: asset for asset in data["assets"]}
         sizes = {name: asset["size"] for name, asset in metadata.items()}
         if len(sizes) != len(data["assets"]):
             raise ValueError("duplicate asset names")
         return {
             "isDraft": data["isDraft"],
+            "name": data["name"],
+            "body": data["body"],
             "assetNames": set(sizes),
             "assetSizes": sizes,
             "assetMetadata": metadata,

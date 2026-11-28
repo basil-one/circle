@@ -23,11 +23,13 @@ The local site is available at http://localhost:4000.
 
 See the [repository conventions](.github/CONVENTIONS.md) for workflow, script, and test locations and focused validation commands. Agents start with [AGENTS.md](AGENTS.md), including the linked automation guidance.
 
-For paper development, preview, and publication, see the [paper build and workflow guide](scripts/README.md).
+For paper development and preview, see the [paper build and workflow guide](scripts/README.md).
 
-## Site Publication
+## Publication
 
 The website is published automatically to GitHub Pages from `main` using the repository's verified build environment. [Site: Publish](.github/workflows/site-publish.yml) can also be run manually from `main` for recovery.
+
+[Release Publish](.github/workflows/release-publish.yml) preserves intentional milestones and publishes the reviewed Circle3 paper. See [CHANGELOG.md](CHANGELOG.md) and the [release conventions](.github/CONVENTIONS.md#changelog-and-releases).
 
 ## Intellectual stewardship
 

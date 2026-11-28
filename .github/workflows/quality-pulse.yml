@@ -93,7 +93,6 @@ jobs:
     name: "Paper: Publication Integrity"
     uses: ./.github/workflows/paper-publication-integrity.yml
     permissions:
-      checks: read
       contents: read
       pull-requests: read
 
