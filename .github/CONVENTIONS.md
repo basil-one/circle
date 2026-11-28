@@ -9,13 +9,13 @@ Circle's shared quality practice covers the website and paper. The domains are o
 | Common | `.github/workflows/common-*.yml` | `scripts/common/` | `tests/common/` |
 | Site | `.github/workflows/site-*.yml` | `scripts/site/` | `tests/site/` |
 | Paper | `.github/workflows/paper-*.yml` | `scripts/paper/` | `tests/paper/` |
-| Cross-domain orchestration | `quality-pulse.yml` | `scripts/orchestration/` | `tests/orchestration/` |
+| Cross-domain orchestration | `quality-pulse.yml`, `release-publish.yml` | `scripts/orchestration/` | `tests/orchestration/` |
 
-Use workflow filenames as capability IDs. A workflow with one substantive job uses its filename stem as that job ID; multi-job workflows qualify each role (`common-dependency-security-review` / `-posture`, `site-publish-build` / `-deploy`). Keep human-facing check names exactly `Domain: Capability`. Quality Pulse is the unqualified Common → Site → Paper coordinator.
+Use workflow filenames as capability IDs. A workflow with one substantive job uses its filename stem as that job ID; multi-job workflows qualify each role (`common-dependency-security-review` / `-posture`, `site-publish-build` / `-deploy`). Keep human-facing check names exactly `Domain: Capability`. Quality Pulse and Release Publish are unqualified orchestration capabilities.
 
 Production helpers live under `scripts/{common,site,paper,orchestration}/`; automated tests live under matching `tests/` domains. Browser test support stays under `tests/site/browser/`, while production route discovery and matrices live in `scripts/site/`. Shared link safety rules live in `scripts/common/`.
 
-Paper source content, configuration, template, PDF builder, release helper, and `build-paper-pdf.sh` remain at their established `scripts/` paths. These three root production entry points are bounded compatibility exceptions: `build-paper-pdf.sh`, `build-pdf.py`, and `paper_release.py`. The shell entry point invokes the historical `scripts/build-pdf.py` and `scripts/plop.paper.config.yaml` paths in the checked-out tree, including when current release tooling resumes a release from an older tag such as v0.2.2. Keep these compatibility paths unless every tagged checkout they serve is deliberately migrated. Paper link dependency pins live at `scripts/paper/requirements-links.txt`.
+Paper source content, configuration, and template live under `scripts/`. The shared Paper workflows and local development use `scripts/build-paper-pdf.sh` and `scripts/build-pdf.py`. Paper link dependency pins live at `scripts/paper/requirements-links.txt`.
 
 ## Workflow anatomy and intentional differences
 
@@ -23,7 +23,7 @@ Make the checked-out revision and task context clear; prepare only the needed en
 
 Use release version tags for external actions and one version of each shared dependency across workflows, unless a documented compatibility constraint requires otherwise.
 
-The order is purposeful, not a template: Site Publish validates and deploys a same-run Pages artifact; Paper Preview builds only for review; Paper Publish is human-initiated and retains its resume/recovery safeguards; Paper Publication Integrity is read-only. Paper validators build independently rather than sharing generated PDFs. Dependency Security separates pull-request review from scheduled/manual alert posture. Performance keeps classification, initial measurement, confirmation, and artifact evidence distinct. Only Quality Pulse owns the daily schedule; proposed-change safeguards retain pull-request checks, and verification workflows support manual diagnostics. Keep permissions narrow and preserve ordinary pull-request protection.
+The order is purposeful, not a template: Site Publish validates and deploys a same-run Pages artifact; Paper Preview builds only for review; Paper Publication Integrity is read-only. Paper validators build independently rather than sharing generated PDFs. Dependency Security separates pull-request review from scheduled/manual alert posture. Performance keeps classification, initial measurement, confirmation, and artifact evidence distinct. Only Quality Pulse owns the daily schedule; proposed-change safeguards retain pull-request checks, and verification workflows support manual diagnostics. Keep permissions narrow and preserve ordinary pull-request protection.
 
 Site Link Integrity reports uncertain external responses as nonblocking advisories; known defects retain failure precedence. Site Performance Integrity measures four representative routes on mobile and desktop with three-run Lighthouse medians and confirms initial violations with three new measurements per affected route/profile. Incomplete confirmation is not a pass. The executable policy defines the budgets and substantial deterioration criteria; the canonical fixed reference is [site-performance-reference.json](site-performance-reference.json). Use complete, successful, compatible main evidence after human review; only successful scheduled-main evidence contributes to informational rolling history. Retain compatible historical readers.
 
@@ -37,9 +37,13 @@ Site Link Integrity reports uncertain external responses as nonblocking advisori
 - `npm run test:site-routes` and `npm run test:rendering-summary` — generated-route and browser-summary contracts. The browser suite needs a built `_site` and the installed Playwright browser.
 - `bundle exec jekyll build --trace` — production site build.
 
-## Changelog stewardship
+## Changelog and releases
 
-Record notable changes in the Unreleased section of [CHANGELOG.md](../CHANGELOG.md) as part of the change that introduces them. Summarize meaningful outcomes rather than individual commits or implementation details. Preserve existing release entries.
+Record notable outcomes under Unreleased in [CHANGELOG.md](../CHANGELOG.md) as work is merged. Preserve published entries.
+
+With human authorization, dispatch Release Publish from `main` with a stable version (`X.Y.Z`). Review and merge the changelog-only PR through the Quality Gate, approving its checks if requested. The workflow polls once per minute for up to 30 minutes and requires twelve successful checks on the exact PR head and a matching merged tree on `main`. Rerun the same version to resume an interrupted, unpublished release. Update a stale branch through GitHub and reconcile conflicting release evidence before rerunning.
+
+If GitHub denies PR creation, a repository owner can check **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. See the [paper guide](../scripts/README.md#pdfs-and-interrupted-drafts) for asset verification and draft recovery.
 
 ## Sustaining coherence
 

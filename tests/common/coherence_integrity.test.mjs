@@ -24,14 +24,13 @@ const capabilities = [
   ['Paper: Rendering Integrity', 'workflows/paper-rendering-integrity.yml'],
   ['Paper: Publication Integrity', 'workflows/paper-publication-integrity.yml'],
   ['Paper: Preview', 'workflows/paper-preview.yml'],
-  ['Paper: Publish', 'workflows/paper-publish.yml']
+  ['Release Publish', 'workflows/release-publish.yml']
 ];
 
 const domains = new Set(['common', 'site', 'paper', 'orchestration']);
 const rootScriptExceptions = new Set([
   'scripts/build-paper-pdf.sh',
-  'scripts/build-pdf.py',
-  'scripts/paper_release.py'
+  'scripts/build-pdf.py'
 ]);
 const testSupportExceptions = new Set([
   'tests/site/browser/accessibility.js',
@@ -328,7 +327,7 @@ test('quality capability table links the canonical workflow inventory', async ()
   );
   assert.throws(() => assertQualityLinks(quality.replace('workflows/paper-preview.yml', 'workflows/missing.yml'), files));
   assert.throws(() => assertQualityLinks(quality.replace('[Paper: Preview](workflows/paper-preview.yml)', 'Paper: Preview'), files));
-  assert.throws(() => assertQualityLinks(quality.replace('[Paper: Preview](workflows/paper-preview.yml)', '[Paper: Publish](workflows/paper-preview.yml)'), files));
+  assert.throws(() => assertQualityLinks(quality.replace('[Paper: Preview](workflows/paper-preview.yml)', '[Release Publish](workflows/paper-preview.yml)'), files));
   const wrongWithinDomainOrder = quality.replace(
     '[Site: Link Integrity](workflows/site-link-integrity.yml)',
     '[Site: SEO Integrity](workflows/site-seo-integrity.yml)'

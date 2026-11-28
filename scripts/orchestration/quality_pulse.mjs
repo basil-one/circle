@@ -632,7 +632,7 @@ function renderPulse({
           ? ''
           : 'Open the run and address the reported failure.'
         : state === 'pending'
-         ? 'Review the release PR/run and rerun Paper: Publish with the same version; a pending publication is not healthy.'
+         ? 'Review the release PR/run and rerun Release Publish with the same version; a pending publication is not healthy.'
         : state === 'unknown'
           ? 'Check Actions/API access and inspect the last available workflow run.'
           : state === 'missing' || state === 'stale'

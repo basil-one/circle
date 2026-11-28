@@ -25,7 +25,7 @@ Circle is a Jekyll website and the source of the Circle3 paper, three guiding mo
 ## Verify outcomes, not just code
 
 - Run the relevant build and tests using the repository's existing commands. For paper changes, follow [scripts/README.md](scripts/README.md), check the generated PDF, and use Paper: Preview where appropriate. Connect new tests to a test path that actually runs; a test file alone is not verification.
-- Do not use Paper: Publish for verification; it changes release state and is reserved for an explicitly authorized publication.
+- Reserve Release Publish for explicitly authorized publication. Use Paper: Preview to review a build and Paper: Publication Integrity to verify an existing release.
 - For changes that depend on hosted behavior, permissions, external APIs, or workflow integration, obtain real execution evidence when possible. Distinguish local tests, PR checks, and end-to-end hosted results.
 - Treat missing or inaccessible evidence as unverified, never successful. State blockers and any specific owner action needed without claiming work was tested when it was not.
 

@@ -97,38 +97,23 @@ The complete Paper capability inventory and canonical ordering are in [Quality S
 
 - **[Paper: Build Integrity](../.github/workflows/paper-build-integrity.yml)** — Runs on every pull request to `main` and in Quality Pulse; verifies a fresh, nonempty, readable author-edition PDF and provides a downloadable preview.
 - **[Paper: Preview](../.github/workflows/paper-preview.yml)** — Runs the same build on demand.
-- **[Paper: Publish](../.github/workflows/paper-publish.yml)** — Run from `main` with the intended version (e.g. `0.2.3`). It promotes the `Unreleased` entries on a dedicated release branch and opens or reuses one changelog-only PR. The workflow reports the PR URL and waits up to 30 minutes, polling once per minute, for the human-reviewed merge and positive evidence for all twelve Quality Gate checks. It does not approve, merge, or bypass the PR.
+- **[Release Publish](../.github/workflows/release-publish.yml)** — Publishes a versioned milestone and its reviewed paper. Follow the [release conventions](../.github/CONVENTIONS.md#changelog-and-releases).
 
-Each release includes:
+Each release includes [`circle3-paper.pdf`](https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf) for the website and `circle3-paper-vX.Y.Z.pdf` for citation and archival links. The PDFs must be readable and byte-identical. Release notes use the version entry from `CHANGELOG.md`.
 
-- [`circle3-paper.pdf`](https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf) — latest PDF, used by the website.
-- `circle3-paper-vX.Y.Z.pdf` — versioned PDF for archival and citation links.
+### PDFs and interrupted drafts
 
-Release notes combine version-specific entries from `CHANGELOG.md` with shared content maintained in `scripts/paper_release.py`.
+Release Publish builds and validates the paper in a detached checkout of the approved revision when the draft has neither required PDF. If one verified draft PDF survives, the workflow uploads those same bytes under the missing name. If both are present, it verifies them and can finish the draft without rebuilding. Each PDF must match its asset metadata and the other download before publication.
 
-Paper validators and link-audit pins live in `scripts/paper/`; their tests live in `tests/paper/`. The build configuration, template, source content, PDF builder, release helper, and `build-paper-pdf.sh` intentionally retain their established `scripts/` paths so current release tooling can run against historical checkouts such as v0.2.2.
-
-### Human publication and recovery
-
-1. Dispatch **Paper: Publish** from `main` with the intended stable version.
-2. Open the reported release PR, review its changelog-only diff, approve the requested GitHub Actions runs if GitHub requires that approval, and merge through the existing Quality Gate.
-3. The same run verifies the exact PR, all twelve required checks, and its immutable merge revision before building the PDF, creating the tag, and continuing through the existing draft/assets/verification/release flow.
-
-The workflow waits for up to 30 minutes at one-minute intervals. A timeout, cancellation, closed-unmerged PR, failed/skipped/missing check, inaccessible GitHub evidence, stale release intent, or unexpected diff stops publication without tagging. Rerun **Paper: Publish** with the same version to resume. It reuses a release branch even if PR creation was interrupted, an open PR, a verified merged PR awaiting its tag, or an existing tag awaiting release completion. A branch that is stale or has been changed unexpectedly is never force-pushed; reconcile it without changing the approved changelog intent, then rerun. Another pending release version or a completed release is not replaced.
-
-The workflow uses only the repository `GITHUB_TOKEN` with narrow `contents:write`, `pull-requests:write`, and `checks:read` permissions. Repository or organization Actions settings may need **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests** enabled so the token can create the PR. Paper Publish uses this only to create the PR; it never approves or merges. If the setting is unavailable or creation is denied, ask a repository owner to configure it; do not use a PAT, App, deploy key, or bypass.
-
-Publication Integrity reports a verified PR/tag/draft interruption as **pending**, not healthy, only when it can verify the exact merged release PR, changelog-only promotion, ancestry, and twelve successful checks; it also continues verifying the prior published release. Once a release is complete, ongoing verification uses durable PR, source-tree, tag, changelog, and artifact evidence, not historical check-run records that may expire under GitHub retention. Checks remain mandatory before publication and when verifying an in-flight release. Unexplained or contradictory state remains failed or unknown and requires human attention.
-
-Completed releases are protected from replacement. If one asset survives, recovery copies that published asset to the missing name rather than pairing it with a newly rebuilt PDF. If both assets differ, or a published release has no surviving PDF, publication stops for a human repair decision; it does not overwrite either asset.
+Paper Publication Integrity checks the published tag, changelog, asset metadata, and public PDFs. It verifies the existing publication while a newer release is pending. Missing or conflicting assets on a published release require a human repair decision.
 
 ## Inputs
 
 - `scripts/plop.paper.config.yaml` — build config (strict)
 - `scripts/template.tex` — LaTeX template
-- `scripts/paper_release.py` — version validation, changelog promotion, and shared release logic (historical compatibility path)
 - `scripts/paper/` — content, link, rendering, and publication integrity validators
-- `tests/paper/` — paper build, release, and validator tests
+- `tests/paper/` — paper build, release helper, and validator tests
+- `scripts/orchestration/release_publish.py` and `tests/orchestration/` — release workflow orchestration and tests
 - `scripts/content/*.md` — longform markdown blocks referenced by the config
 - `_moves/*.md`, `_lenses/*.md` — pattern sources (web + PDF share these)
 

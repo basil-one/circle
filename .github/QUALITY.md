@@ -51,7 +51,7 @@ Domain-specific workflows follow the naming convention `Domain: Capability`. Cro
 | [Paper: Rendering Integrity](workflows/paper-rendering-integrity.yml) | Verification that every generated PDF page renders without errors or wholly blank output; visual fidelity remains for human review. |
 | [Paper: Publication Integrity](workflows/paper-publication-integrity.yml) | Read-only verification of published release identity, changelog, PDF readability, and stable/versioned download parity. |
 | [Paper: Preview](workflows/paper-preview.yml) | On-demand PDF generation for human review, independent of full quality verification. |
-| [Paper: Publish](workflows/paper-publish.yml) | Human-initiated, controlled publication of the paper. |
+| [Release Publish](workflows/release-publish.yml) | Human-initiated, reviewed publication of a versioned milestone and its paper PDF. |
 
 ## Quality Gate
 
@@ -65,9 +65,9 @@ Sustain conceptual integrity across workflows, code, tests, and documentation. E
 
 ## Publication
 
-Website and paper publication use their respective verified build mechanisms.
+The website is published automatically following an approved merge.
 
-The website is published automatically following an approved merge. Paper publication is initiated by a human, prepares a changelog pull request, and continues from the verified revision after human approval and merge through the Quality Gate.
+Versioned milestones are published separately by human initiation and approval through the Quality Gate. Paper Publication Integrity verifies the existing publication, including while a newer version is pending. Defects in published releases require human judgment.
 
 ## Quality Pulse
 

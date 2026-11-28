@@ -19,7 +19,7 @@ Apply the repository's [root guidance](../AGENTS.md) as well. This file adds exp
 
 ## Protect publication
 
-- Use read-only checks and preview capabilities for verification. Publication changes release or deployment state; respect the documented triggers, approved intent, and human authorization. Never bypass the Quality Gate or overwrite published release assets to repair a failure.
+- Use read-only checks and preview capabilities for verification. Publication changes release or deployment state; respect the documented triggers, approved intent, and human authorization. Release Publish requires a human to initiate the release and merge its changelog PR. Never bypass the Quality Gate or overwrite published release assets to repair a failure.
 
 ## Keep reporting proportional
 
