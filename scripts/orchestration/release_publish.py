@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -11,8 +12,8 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from scripts.paper_release import (
-    LEGACY_SOURCE,
+from scripts.paper.release import (
+    REPOSITORY,
     ReleaseError,
     changelog_versions,
     get_release,
@@ -22,14 +23,13 @@ from scripts.paper_release import (
     promote_changelog,
     publish_release,
     release_section,
+    render_release_notes,
+    require_unpublished,
     required_asset_names,
     stable_tag_versions,
     validate_latest_release,
-    validate_resume,
-    verify_asset_parity,
 )
 
-REPOSITORY = "basil-one/circle"
 CHECKS = (
     "Common: Code Quality",
     "Common: Coherence Integrity",
@@ -46,7 +46,7 @@ CHECKS = (
 )
 EXPECTED_CHECK_APP_ID = 15368
 SHA = re.compile(r"[0-9a-f]{40}")
-BUILDER = Path(__file__).resolve().parents[1] / "build-paper-pdf.sh"
+BUILDER = "scripts/build-paper-pdf.sh"
 PDF = Path("assets/pdfs/circle3-paper.pdf")
 BOT = (
     "-c",
@@ -305,11 +305,10 @@ class Publisher:
             ) from error
         return self.pr(created["number"])
 
-    def verify_merged_source(self, pr, main, *, require_checks):
+    def verify_merged_source(self, pr, main):
         number = pr["number"]
         head, source = pr["head"]["sha"], pr["merge_commit_sha"]
-        if require_checks:
-            verify_checks(check_pages(head), head)
+        verify_checks(check_pages(head), head)
         git("fetch", "origin", f"refs/pull/{number}/head")
         if git("rev-parse", "FETCH_HEAD") != head:
             raise PublishError(f"Fetched PR #{number} head differs from the checked revision.")
@@ -335,7 +334,7 @@ class Publisher:
         while True:
             if pr["state"] == "closed":
                 try:
-                    source = self.verify_merged_source(pr, self.fetch_main(), require_checks=True)
+                    source = self.verify_merged_source(pr, self.fetch_main())
                     print(f"All {len(CHECKS)} required checks passed for PR #{number}.", flush=True)
                     return pr, source
                 except ChecksPending as error:
@@ -366,7 +365,7 @@ class Publisher:
         if git("for-each-ref", "--format=%(contents)", ref) != f"Release {self.tag}":
             raise PublishError(f"Existing tag {self.tag} has unexpected release provenance.")
 
-    def verify_current_release(self, main, source, tagged):
+    def verify_current_release(self, main, source):
         tags = git_tags()
         latest = latest_stable_tag(tags)
         if latest and parse_version(latest) > parse_version(self.version):
@@ -376,8 +375,6 @@ class Publisher:
             release_section(self.version, current) != release_section(self.version, approved)
         ):
             raise PublishError("Current main changed the approved release entry or version.")
-        if tagged:
-            validate_resume(self.version, approved, tags)
         prior = [
             f"v{version}"
             for version in stable_tag_versions(tags)
@@ -386,9 +383,14 @@ class Publisher:
         validate_latest_release(prior)
         return approved
 
+    def unpublished_release(self, tagged):
+        release = get_release(self.tag)
+        require_unpublished(self.tag, release)
+        if release is not None and not tagged:
+            raise PublishError("An existing draft must have its verified tag.")
+        return release
+
     def build_and_publish(self, pr, source, tagged):
-        # The current wrapper drives the builder and configuration from verified source.
-        # In particular, v0.2.2 predates the wrapper.
         with tempfile.TemporaryDirectory() as directory:
             checkout = Path(directory) / "source"
             git("worktree", "add", "--detach", str(checkout), source)
@@ -397,82 +399,60 @@ class Publisher:
                 env.pop("GH_TOKEN", None)
                 env.pop("GITHUB_TOKEN", None)
                 print(f"Building Circle3 paper from {source}.", flush=True)
-                subprocess.run(
-                    ["bash", str(BUILDER)], cwd=checkout, env=env, check=True, timeout=3600
-                )
-                self.finalize(pr, source, tagged, checkout / PDF)
+                subprocess.run(["bash", BUILDER], cwd=checkout, env=env, check=True, timeout=3600)
+                # The build can take time. Refresh the Gate evidence before any release writes.
+                current = self.pr(pr["number"])
+                head = pr["head"]["sha"]
+                if current["state"] != "closed" or (
+                    current["head"]["sha"],
+                    current["merge_commit_sha"],
+                ) != (head, source):
+                    raise PublishError("The checked PR changed during the build.")
+                verify_checks(check_pages(head), head)
+                self.finalize(source, tagged, self.unpublished_release(tagged), checkout / PDF)
             finally:
                 git("worktree", "remove", "--force", str(checkout))
 
-    def finalize(self, pr, source, tagged, pdf):
+    def finalize(self, source, tagged, release, pdf=None):
         main = self.fetch_main()
         if not is_ancestor(source, main) or self.tag_source() != tagged:
-            raise PublishError("Verified source ancestry or release tag changed during the build.")
+            raise PublishError("Verified source ancestry or release tag changed.")
         self.reject_competing_releases()
-        if pr:
-            current = self.pr(pr["number"])
-            if current["state"] != "closed" or (
-                current["head"]["sha"],
-                current["merge_commit_sha"],
-            ) != (pr["head"]["sha"], source):
-                raise PublishError("The checked PR changed during the build.")
-            verify_checks(check_pages(current["head"]["sha"]), current["head"]["sha"])
-        approved = self.verify_current_release(main, source, tagged)
+        approved = self.verify_current_release(main, source)
         if not tagged:
-            if not pr or get_release(self.tag) is not None:
-                raise PublishError("Cannot tag without a verified PR and a vacant release.")
             git(*BOT, "tag", "-a", self.tag, source, "-m", f"Release {self.tag}")
             git("push", "origin", f"refs/tags/{self.tag}")
-        publish_release(self.version, pdf, approved, git_tags())
+        publish_release(self.tag, render_release_notes(self.version, approved), release, pdf)
         print(
             f"Published {self.tag} at {source}: https://github.com/{REPOSITORY}/releases/tag/{self.tag}"
         )
-
-    def resolve_source(self, pr, main, tagged, complete):
-        if not tagged:
-            if not pr or pr["state"] == "open":
-                pr = self.prepare_pr(main, pr)
-            return self.await_merge(pr)
-        if pr is None:
-            if self.version != "0.2.2" or tagged != LEGACY_SOURCE:
-                raise PublishError("Existing tag has no merged release PR or historical source.")
-            return None, tagged
-        if pr["state"] != "closed" or pr["merge_commit_sha"] != tagged:
-            raise PublishError("Existing tag does not point to the merged release PR.")
-        if complete:
-            return pr, self.verify_merged_source(pr, main, require_checks=False)
-        return self.await_merge(pr)
 
     def run(self):
         main = self.fetch_main()
         if git("rev-parse", "HEAD") != main:
             raise PublishError("Dispatch revision is no longer current main; rerun.")
         tagged = self.tag_source()
-        release = get_release(self.tag)
-        if release is not None and not tagged:
-            raise PublishError("An existing release must have its verified tag.")
-        complete = (
-            release is not None
-            and not release["isDraft"]
-            and (required_asset_names(self.tag) <= release["assetNames"])
-        )
-        if not complete:
-            self.reject_competing_releases()
-        pr, source = self.resolve_source(self.find_pr(), main, tagged, complete)
+        self.unpublished_release(tagged)
+        self.reject_competing_releases()
+        pr = self.find_pr()
         if tagged:
-            self.verify_tag(tagged, source)
-        main = self.fetch_main()
-        if not is_ancestor(source, main):
-            raise PublishError("Verified source is not on current main.")
-        if complete:
-            if release_section(self.version, changelog_at(source)) not in release["body"]:
-                raise PublishError("Published release notes differ from the tagged changelog.")
-            with tempfile.TemporaryDirectory() as directory:
-                verify_asset_parity(self.tag, release, Path(directory))
-            print(f"Verified existing publication {self.tag} at {source}.")
-            return
-        self.verify_current_release(main, source, tagged)
-        self.build_and_publish(pr, source, tagged)
+            if not pr or pr["state"] != "closed":
+                raise PublishError("Existing tag has no merged release PR. Review it manually.")
+            self.verify_tag(tagged, pr["merge_commit_sha"])
+        elif not pr or pr["state"] == "open":
+            pr = self.prepare_pr(main, pr)
+        pr, source = self.await_merge(pr)
+        release = self.unpublished_release(tagged)
+        if release and required_asset_names(self.tag) & release["assets"].keys():
+            # Draft recovery can skip the build that normally installs Poppler.
+            if not shutil.which("pdfinfo"):
+                subprocess.run(["sudo", "apt-get", "update"], check=True, timeout=180)
+                subprocess.run(
+                    ["sudo", "apt-get", "install", "-y", "poppler-utils"], check=True, timeout=180
+                )
+            self.finalize(source, tagged, release)
+        else:
+            self.build_and_publish(pr, source, tagged)
 
 
 def main():
@@ -491,6 +471,7 @@ def main():
         PublishError,
         OSError,
         ReleaseError,
+        json.JSONDecodeError,
         KeyError,
         TypeError,
         AttributeError,

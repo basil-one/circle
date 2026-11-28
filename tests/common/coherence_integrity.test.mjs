@@ -30,8 +30,7 @@ const capabilities = [
 const domains = new Set(['common', 'site', 'paper', 'orchestration']);
 const rootScriptExceptions = new Set([
   'scripts/build-paper-pdf.sh',
-  'scripts/build-pdf.py',
-  'scripts/paper_release.py'
+  'scripts/build-pdf.py'
 ]);
 const testSupportExceptions = new Set([
   'tests/site/browser/accessibility.js',

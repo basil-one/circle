@@ -187,11 +187,20 @@ class GitPublicationTests(unittest.TestCase):
         release.git("config", "user.name", "Fixture")
         release.git("config", "user.email", "fixture@example.invalid")
         release.git("remote", "add", "origin", "../remote.git")
+        builder = Path(release.BUILDER)
+        builder.parent.mkdir()
+        builder.write_text(
+            "set -e\nmkdir -p assets/pdfs\ngit rev-parse HEAD > " + str(release.PDF) + "\n"
+        )
+        release.git("add", release.BUILDER)
         self.base = self.commit_changelog(BASE_CHANGELOG)
         release.git("tag", "v0.3.0")
         release.git("push", "origin", "main", "--tags")
         self.publisher = release.Publisher(VERSION)
         self.promoted = release.promote_changelog(VERSION, "2026-11-28", BASE_CHANGELOG, ["v0.3.0"])
+        self.check_pages = self.enterContext(
+            patch.object(release, "check_pages", side_effect=check_runs)
+        )
 
     @staticmethod
     def commit_changelog(content):
@@ -218,37 +227,28 @@ class GitPublicationTests(unittest.TestCase):
     def test_squash_must_match_the_checked_tree(self):
         pr = self.merge_candidate("squash")
         source = pr["merge_commit_sha"]
-        with patch.object(release, "check_pages", return_value=check_runs(pr["head"]["sha"])):
-            self.assertEqual(
-                self.publisher.verify_merged_source(pr, source, require_checks=True), source
-            )
+        self.assertEqual(self.publisher.verify_merged_source(pr, source), source)
         Path("extra.txt").write_text("unreviewed change")
         release.git("add", "extra.txt")
         release.git("commit", "-qm", "unreviewed change")
         other = release.git("rev-parse", "HEAD")
         with self.assertRaisesRegex(release.PublishError, "merged tree differs"):
-            self.publisher.verify_merged_source(
-                dict(pr, merge_commit_sha=other), other, require_checks=False
-            )
+            self.publisher.verify_merged_source(dict(pr, merge_commit_sha=other), other)
         with self.assertRaisesRegex(release.PublishError, "not on current main"):
-            self.publisher.verify_merged_source(pr, self.base, require_checks=False)
+            self.publisher.verify_merged_source(pr, self.base)
 
     def test_merge_commit_requires_the_fetched_checked_head(self):
         pr = self.merge_candidate("merge")
         source = pr["merge_commit_sha"]
-        self.assertEqual(
-            self.publisher.verify_merged_source(pr, source, require_checks=False), source
-        )
+        self.assertEqual(self.publisher.verify_merged_source(pr, source), source)
         pr["head"]["sha"] = self.base
         with self.assertRaisesRegex(release.PublishError, "differs from the checked revision"):
-            self.publisher.verify_merged_source(pr, source, require_checks=False)
+            self.publisher.verify_merged_source(pr, source)
 
     def test_fast_forward_candidate_remains_verifiable(self):
         pr = self.merge_candidate("rebase")
         source = pr["merge_commit_sha"]
-        self.assertEqual(
-            self.publisher.verify_merged_source(pr, source, require_checks=False), source
-        )
+        self.assertEqual(self.publisher.verify_merged_source(pr, source), source)
 
     def test_orphan_branch_is_reused_and_unexpected_changes_are_rejected(self):
         branch = self.publisher.branch
@@ -281,89 +281,112 @@ class GitPublicationTests(unittest.TestCase):
     def test_changed_changelog_after_build_stops_before_tag(self):
         pr = self.merge_candidate("merge")
         source = pr["merge_commit_sha"]
-        changed = self.commit_changelog(self.promoted.replace("approved change", "altered change"))
+        self.commit_changelog(self.promoted.replace("approved change", "altered change"))
         release.git("push", "origin", "main")
         with (
             patch.object(release, "pulls", return_value=[]),
-            patch.object(self.publisher, "pr", return_value=pr),
-            patch.object(release, "check_pages", return_value=check_runs(pr["head"]["sha"])),
             patch.object(release, "publish_release") as upload,
             self.assertRaisesRegex(release.PublishError, "Current main changed"),
         ):
-            self.publisher.finalize(pr, source, None, Path("fixture.pdf"))
+            self.publisher.finalize(source, None, None, Path("fixture.pdf"))
         upload.assert_not_called()
         self.assertIsNone(self.publisher.tag_source())
-        self.assertNotEqual(changed, source)
 
-    def test_tagged_draft_resumes_with_exact_source_and_no_retag(self):
+    def test_new_release_builds_from_exact_merge_even_after_main_moves(self):
         pr = self.merge_candidate("merge")
-        release.git("tag", "-a", self.publisher.tag, "-m", f"Release {self.publisher.tag}")
-        release.git("push", "origin", f"refs/tags/{self.publisher.tag}")
-        ref = f"refs/tags/{self.publisher.tag}"
-        original = release.git("rev-parse", ref)
+        source = pr["merge_commit_sha"]
+        Path(release.BUILDER).write_text("exit 99\n")
+        release.git("commit", "-qam", "Later builder change")
+        release.git("push", "origin", "main")
 
-        def build(args, *, cwd, **_options):
-            self.assertEqual(args, ["bash", str(release.BUILDER)])
-            self.assertEqual((cwd / "CHANGELOG.md").read_text(), self.promoted)
-
-        original_run = release.subprocess.run
-
-        def subprocess_run(args, *positional, **options):
-            if args[0] == "bash":
-                return build(args, **options)
-            return original_run(args, *positional, **options)
+        def publish(tag, notes, draft, pdf):
+            self.assertEqual(tag, self.publisher.tag)
+            self.assertIn("An approved change.", notes)
+            self.assertIsNone(draft)
+            self.assertEqual(pdf.read_text().strip(), source)
 
         with (
             patch.object(self.publisher, "find_pr", return_value=pr),
             patch.object(self.publisher, "pr", return_value=pr),
             patch.object(release, "pulls", return_value=[]),
-            patch.object(release, "get_release", return_value={"isDraft": True}),
-            patch.object(release, "check_pages", return_value=check_runs(pr["head"]["sha"])),
+            patch.object(release, "get_release", return_value=None),
             patch.object(release, "validate_latest_release"),
-            patch.object(release.subprocess, "run", side_effect=subprocess_run),
-            patch.object(release, "publish_release") as publish,
+            patch.object(release, "publish_release", side_effect=publish) as upload,
         ):
             self.publisher.run()
-        publish.assert_called_once()
-        self.assertEqual(publish.call_args.args[2], self.promoted)
-        self.assertEqual(release.git("rev-parse", ref), original)
-
-    def test_finalization_creates_annotated_tag_at_verified_merge(self):
-        pr = self.merge_candidate("merge")
-        source = pr["merge_commit_sha"]
-        with (
-            patch.object(release, "pulls", return_value=[]),
-            patch.object(self.publisher, "pr", return_value=pr),
-            patch.object(release, "check_pages", return_value=check_runs(pr["head"]["sha"])),
-            patch.object(release, "validate_latest_release"),
-            patch.object(release, "get_release", return_value=None),
-            patch.object(release, "publish_release") as upload,
-        ):
-            self.publisher.finalize(pr, source, None, Path("fixture.pdf"))
         self.assertEqual(self.publisher.tag_source(), source)
         self.publisher.verify_tag(source, source)
         upload.assert_called_once()
+        self.assertEqual(self.check_pages.call_count, 2)
 
-    def test_completed_publication_needs_no_live_checks_or_build(self):
+    def test_tagged_draft_builds_only_when_no_required_asset_exists(self):
         pr = self.merge_candidate("merge")
-        release.git("tag", "-a", self.publisher.tag, "-m", f"Release {self.publisher.tag}")
-        release.git("push", "origin", f"refs/tags/{self.publisher.tag}")
-        published = {
-            "isDraft": False,
-            "assetNames": release.required_asset_names(self.publisher.tag),
-            "body": "### Changed\n- An approved change.",
-        }
+        source = pr["merge_commit_sha"]
+        tag = self.publisher.tag
+        release.git("tag", "-a", tag, "-m", f"Release {tag}")
+        release.git("push", "origin", f"refs/tags/{tag}")
+        ref = f"refs/tags/{tag}"
+        original = release.git("rev-parse", ref)
+        names = sorted(release.required_asset_names(tag))
+        for existing in ([], names[:1], names):
+            with (
+                self.subTest(existing=existing),
+                patch.object(self.publisher, "find_pr", return_value=pr),
+                patch.object(self.publisher, "pr", return_value=pr),
+                patch.object(release, "pulls", return_value=[]),
+                patch.object(release, "validate_latest_release"),
+                patch.object(
+                    release,
+                    "get_release",
+                    return_value={"draft": True, "assets": dict.fromkeys(existing)},
+                ),
+                patch.object(self.publisher, "build_and_publish") as build,
+                patch.object(release.shutil, "which", return_value="/usr/bin/pdfinfo"),
+                patch.object(release, "publish_release") as publish,
+            ):
+                self.publisher.run()
+                if existing:
+                    build.assert_not_called()
+                    publish.assert_called_once()
+                    self.assertIsNone(publish.call_args.args[-1])
+                else:
+                    build.assert_called_once_with(pr, source, source)
+                    publish.assert_not_called()
+        self.assertEqual(release.git("rev-parse", ref), original)
+
+    def test_published_release_never_builds_or_mutates_even_with_missing_assets(self):
+        names = sorted(release.required_asset_names(self.publisher.tag))
+        for existing in ([], names[:1], names):
+            published = {"draft": False, "assets": dict.fromkeys(existing)}
+            with (
+                self.subTest(existing=existing),
+                patch.object(release, "get_release", return_value=published),
+                patch.object(self.publisher, "find_pr") as pr,
+                patch.object(self.publisher, "build_and_publish") as build,
+                patch.object(release, "publish_release") as publish,
+                self.assertRaisesRegex(release.ReleaseError, "human repair|already published"),
+            ):
+                self.publisher.run()
+            pr.assert_not_called()
+            build.assert_not_called()
+            publish.assert_not_called()
+        self.check_pages.assert_not_called()
+        self.assertIsNone(self.publisher.tag_source())
+
+    def test_historical_tag_without_reviewed_pr_never_rebuilds(self):
+        publisher = release.Publisher("0.2.2")
         with (
-            patch.object(self.publisher, "find_pr", return_value=pr),
-            patch.object(release, "get_release", return_value=published),
-            patch.object(release, "check_pages") as checks,
-            patch.object(release, "verify_asset_parity") as assets,
-            patch.object(self.publisher, "build_and_publish") as build,
+            patch.object(publisher, "tag_source", return_value=self.base),
+            patch.object(release, "get_release", return_value=None),
+            patch.object(release, "pulls", return_value=[]),
+            patch.object(publisher, "build_and_publish") as build,
+            patch.object(release, "publish_release") as publish,
+            self.assertRaisesRegex(release.PublishError, "no merged release PR"),
         ):
-            self.publisher.run()
-        checks.assert_not_called()
+            publisher.run()
         build.assert_not_called()
-        assets.assert_called_once()
+        publish.assert_not_called()
+        self.check_pages.assert_not_called()
 
 
 if __name__ == "__main__":

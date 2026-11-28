@@ -11,8 +11,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from scripts.paper_release import (
-    LEGACY_SOURCE,
+from scripts.paper.release import (
     ReleaseError,
     changelog_versions,
     git_tags,
@@ -26,6 +25,8 @@ REPOSITORY = "basil-one/circle"
 API = f"https://api.github.com/repos/{REPOSITORY}"
 DOWNLOAD = f"https://github.com/{REPOSITORY}/releases"
 MAX_BYTES = 50_000_000
+# v0.2.2 predates release PRs. Its annotated tag resolves to this commit.
+LEGACY_SOURCE = "a5e28c0b5ac838ac5d8251c6e37b18cb3ebe0c15"
 
 
 class Mismatch(ValueError):

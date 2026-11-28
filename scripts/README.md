@@ -101,21 +101,16 @@ The complete Paper capability inventory and canonical ordering are in [Quality S
 
 Each release includes [`circle3-paper.pdf`](https://github.com/basil-one/circle/releases/latest/download/circle3-paper.pdf) for the website and `circle3-paper-vX.Y.Z.pdf` for citation and archival links. The PDFs must be readable and byte-identical. Release notes use the version entry from `CHANGELOG.md`.
 
-### Human publication and recovery
+### PDFs and interrupted drafts
 
-Release Publish reports the changelog-only PR and polls once per minute for up to 30 minutes. After a human merges it through the Quality Gate, publication requires all twelve successful checks for the exact head and a matching tree on `main`. The workflow builds from that immutable revision using the current build wrapper and the source tree's builder and configuration. This also supports the historical v0.2.2 tag, which predates the release PR and build wrapper.
+Release Publish builds and validates the paper in a detached checkout of the approved revision when the draft has neither required PDF. If one verified draft PDF survives, the workflow uploads those same bytes under the missing name. If both are present, it verifies them and can finish the draft without rebuilding. Each PDF must match its asset metadata and the other download before publication.
 
-Rerun the same version after timeout or interruption to reuse its branch, PR, tag, or draft. Update a stale branch through GitHub. If a different release is pending or the approved source conflicts with current evidence, reconcile it before rerunning. If an existing release has one verified PDF, recovery copies that asset to the missing name. Diverging PDFs or a published release with no surviving PDF require a human repair decision.
-
-If PR creation is denied, a repository owner should check **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. The workflow requests only the permissions needed to prepare the PR, read checks, and publish after a human merge.
-
-Paper Publication Integrity verifies the published tag, changelog, release metadata, and public downloads independently of historical check runs. A merged release awaiting publication is reported as pending after the existing publication is verified.
+Paper Publication Integrity checks the published tag, changelog, asset metadata, and public PDFs. It verifies the existing publication while a newer release is pending. Missing or conflicting assets on a published release require a human repair decision.
 
 ## Inputs
 
 - `scripts/plop.paper.config.yaml` — build config (strict)
 - `scripts/template.tex` — LaTeX template
-- `scripts/paper_release.py` — version validation, changelog promotion, and shared release logic (historical compatibility path)
 - `scripts/paper/` — content, link, rendering, and publication integrity validators
 - `tests/paper/` — paper build, release helper, and validator tests
 - `scripts/orchestration/release_publish.py` and `tests/orchestration/` — release workflow orchestration and tests

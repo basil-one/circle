@@ -9,7 +9,7 @@ For licensing, see `LICENSE.md`.
 ## [Unreleased]
 
 ### Changed
-- Reconciled Release Publish with the shared human-reviewed release process, including same-version recovery and verified Circle3 PDF downloads.
+- Reconciled Release Publish with the shared human-reviewed release process, including same-version draft recovery and verified Circle3 PDF downloads. Defects in published releases are left for human review.
 - Simplified Paper Publication Integrity to verify the published release and its downloads while a newer release is pending.
 - Reconciled contributor guidance, automation stewardship, and repository documentation with Agency's shared quality practice while preserving Circle's paper-specific responsibilities.
 

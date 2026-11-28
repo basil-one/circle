@@ -67,7 +67,7 @@ Sustain conceptual integrity across workflows, code, tests, and documentation. E
 
 The website is published automatically following an approved merge.
 
-Versioned milestones are published separately by human initiation and approval through the Quality Gate. Each release builds the paper from the verified source and supplies stable and versioned PDF downloads. Paper Publication Integrity verifies the existing publication, including while a newer version is pending.
+Versioned milestones are published separately by human initiation and approval through the Quality Gate. Paper Publication Integrity verifies the existing publication, including while a newer version is pending. Defects in published releases require human judgment.
 
 ## Quality Pulse
 
